@@ -240,7 +240,7 @@ p10 = $0010
 p30 = $0030
 COLOR_RAM = $D800
 
-        * = $0800
+* = $0800
 
 p0800   LDA fC2,X
         EOR #$FF
@@ -294,7 +294,7 @@ b085C   RTS
         JSR s1100
         LDA #$00
         STA aA3
-        LDA f0096,Y
+        LDA @wf0096,Y
         SEC 
         SBC #$01
         AND #$7F
@@ -381,6 +381,7 @@ b08D3   LDY aA0
 ;-------------------------------
 ; $0900 - Potential Start of Program
 ;-------------------------------
+s0900
         SEI 
         LDA #$0B
         STA $D011    ;VIC Control Register 1
@@ -391,15 +392,15 @@ b08D3   LDY aA0
         STA a01
         LDY #$FE
         LDA #$00
-b0916   STA f0001,Y
+b0916   STA @wf0001,Y
         DEY 
         BNE b0916
         LDX #<p8000
         LDY #>p8000
         STX aB2
         STY aB3
-        LDX #<pE000
-        LDY #>pE000
+        LDX #<$E000
+        LDY #>$E000
         STX aB0
         STY aB1
         LDX #$20
@@ -414,8 +415,8 @@ b0916   STA f0001,Y
         LDY #>p7C00
         STX aB2
         STY aB3
-        LDX #<pD200
-        LDY #>pD200
+        LDX #<$D200
+        LDY #>$D200
         STX aB0
         STY aB1
         LDX #$02
@@ -467,20 +468,20 @@ p099D   SEI
         JSR sB000
         LDX #<p3F93
         LDY #>p3F93
-        STX aFFFE    ;IRQ
-        STY aFFFF    ;IRQ
+        STX $FFFE    ;IRQ
+        STY $FFFF    ;IRQ
         LDX #<p099D
         LDY #>p099D
         STX p8000
         STY a8001
         STX a8002
         STY a8003
-        STX aFFFC    ;Hardware Reset
-        STY aFFFD    ;Hardware Reset
+        STX $FFFC    ;Hardware Reset
+        STY $FFFD    ;Hardware Reset
         LDX #<p3FD6
         LDY #>p3FD6
-        STX aFFFA    ;NMI
-        STY aFFFB    ;NMI
+        STX $FFFA    ;NMI
+        STY $FFFB    ;NMI
         LDA #$01
         STA $D01A    ;VIC Interrupt Mask Register (IMR)
         LDA #$80
@@ -511,12 +512,12 @@ j0A20   LDX #$FF
         TXS 
         LDA #$F0
         STA a4A
-        LDX #<pDC00
-        LDY #>pDC00
+        LDX #<$DC00
+        LDY #>$DC00
         STX aB025
         STY aB026
-        LDX #<pDC01
-        LDY #>pDC01
+        LDX #<$DC01
+        LDY #>$DC01
         STX aB028
         STY aB029
         LDY #$26
@@ -549,8 +550,8 @@ j0A6F   JSR s17CC
         STA a90
         LDA #$30
         JSR s2397
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a1C
         STY a1D
         LDX #<p3778
@@ -600,8 +601,8 @@ b0AD4   LDA #$00
 b0AED   JSR s17CC
         LDA #$30
         JSR s2397
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a1C
         STY a1D
         LDX #<p3763
@@ -652,8 +653,8 @@ b0AED   JSR s17CC
 
 j0B65   LDX #$08
 b0B67   LDA f3496,X
-        STA f0250,X
-        STA f0260,X
+        STA $0250,X
+        STA $0260,X
         STA f20,X
         DEX 
         BPL b0B67
@@ -683,7 +684,7 @@ j0BA1   LDX #$08
         LDA a5D
         CMP #$01
         BEQ b0BCC
-b0BAF   LDA f0260,X
+b0BAF   LDA $0260,X
         STA f20,X
         DEX 
         BPL b0BAF
@@ -693,11 +694,11 @@ b0BAF   LDA f0260,X
         BNE b0BF2
         LDX #$08
         DEC a5D
-        LDA a0255
+        LDA $0255
         BNE b0BCC
         JMP jC909
 
-b0BCC   LDA f0250,X
+b0BCC   LDA $0250,X
         STA f20,X
         DEX 
         BPL b0BCC
@@ -712,7 +713,7 @@ b0BCC   LDA f0250,X
         JMP jC909
 
 b0BE8   INC a5D
-        LDA a0265
+        LDA $0265
         BNE b0BAF
         JMP jC909
 
@@ -721,14 +722,14 @@ b0BF2   LDA a5C
         LDA a5D
         CMP #$01
         BEQ b0C09
-        LDX #<pDC00
-        LDY #>pDC00
+        LDX #<$DC00
+        LDY #>$DC00
         STX aB025
         STY aB026
         JMP j0C13
 
-b0C09   LDX #<pDC01
-        LDY #>pDC01
+b0C09   LDX #<$DC01
+        LDY #>$DC01
         STX aB025
         STY aB026
 j0C13   STX aB028
@@ -747,8 +748,8 @@ b0C19   JSR s17CC
         LDY #>p37BF
         STX a1A
         STY a1B
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a1C
         STY a1D
         LDY #$0D
@@ -796,9 +797,9 @@ b0C71   STX a37FB
         JSR sB287
         JSR sB272
         JSR s3086
-        LDA #<p0403
+        LDA #<$0403
         STA a91
-        LDA #>p0403
+        LDA #>$0403
         STA a92
         LDA #$05
         STA a93
@@ -832,7 +833,7 @@ b0CD7   LDA #$12
         STA $D02E    ;Sprite 7 Color
         LDY #$07
 b0CF0   LDA f32ED,Y
-        STA f0035,Y
+        STA @wf0035,Y
         DEY 
         BPL b0CF0
 b0CF9   LDA a2F
@@ -904,8 +905,8 @@ b0D75   STA a24
         JSR s17CC
         LDA #$30
         JSR s2397
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a1C
         STY a1D
         LDX #<p37CD
@@ -952,7 +953,7 @@ b0DE8   JSR s19B7
         CMP #$01
         BEQ b0E02
 b0DF3   LDA f20,X
-        STA f0260,X
+        STA $0260,X
         DEX 
         BPL b0DF3
         LDA #$01
@@ -960,7 +961,7 @@ b0DF3   LDA f20,X
         JMP j0BA1
 
 b0E02   LDA f20,X
-        STA f0250,X
+        STA $0250,X
         DEX 
         BPL b0E02
         LDA a5C
@@ -1006,9 +1007,9 @@ b0E49   JSR s1108
         STA aEF
         LDA #$01
         STA aF2
-        LDA #<ROM_SETLFSj
+        LDA #<$FFBA
         STA a3E99
-        LDA #>ROM_SETLFSj
+        LDA #>$FFBA
         STA a3E9A
         RTS 
 
@@ -1158,16 +1159,16 @@ a0F5F   =*+$01
         STA $D418    ;Select Filter Mode and Volume
         LDY #$00
         STY a9F
-b0F67   LDA f0091,Y
+b0F67   LDA @wf0091,Y
         BEQ b0F78
         BMI b0F72
         LDX f96,Y
         BMI b0F78
-b0F72   STA f0096,Y
+b0F72   STA @wf0096,Y
         JSR s105D
 b0F78   LDY a9F
         LDA #$00
-        STA f0091,Y
+        STA @wf0091,Y
         INY 
         STY a9F
         CPY #$03
@@ -1288,7 +1289,7 @@ b105C   RTS
 s105D   JSR s1100
         LDA #$00
         STA aA3
-        LDA f0096,Y
+        LDA @wf0096,Y
         SEC 
         SBC #$01
         AND #$7F
@@ -1426,7 +1427,7 @@ f1144   =*+$01
 f1147   =*+$01
         ASL f1D0E,X
 f114A   =*+$01
-        BIT a0008
+        BIT @wa0008
         BRK #$00
 ;-------------------------------
 ; s114E
@@ -1452,8 +1453,8 @@ b116F   LDA a2F
         JSR sB302
         LDY #$50
         JSR sB30F
-        LDX #<pD200
-        LDY #>pD200
+        LDX #<$D200
+        LDY #>$D200
         STX aB2
         STY aB3
         LDX #<p7C00
@@ -1489,9 +1490,9 @@ b11A4   LDA a2F
         JSR sB244
         LDA a26
         STA aAD
-        LDA #>p0609
+        LDA #>$0609
         STA aA9
-        LDA #<p0609
+        LDA #<$0609
         STA aA8
         LDA a28
         LSR 
@@ -1839,8 +1840,8 @@ b1473   JSR s15D4
 b1487   JSR s17CC
         LDA #$30
         JSR s2397
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a1C
         STY a1D
         LDX #<p378D
@@ -1954,9 +1955,9 @@ b1582   LDA $D41B    ;Oscillator 3 Output
 b1593   LDA a2E
         CMP #$07
         BCC b15A3
-        LDA #>p0700
+        LDA #>$0700
         STA a2E
-        LDA #<p0700
+        LDA #<$0700
         STA a2D
         STA a5F
 b15A3   LDA $D41B    ;Oscillator 3 Output
@@ -1965,7 +1966,7 @@ b15A3   LDA $D41B    ;Oscillator 3 Output
         AND #$01
         TAY 
         LDA #$1A
-        STA f0091,Y
+        STA @wf0091,Y
 b15B2   LDA a2A
         CMP #$02
         BCS b156D
@@ -1995,8 +1996,8 @@ s15D4   LDA a2F
         LDY #>p48A0
         STX a1A
         STY a1B
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a12
         STY a13
         LDA #$1E
@@ -2043,8 +2044,8 @@ s1627   LDX #<p48A0
         LDY #>p48A0
         STX a1A
         STY a1B
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a12
         STY a13
         LDA #$1D
@@ -2283,8 +2284,8 @@ s17CC   LDA a2F
         SEI 
         LDX #<p3F93
         LDY #>p3F93
-        STX aFFFE    ;IRQ
-        STY aFFFF    ;IRQ
+        STX $FFFE    ;IRQ
+        STY $FFFF    ;IRQ
         CLI 
         RTS 
 
@@ -2298,8 +2299,8 @@ s17E2   LDA a2F
         SEI 
         LDX #<p3F00
         LDY #>p3F00
-        STX aFFFE    ;IRQ
-        STY aFFFF    ;IRQ
+        STX $FFFE    ;IRQ
+        STY $FFFF    ;IRQ
         CLI 
         RTS 
 
@@ -2318,7 +2319,7 @@ s17F8   LDA #$09
         STY a15
 j180C   LDY #$12
 b180E   LDA (p1A),Y
-        CMP f000E,Y
+        CMP @wf000E,Y
         BCC b181F
         BEQ b181A
         JMP j184A
@@ -2529,8 +2530,8 @@ s1974   LDA a62
         LDY #>a37A2
         STX a1A
         STY a1B
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a1C
         STY a1D
         LDY #$10
@@ -2644,7 +2645,7 @@ s1A54   SEI
         LDA #$24
         STA a01
         LDY a26
-        LDA fE040,Y
+        LDA $E040,Y
         STA aB3
         LDA #$00
         STA aB2
@@ -2807,9 +2808,9 @@ j1B83   LDY #$0C
         STA a7C
         LDA #$00
         STA a7D
-        LDY #>p050A
+        LDY #>$050A
         STY a11
-        LDX #<p050A
+        LDX #<$050A
         STX a10
 b1B95   LDY a11
         STY a04
@@ -3328,7 +3329,7 @@ b1F7C   JMP j1EA6
         BCC b1F9A
         LDX a54
         BMI b1F9A
-b1F92   LDA f0240,X
+b1F92   LDA $0240,X
         BPL b1F9B
         DEX 
         BPL b1F92
@@ -3360,14 +3361,14 @@ b1FA6   STY a04
         STA fA498,Y
         STA fA4A8,Y
         STA fA4A0,Y
-        LDA f0220,X
+        LDA $0220,X
         ASL 
         ASL 
         ASL 
         CLC 
         ADC #$2C
         STA a07
-        LDA f0240,X
+        LDA $0240,X
         CLC 
         ADC #$02
         ASL 
@@ -3655,7 +3656,7 @@ s21B5   LDA #$01
         STA a55
         LDY #$07
 b220D   LDA f32ED,Y
-        STA f0035,Y
+        STA @wf0035,Y
         DEY 
         BPL b220D
 b2216   LDA a2F
@@ -3811,8 +3812,8 @@ b232D   LDX #$26
         RTS 
 
 b2335   LDY a26
-        LDX fE050,Y
-        LDA fE060,Y
+        LDX $E050,Y
+        LDA $E060,Y
         TAY 
         JSR sB295
         RTS 
@@ -3829,12 +3830,12 @@ s2342   LDA a19
         BEQ b237B
         RTS 
 
-b2351   LDX #<pDC00
-        LDY #>pDC00
+b2351   LDX #<$DC00
+        LDY #>$DC00
         STX aB025
         STY aB026
-        LDX #<pDC01
-        LDY #>pDC01
+        LDX #<$DC01
+        LDY #>$DC01
         STX aB028
         STY aB029
         LDA a19
@@ -3926,19 +3927,19 @@ b23D7   LDX #$AD
 s23EF   LDA a61
         BEQ b2402
         LDA #$F1
-        STA aD85A
-        STA aD85B
-        STA aD882
-        STA aD883
+        STA $D85A
+        STA $D85B
+        STA $D882
+        STA $D883
         RTS 
 
 b2402   LDA #$F2
-        STA aD85A
-        STA aD85B
-        LDA #<pF6F5
-        STA aD882
-        LDA #>pF6F5
-        STA aD883
+        STA $D85A
+        STA $D85B
+        LDA #<$F6F5
+        STA $D882
+        LDA #>$F6F5
+        STA $D883
         RTS 
 
 ;-------------------------------
@@ -5120,8 +5121,8 @@ b2C42   LDA a31
 ;-------------------------------
 ; s2C66
 ;-------------------------------
-s2C66   LDX #<pE100
-        LDY #>pE100
+s2C66   LDX #<$E100
+        LDY #>$E100
         STX a1A
         STY a1B
         LDX #$01
@@ -5173,9 +5174,9 @@ s2CB2   LDA #$FF
         LDA a26
         AND #$0F
         TAY 
-        LDA fE010,Y
+        LDA $E010,Y
         STA a12
-        LDA fE020,Y
+        LDA $E020,Y
         STA a13
         LDA #>pA200
         STA a15
@@ -5344,20 +5345,20 @@ s2DE4   CMP #$59
         STY a54
         LDA a1D
         AND #$01
-        STA f0230,Y
+        STA $0230,Y
         LDA a1D
         SEC 
         SBC #$82
         CLC 
         ADC #$0C
         LSR 
-        STA f0220,Y
+        STA $0220,Y
         LDA a1C
-        STA f0210,Y
+        STA $0210,Y
         ROR 
-        STA f0200,Y
+        STA $0200,Y
         LDA #$FF
-        STA f0240,Y
+        STA $0240,Y
 b2E16   RTS 
 
 ;-------------------------------
@@ -5529,7 +5530,7 @@ s2F33   LDX #<p3372
         LDA a61
         BNE b2F5B
         LDY a26
-        LDA fE030,Y
+        LDA $E030,Y
         BEQ b2F5B
         STA a8F
 b2F4C   CLC 
@@ -5542,7 +5543,7 @@ b2F57   DEC a8F
         BNE b2F4C
 b2F5B   LDY #$04
 b2F5D   LDA (p1C),Y
-        STA f004B,Y
+        STA @wf004B,Y
         DEY 
         BPL b2F5D
         LDA a4B
@@ -5556,8 +5557,8 @@ b2F5D   LDA (p1C),Y
         LDA a4D
         AND #$F7
         STA a58
-        LDX #<pD8A0
-        LDY #>pD8A0
+        LDX #<$D8A0
+        LDY #>$D8A0
         STX a1C
         STY a1D
         LDX #$02
@@ -5576,19 +5577,19 @@ b2F5D   LDA (p1C),Y
 ;-------------------------------
 s2F9D   LDA #$FF
         STA a60
-        STA pDC00    ;CIA1: Data Port Register A
-        LDA pDC01    ;CIA1: Data Port Register B
+        STA $DC00    ;CIA1: Data Port Register A
+        LDA $DC01    ;CIA1: Data Port Register B
         AND #$08
         CMP #$08
         BNE b2FC7
         LDA #$7F
-        STA pDC00    ;CIA1: Data Port Register A
-        LDA pDC01    ;CIA1: Data Port Register B
+        STA $DC00    ;CIA1: Data Port Register A
+        LDA $DC01    ;CIA1: Data Port Register B
         ORA #$7F
         STA a60
         LDA #$BF
-        STA pDC00    ;CIA1: Data Port Register A
-        LDA pDC01    ;CIA1: Data Port Register B
+        STA $DC00    ;CIA1: Data Port Register A
+        LDA $DC01    ;CIA1: Data Port Register B
         ORA #$F7
         AND a60
         STA a60
@@ -5599,24 +5600,24 @@ b2FC7   RTS
 ;-------------------------------
 s2FC8   LDX a54
         BMI b3000
-b2FCC   LDY f0220,X
+b2FCC   LDY $0220,X
         LDA f340F,Y
         STA a1F
         LDA fB379,Y
         STA a1E
-        LDY f0240,X
+        LDY $0240,X
         BMI b2FE2
         LDA a4D
         STA (p1E),Y
-b2FE2   LDA f0200,X
+b2FE2   LDA $0200,X
         CMP a50
         BCC b3001
         CMP a51
         BCS b3001
-        LDA f0210,X
+        LDA $0210,X
         SEC 
         SBC a31
-        STA f0240,X
+        STA $0240,X
         BMI b3001
         TAY 
         LDA a55
@@ -5626,7 +5627,7 @@ b2FFD   DEX
 b3000   RTS 
 
 b3001   LDA #$FF
-        STA f0240,X
+        STA $0240,X
         BNE b2FFD
 ;-------------------------------
 ; s3008
@@ -6280,9 +6281,9 @@ p3F00   PHA
         STA $D021    ;Background Color 0
         INC a2F
         LDA #<p3F38
-        STA aFFFE    ;IRQ
+        STA $FFFE    ;IRQ
         LDA #>p3F38
-        STA aFFFF    ;IRQ
+        STA $FFFF    ;IRQ
         TXA 
         PHA 
         TYA 
@@ -6317,9 +6318,9 @@ a3F4A   =*+$01
         STA $D011    ;VIC Control Register 1
         INC a2F
         LDA #<p3F73
-        STA aFFFE    ;IRQ
+        STA $FFFE    ;IRQ
         LDA #>p3F73
-        STA aFFFF    ;IRQ
+        STA $FFFF    ;IRQ
         JSR sB24B
         PLA 
         RTI 
@@ -6334,9 +6335,9 @@ p3F73   PHA
         LDA #$00
         STA a2F
         LDA #<p3F00
-        STA aFFFE    ;IRQ
+        STA $FFFE    ;IRQ
         LDA #>p3F00
-        STA aFFFF    ;IRQ
+        STA $FFFF    ;IRQ
         PLA 
         RTI 
 
@@ -8191,17 +8192,17 @@ pA6A0   .BYTE $20,$23,$26,$26,$26,$26,$26,$26
 ;-------------------------------
 ; sB000
 ;-------------------------------
-sB000   LDA #>p0180
+sB000   LDA #>$0180
         STA aBC
-        LDA #<p0180
+        LDA #<$0180
         STA aBB
         LDX #<p10
         LDY #>p10
         STX aB7
         STY aB8
-        LDA #<p0500
+        LDA #<$0500
         STA a94
-        LDA #>p0500
+        LDA #>$0500
         STA a95
         RTS 
 
@@ -8212,13 +8213,13 @@ sB019   LDA #$00
         STA a16
         STA a17
         LDA #$FF
-        STA pDC00    ;CIA1: Data Port Register A
+        STA $DC00    ;CIA1: Data Port Register A
 aB025   =*+$01
 aB026   =*+$02
-        LDA pDC00    ;CIA1: Data Port Register A
+        LDA $DC00    ;CIA1: Data Port Register A
 aB028   =*+$01
 aB029   =*+$02
-        AND pDC01    ;CIA1: Data Port Register B
+        AND $DC01    ;CIA1: Data Port Register B
         BIT aB057
         BEQ bB037
         BIT aB058
@@ -8427,10 +8428,10 @@ bB1B3   RTS
 ;-------------------------------
 ; sB1B4
 ;-------------------------------
-sB1B4   LDA #<p0102
+sB1B4   LDA #<$0102
         STA aB4
 aB1B9   =*+$01
-        LDA #>p0102
+        LDA #>$0102
         STA aB5
         LDX #>p30
         STX a10
@@ -8476,27 +8477,27 @@ sB1FD   LDA #$FF
         LDA #$00
         STA $DC03    ;CIA1: Data Direction Register B
         LDA #$FE
-        STA pDC00    ;CIA1: Data Port Register A
-        LDA pDC01    ;CIA1: Data Port Register B
+        STA $DC00    ;CIA1: Data Port Register A
+        LDA $DC01    ;CIA1: Data Port Register B
         AND #$78
         STA a19
         LDA #$FD
-        STA pDC00    ;CIA1: Data Port Register A
-        LDA pDC01    ;CIA1: Data Port Register B
+        STA $DC00    ;CIA1: Data Port Register A
+        LDA $DC01    ;CIA1: Data Port Register B
         AND #$80
         ORA a19
         STA a19
         LDA #$BF
-        STA pDC00    ;CIA1: Data Port Register A
-        LDA pDC01    ;CIA1: Data Port Register B
+        STA $DC00    ;CIA1: Data Port Register A
+        LDA $DC01    ;CIA1: Data Port Register B
         AND #$10
         BNE bB233
         LDA a19
         AND #$7F
         STA a19
 bB233   LDA #$FF
-        STA pDC00    ;CIA1: Data Port Register A
-        LDA pDC01    ;CIA1: Data Port Register B
+        STA $DC00    ;CIA1: Data Port Register A
+        LDA $DC01    ;CIA1: Data Port Register B
         ORA #$E0
         EOR #$FF
         ORA a19
@@ -8557,7 +8558,7 @@ bB276   JSR sB019
 ;-------------------------------
 sB287   LDY #$0A
 bB289   LDA (p1A),Y
-        STA f0004,Y
+        STA @wf0004,Y
         DEY 
         BPL bB289
         JSR sB0E3
@@ -9415,7 +9416,7 @@ bC92A   LDA f34C2,X
         BPL bC92A
         LDX #$6F
 bC935   LDA f90,X
-        STA f0400,X
+        STA $0400,X
         DEX 
         BPL bC935
         SEI 
@@ -9427,10 +9428,10 @@ bC935   LDA f90,X
         STA $D011    ;VIC Control Register 1
         LDA #$37
         STA a01
-        JSR ROM_IOINITj ;$FDA3 (jmp) - initialize CIA & IRQ             
+        JSR $FDA3 ;(jmp) - initialize CIA & IRQ             
         CLI 
         LDX #$00
-        STX a02A1
+        STX $02A1
         TXA 
 bC95B   STA f90,X
         INX 
@@ -9439,23 +9440,23 @@ bC95B   STA f90,X
         LDA #$01
         TAY 
         LDX #$08
-        JSR ROM_SETLFS ;$FFBA - set file parameters              
+        JSR $FFBA ; - set file parameters              
         LDA #$13
         LDX #$BF
         LDY #$C9
-        JSR ROM_SETNAM ;$FFBD - set file name                    
+        JSR $FFBD ;- set file name                    
         LDA #<fCA00
         STA aFB
         LDY #>fCA00
         STY aFC
         LDX #$CE
         LDA #$FB
-        JSR ROM_SAVE ;$FFD8 - save after call SETLFS,SETNAM    
+        JSR $FFD8 ;- save after call SETLFS,SETNAM    
         SEI 
         LDA #$35
         STA a01
         LDX #$6F
-bC989   LDA f0400,X
+bC989   LDA $0400,X
         STA f90,X
         DEX 
         BPL bC989
@@ -9487,18 +9488,18 @@ jC9B1   LDA #$01
 ; sC9D2
 ;-------------------------------
 sC9D2   JSR s166D
-        LDA pDC00    ;CIA1: Data Port Register A
+        LDA $DC00    ;CIA1: Data Port Register A
         STA aC9EC
         LDA #$7F
-        STA pDC00    ;CIA1: Data Port Register A
-        LDA pDC01    ;CIA1: Data Port Register B
+        STA $DC00    ;CIA1: Data Port Register A
+        LDA $DC01    ;CIA1: Data Port Register B
         LDA #$DF
         BEQ bC9F1
         LDA #$BF
         BEQ bC9F7
 aC9EC   =*+$01
 jC9EB   LDA #$FF
-        STA pDC00    ;CIA1: Data Port Register A
+        STA $DC00    ;CIA1: Data Port Register A
         RTS 
 
 bC9F1   JSR s15B8
@@ -9692,14 +9693,3 @@ fCAC0   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $8E,$91,$19,$90,$99,$19,$90,$9E
         .BYTE $C4,$68,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-
