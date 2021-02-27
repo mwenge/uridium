@@ -568,11 +568,11 @@ b0A3D   LDA playerLinesColorScheme1,Y
         DEY 
         BPL b0A3D
 
-        LDX #$26
-        LDY #$31
+        LDX #<$3126
+        LDY #>$3126
         JSR WriteToScreen
-        LDX #$30
-        LDY #$31
+        LDX #<$3130
+        LDY #>$3130
         JSR WriteToScreen
         JSR PaintPlayerScoreColors
 
@@ -604,26 +604,26 @@ j0A6F   JSR SetInterruptToIRQInterrupt1
         LDY #$14
         JSR WriteSourceValueToRam
 
-        LDX #$76
-        LDY #$35
+        LDX #<$3576
+        LDY #>$3576
         JSR WriteToScreen
-        LDX #$7F
-        LDY #$35
+        LDX #<$357F
+        LDY #>$357F
         JSR WriteToScreen
-        LDX #$8A
-        LDY #$35
+        LDX #<$358A
+        LDY #>$358A
         JSR WriteToScreen
-        LDX #$97
-        LDY #$35
+        LDX #<$3597
+        LDY #>$3597
         JSR WriteToScreen
-        LDX #$B0
-        LDY #$35
+        LDX #<$35B0
+        LDY #>$35B0
         JSR WriteToScreen
-        LDX #$CD
-        LDY #$35
+        LDX #<$35CD
+        LDY #>$35CD
         JSR WriteToScreen
-        LDX #$50
-        LDY #$31
+        LDX #<$3150
+        LDY #>$3150
         JSR WriteToScreen
 
         JSR s2150
@@ -658,38 +658,38 @@ b0AED   JSR SetInterruptToIRQInterrupt1
         LDY #$14
         JSR WriteSourceValueToRam
 
-        LDX #$E1
-        LDY #$35
+        LDX #<$35E1
+        LDY #>$35E1
         JSR WriteToScreen
-        LDX #$F0
-        LDY #$35
+        LDX #<$35F0
+        LDY #>$35F0
         JSR WriteToScreen
-        LDX #$06
-        LDY #$36
+        LDX #<$3606
+        LDY #>$3606
         JSR WriteToScreen
-        LDX #$1C
-        LDY #$36
+        LDX #<$361C
+        LDY #>$361C
         JSR WriteToScreen
-        LDX #$32
-        LDY #$36
+        LDX #<$3632
+        LDY #>$3632
         JSR WriteToScreen
-        LDX #$48
-        LDY #$36
+        LDX #<$3648
+        LDY #>$3648
         JSR WriteToScreen
-        LDX #$5E
-        LDY #$36
+        LDX #<$365E
+        LDY #>$365E
         JSR WriteToScreen
-        LDX #$74
-        LDY #$36
+        LDX #<$3674
+        LDY #>$3674
         JSR WriteToScreen
-        LDX #$8A
-        LDY #$36
+        LDX #<$368A
+        LDY #>$368A
         JSR WriteToScreen
         JSR s2150
         LDA firePressed
         BEQ j0B65
-        LDX #$B9
-        LDY #$36
+        LDX #<$36B9
+        LDY #>$36B9
         JSR WriteToScreen
         LDA #$13
         STA a90
@@ -782,8 +782,8 @@ b0C09   LDX #<$DC01
 j0C13   STX aB028
         STY aB029
 b0C19   JSR SetInterruptToIRQInterrupt1
-        LDX #$50
-        LDY #$31
+        LDX #<$3150
+        LDY #>$3150
         JSR WriteToScreen
         JSR s19B7
         JSR s3008
@@ -801,19 +801,19 @@ b0C19   JSR SetInterruptToIRQInterrupt1
         STY ramHiPtr
         LDY #$0D
         JSR WriteSourceValueToRam
-        LDX #$EE
-        LDY #$37
+        LDX #<$37EE
+        LDY #>$37EE
         JSR WriteToScreen
         LDA a5D
         CMP #$01
         BEQ b0C5F
-        LDX #$E3
-        LDY #$37
+        LDX #<$37E3
+        LDY #>$37E3
         JSR WriteToScreen
         JMP j0C66
 
-b0C5F   LDX #$D8
-        LDY #$37
+b0C5F   LDX #<$37D8
+        LDY #>$37D8
         JSR WriteToScreen
 j0C66   LDA a25
         LDX #$30
@@ -827,11 +827,11 @@ b0C71   STX a37FB
         LDA a25
         AND #$0F
         STA a37FC
-        LDX #$F9
-        LDY #$37
+        LDX #<$37F9
+        LDY #>$37F9
         JSR WriteToScreen
-        LDX #$F9
-        LDY #$34
+        LDX #<$34F9
+        LDY #>$34F9
         JSR WriteToScreen
         LDA #$F1
         STA $D026    ;Sprite Multi-Color Register 1
@@ -966,19 +966,19 @@ a0D7C   =*+$01
         LDA a5D
         CMP #$01
         BEQ b0DB2
-        LDX #$E3
-        LDY #$37
+        LDX #<$37E3
+        LDY #>$37E3
         JSR WriteToScreen
         JMP j0DB9
 
-b0DB2   LDX #$D8
-        LDY #$37
+b0DB2   LDX #<$37D8
+        LDY #>$37D8
         JSR WriteToScreen
-j0DB9   LDX #$08
-        LDY #$38
+j0DB9   LDX #<$3808
+        LDY #>$3808
         JSR WriteToScreen
-        LDX #$50
-        LDY #$31
+        LDX #<$3150
+        LDY #>$3150
         JSR WriteToScreen
         LDA #<p1D1C
         STA a91
@@ -1910,8 +1910,8 @@ b1487   JSR SetInterruptToIRQInterrupt1
         STY srcHiPtr
         LDY #$14
         JSR WriteSourceValueToRam
-        LDX #$15
-        LDY #$38
+        LDX #<$3815
+        LDY #>$3815
         JSR WriteToScreen
         LDA #$17
         STA a91
@@ -1919,8 +1919,8 @@ b1487   JSR SetInterruptToIRQInterrupt1
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
-        LDX #$31
-        LDY #$38
+        LDX #<$3831
+        LDY #>$3831
         JSR WriteToScreen
         LDA #$18
         STA a92
@@ -1934,8 +1934,8 @@ b1487   JSR SetInterruptToIRQInterrupt1
         LDA #$00
         STA a59
         JSR s176E
-        LDX #$51
-        LDY #$38
+        LDX #<$3851
+        LDY #>$3851
         JSR WriteToScreen
         LDA #$19
         STA a92
@@ -2180,8 +2180,8 @@ b169A   LDA fA490,Y
         STA f4BF8,Y
 b16A9   DEY 
         BPL b169A
-b16AC   LDX #$50
-        LDY #$31
+b16AC   LDX #<$3150
+        LDY #>$3150
         JSR WriteToScreen
         RTS 
 
@@ -2194,8 +2194,8 @@ b16BC   LDA a62
         BEQ b16AC
         CMP #$10
         BNE b1675
-        LDX #$5E
-        LDY #$31
+        LDX #<$315E
+        LDY #>$315E
         JSR WriteToScreen
         LDA #$8F
         STA a91
@@ -2319,8 +2319,8 @@ j178F   SEC
         INC a3876
         JMP j178F
 
-b179D   LDX #$68
-        LDY #$38
+b179D   LDX #<$3868
+        LDY #>$3868
         JSR WriteToScreen
         LDA a59
         BNE b17B3
@@ -2430,14 +2430,14 @@ b1851   LDX #$00
         LDA #$28
         STA a38BD
         JSR sC900
-        LDX #$50
-        LDY #$31
+        LDX #<$3150
+        LDY #>$3150
         JSR WriteToScreen
-        LDX #$9C
-        LDY #$38
+        LDX #<$389C
+        LDY #>$389C
         JSR WriteToScreen
-        LDX #$7A
-        LDY #$38
+        LDX #<$387A
+        LDY #>$387A
         JSR WriteToScreen
         LDA #$1F
         STA a91
@@ -2556,8 +2556,8 @@ b193E   STA a11
         LDA f38C3,Y
         LDX a10
         STA f38BC,X
-        LDX #$BA
-        LDY #$38
+        LDX #<$38BA
+        LDY #>$38BA
         JSR WriteToScreen
         LDA a62
         BNE b1958
@@ -2629,8 +2629,8 @@ b19C8   STX a3142
         LDA a25
         AND #$0F
         STA a3143
-        LDX #$3A
-        LDY #$31
+        LDX #<$313A
+        LDY #>$313A
         JSR WriteToScreen
         RTS 
 
@@ -2645,8 +2645,8 @@ b19E3   STX a3149
         LDA a25
         AND #$0F
         STA a314A
-        LDX #$45
-        LDY #$31
+        LDX #<$3145
+        LDY #>$3145
         JSR WriteToScreen
         RTS 
 
@@ -3875,13 +3875,13 @@ b22FC   LDA a5C
         LDA a61
         BEQ b2315
 
-        LDX #$F5
-        LDY #$34
+        LDX #<$34F5
+        LDY #>$34F5
         JSR WriteToScreen
         RTS 
 
-b2315   LDX #$F1
-        LDY #$34
+b2315   LDX #<$34F1
+        LDY #>$34F1
         JSR WriteToScreen
 b231C   RTS 
 
@@ -3891,13 +3891,13 @@ p2322   =*+$01
         JSR WriteToScreen
         RTS 
 
-b2325   LDX #$10
-        LDY #$35
+b2325   LDX #<$3510
+        LDY #>$3510
         JSR WriteToScreen
         RTS 
 
-b232D   LDX #$26
-        LDY #$35
+b232D   LDX #<$3526
+        LDY #>$3526
         JSR WriteToScreen
         RTS 
 
@@ -3933,8 +3933,8 @@ b2351   LDX #<$DC00
         BMI b2389
         LDA #$02
         STA a5C
-        LDX #$D0
-        LDY #$34
+        LDX #<$34D0
+        LDY #>$34D0
         JSR WriteToScreen
 j2374   LDA a5B
         CMP #$03
@@ -3943,15 +3943,15 @@ j2374   LDA a5B
 
 b237B   LDA #$00
         STA a5C
-        LDX #$DB
-        LDY #$34
+        LDX #<$34DB
+        LDY #>$34DB
         JSR WriteToScreen
         JMP j2374
 
 b2389   LDA #$01
         STA a5C
-        LDX #$E5
-        LDY #$34
+        LDX #<$34E5
+        LDY #>$34E5
         JSR WriteToScreen
         JMP j2374
 
@@ -3989,8 +3989,8 @@ s23B5
         BNE b23D6
         LDA a19
         BPL b23D7
-        LDX #$A0
-        LDY #$36
+        LDX #<$36A0
+        LDY #>$36A0
         JSR WriteToScreen
         LDA #$00
         STA a61
@@ -4002,8 +4002,8 @@ s23B5
 
 b23D6   RTS 
 
-b23D7   LDX #$AD
-        LDY #$36
+b23D7   LDX #<$36AD
+        LDY #>$36AD
         JSR WriteToScreen
         LDA #$FF
         STA a61
@@ -5109,8 +5109,8 @@ s2B6D
         LDA a60
         AND #$80
         BNE b2BBE
-        LDX #$65
-        LDY #$B2
+        LDX #<$B265
+        LDY #>$B265
         JSR WriteToScreen
         LDA #$00
         STA a90
@@ -5148,8 +5148,8 @@ b2BBF   JMP jC909
 
 b2BC2   JSR GetJoystickInput
         JSR s2F9D
-        LDX #$50
-        LDY #$31
+        LDX #<$3150
+        LDY #>$3150
         JSR WriteToScreen
         LDY #$1C
         JSR WasteCyclesUsingXAndY
