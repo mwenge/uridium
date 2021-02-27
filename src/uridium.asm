@@ -1,7 +1,7 @@
 ;
 ; **** ZP FIELDS **** 
 ;
-f20 = $20
+playerScore = $20
 f52 = $52
 f70 = $70
 f71 = $71
@@ -57,12 +57,12 @@ a14 = $14
 a15 = $15
 a16 = $16
 a17 = $17
-a18 = $18
+firePressed = $18
 a19 = $19
-a1A = $1A
-a1B = $1B
-a1C = $1C
-a1D = $1D
+srcLoPtr = $1A
+srcHiPtr = $1B
+ramLoPtr = $1C
+ramHiPtr = $1D
 a1E = $1E
 a1F = $1F
 a20 = $20
@@ -190,16 +190,15 @@ tempLoPtrCopyTo = $B0
 tempHiPtrCopyTo = $B1
 tempLoPtrCopyFrom = $B2
 tempHiPtrCopyFrom = $B3
-aB4 = $B4
-aB5 = $B5
-aB6 = $B6
+currentCharYPos = $B4
+currentCharXPos = $B5
+charToWrite = $B6
 aB7 = $B7
 aB8 = $B8
 aBA = $BA
 aBB = $BB
 aBC = $BC
-aBE = $BE
-aBF = $BF
+dataHiPtr = $BF
 aE8 = $E8
 aEF = $EF
 aF0 = $F0
@@ -215,15 +214,13 @@ aFF = $FF
 p04 = $04
 p12 = $12
 p14 = $14
-p1A = $1A
-p1C = $1C
 p1E = $1E
 p42 = $42
 p52 = $52
 p6D = $6D
 p70 = $70
 pA2 = $A2
-pBE = $BE
+dataLoPtr = $BE
 ;
 ; **** FIELDS **** 
 ;
@@ -246,6 +243,7 @@ p30 = $0030
 e00FD = $00FD
 COLOR_RAM = $D800
 SCREEN_RAM = $0400
+SCREEN_RAM_HIBANK = $4800
 
 ;-------------------------------------------------------------------
 ; Game begins executing from LaunchGame below
@@ -449,8 +447,8 @@ b091C   LDX #<p8000
         LDX #$0C
         JSR CopyDataUntilXIsZero
 
-        LDX #<p4800
-        LDY #>p4800
+        LDX #<SCREEN_RAM_HIBANK + $0000
+        LDY #>SCREEN_RAM_HIBANK + $0000
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
         LDX #<pA600
@@ -481,9 +479,9 @@ b091C   LDX #<p8000
         JSR CopyDataFromp7000Top7400
         JSR CopyDataWithin71007800
 ;-------------------------------------------------------------------
-; p099D
+; DrawTitleScreen
 ;-------------------------------------------------------------------
-p099D
+DrawTitleScreen
         SEI 
 
         LDA #$25
@@ -501,8 +499,8 @@ p099D
         LDY #>IRQInterrupt1
         STX $FFFE    ;IRQ
         STY $FFFF    ;IRQ
-        LDX #<p099D
-        LDY #>p099D
+        LDX #<DrawTitleScreen
+        LDY #>DrawTitleScreen
         STX p8000
         STY a8001
         STX a8002
@@ -523,19 +521,23 @@ p099D
         LDA $DC0D    ;CIA1: CIA Interrupt Control Register
         LDA $DD0D    ;CIA2: CIA Interrupt Control Register
         JSR s25E5
-        LDX #<p4800
-        LDY #>p4800
-        STX a1C
-        STY a1D
+
+        ; Write 4 zeroes to the top left?
+        LDX #<SCREEN_RAM_HIBANK
+        LDY #>SCREEN_RAM_HIBANK
+        STX ramLoPtr
+        STY ramHiPtr
         LDX #$04
         LDA #$30
-        JSR sB189
+        JSR WriteToRam
+
         LDA #$1F
         STA aB1B9
-        JSR sB1B4
+        JSR UpdatePlayerScore
         LDA #$01
         STA aB1B9
-        JSR sB1B4
+        JSR UpdatePlayerScore
+
         LDA #$01
         STA a5C
         CLI 
@@ -543,6 +545,8 @@ j0A20   LDX #$FF
         TXS 
         LDA #$F0
         STA a4A
+
+        ; Store pointers to joysticks 1 and 2
         LDX #<$DC00
         LDY #>$DC00
         STX aB025
@@ -551,69 +555,79 @@ j0A20   LDX #$FF
         LDY #>$DC01
         STX aB028
         STY aB029
+
         LDY #$26
-b0A3D   LDA f316A,Y
+b0A3D   LDA playerLinesColorScheme1,Y
         STA COLOR_RAM + $0000,Y
         AND #$F7
         STA COLOR_RAM + $0028,Y
-        LDA f3192,Y
+        LDA playerLinesColorScheme2,Y
         STA COLOR_RAM + $0050,Y
-        LDA f31BA,Y
+        LDA playerLinesColorScheme3,Y
         STA COLOR_RAM + $0078,Y
         DEY 
         BPL b0A3D
+
         LDX #$26
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         LDX #$30
         LDY #$31
-        JSR sB295
-        JSR s23EF
+        JSR WriteToScreen
+        JSR PaintPlayerScoreColors
+
         JSR s2415
+
         LDA #$03
         STA a5B
-j0A6F   JSR s17CC
+j0A6F   JSR SetInterruptToIRQInterrupt1
+
         LDA #$00
         STA $D015    ;Sprite display Enable
         STA a5A
         STA a28
+
         LDA #$11
         STA a90
+
         LDA #$30
-        JSR s2397
-        LDX #<$D8A0
-        LDY #>$D8A0
-        STX a1C
-        STY a1D
-        LDX #<p3778
-        LDY #>p3778
-        STX a1A
-        STY a1B
+        JSR Write21LinesOfAccumulatorValToScreen
+
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
+        LDX #<colorsForSomething1
+        LDY #>colorsForSomething1
+        STX srcLoPtr
+        STY srcHiPtr
         LDY #$14
-        JSR s23A5
+        JSR WriteSourceValueToRam
+
         LDX #$76
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         LDX #$7F
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         LDX #$8A
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         LDX #$97
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         LDX #$B0
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         LDX #$CD
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         LDX #$50
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
+
         JSR s2150
-        LDA a18
+        LDA firePressed
         BNE b0AD4
         JMP j0B65
 
@@ -625,60 +639,62 @@ b0AD4   LDA #$00
         LDA #$FC
         STA a2E
         JSR s217E
-        LDA a18
+        LDA firePressed
         BNE b0AED
         JMP j0B65
 
-b0AED   JSR s17CC
+b0AED   JSR SetInterruptToIRQInterrupt1
         LDA #$30
-        JSR s2397
-        LDX #<$D8A0
-        LDY #>$D8A0
-        STX a1C
-        STY a1D
+        JSR Write21LinesOfAccumulatorValToScreen
+
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
         LDX #<p3763
         LDY #>p3763
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         LDY #$14
-        JSR s23A5
+        JSR WriteSourceValueToRam
+
         LDX #$E1
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         LDX #$F0
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         LDX #$06
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDX #$1C
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDX #$32
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDX #$48
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDX #$5E
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDX #$74
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDX #$8A
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         JSR s2150
-        LDA a18
+        LDA firePressed
         BEQ j0B65
         LDX #$B9
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDA #$13
         STA a90
         JSR s21B5
-        LDA a18
+        LDA firePressed
         BEQ j0B65
         JMP j0A6F
 
@@ -686,7 +702,7 @@ j0B65   LDX #$08
 b0B67   LDA f3496,X
         STA $0250,X
         STA $0260,X
-        STA f20,X
+        STA playerScore,X
         DEX 
         BPL b0B67
         LDA #$12
@@ -704,10 +720,10 @@ b0B67   LDA f3496,X
         STA a8D
         LDA #$1F
         STA aB1B9
-        JSR sB1B4
+        JSR UpdatePlayerScore
         LDA #$01
         STA aB1B9
-        JSR sB1B4
+        JSR UpdatePlayerScore
 j0BA1   LDX #$08
         LDA a5C
         CMP #$01
@@ -716,7 +732,7 @@ j0BA1   LDX #$08
         CMP #$01
         BEQ b0BCC
 b0BAF   LDA $0260,X
-        STA f20,X
+        STA playerScore,X
         DEX 
         BPL b0BAF
         LDA #$1F
@@ -730,7 +746,7 @@ b0BAF   LDA $0260,X
         JMP jC909
 
 b0BCC   LDA $0250,X
-        STA f20,X
+        STA playerScore,X
         DEX 
         BPL b0BCC
         LDA #$01
@@ -765,40 +781,40 @@ b0C09   LDX #<$DC01
         STY aB026
 j0C13   STX aB028
         STY aB029
-b0C19   JSR s17CC
+b0C19   JSR SetInterruptToIRQInterrupt1
         LDX #$50
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         JSR s19B7
         JSR s3008
         LDA #$00
         STA $D015    ;Sprite display Enable
         LDA #$30
-        JSR s2397
+        JSR Write21LinesOfAccumulatorValToScreen
         LDX #<p37BF
         LDY #>p37BF
-        STX a1A
-        STY a1B
-        LDX #<$D8A0
-        LDY #>$D8A0
-        STX a1C
-        STY a1D
+        STX srcLoPtr
+        STY srcHiPtr
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
         LDY #$0D
-        JSR s23A5
+        JSR WriteSourceValueToRam
         LDX #$EE
         LDY #$37
-        JSR sB295
+        JSR WriteToScreen
         LDA a5D
         CMP #$01
         BEQ b0C5F
         LDX #$E3
         LDY #$37
-        JSR sB295
+        JSR WriteToScreen
         JMP j0C66
 
 b0C5F   LDX #$D8
         LDY #$37
-        JSR sB295
+        JSR WriteToScreen
 j0C66   LDA a25
         LDX #$30
         LSR 
@@ -813,20 +829,20 @@ b0C71   STX a37FB
         STA a37FC
         LDX #$F9
         LDY #$37
-        JSR sB295
+        JSR WriteToScreen
         LDX #$F9
         LDY #$34
-        JSR sB295
+        JSR WriteToScreen
         LDA #$F1
         STA $D026    ;Sprite Multi-Color Register 1
         LDA #$FE
         STA $D025    ;Sprite Multi-Color Register 0
         LDX #<p32CC
         LDY #>p32CC
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         JSR sB287
-        JSR sB272
+        JSR SpinWaitingForJoystickInput
         JSR s3086
         LDA #<SCREEN_RAM + $0003
         STA a91
@@ -837,7 +853,7 @@ b0C71   STX a37FB
         LDA #$BF
         STA a62
 j0CB4   JSR s13B1
-        LDA a18
+        LDA firePressed
         BEQ b0CD7
         LDA a62
         BEQ b0CD7
@@ -876,17 +892,17 @@ b0CF9   LDA a2F
         JSR s2FC8
         JSR s1BFD
         INC a62
-        JSR sB019
+        JSR GetJoystickInput
         LDA a62
         AND #$07
         TAY 
-        LDA f36D5,Y
+        LDA screenWriteJumpTableHiPtr,Y
         STA a0D27
-        LDA f36CD,Y
+        LDA screenWriteJumpTableLoPtr,Y
         STA a0D26
 a0D26   =*+$01
 a0D27   =*+$02
-        JSR s22D3
+        JSR MaybeChangeTitleDecal
         JSR s292F
         JSR s2576
         JSR s2635
@@ -934,36 +950,36 @@ a0D7C   =*+$01
         CLD 
         BNE b0DE8
         JSR s19B7
-        JSR s17CC
+        JSR SetInterruptToIRQInterrupt1
         LDA #$30
-        JSR s2397
-        LDX #<$D8A0
-        LDY #>$D8A0
-        STX a1C
-        STY a1D
+        JSR Write21LinesOfAccumulatorValToScreen
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
         LDX #<p37CD
         LDY #>p37CD
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         LDY #$0A
-        JSR s23A5
+        JSR WriteSourceValueToRam
         LDA a5D
         CMP #$01
         BEQ b0DB2
         LDX #$E3
         LDY #$37
-        JSR sB295
+        JSR WriteToScreen
         JMP j0DB9
 
 b0DB2   LDX #$D8
         LDY #$37
-        JSR sB295
+        JSR WriteToScreen
 j0DB9   LDX #$08
         LDY #$38
-        JSR sB295
+        JSR WriteToScreen
         LDX #$50
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         LDA #<p1D1C
         STA a91
         LDA #>p1D1C
@@ -973,18 +989,18 @@ j0DB9   LDX #$08
         LDA #$90
         STA a62
 b0DD7   JSR s13B1
-        LDA a18
+        LDA firePressed
         BEQ b0DE2
         LDA a62
         BNE b0DD7
-b0DE2   JSR sB272
+b0DE2   JSR SpinWaitingForJoystickInput
         JSR s17F8
 b0DE8   JSR s19B7
         LDX #$08
         LDA a5D
         CMP #$01
         BEQ b0E02
-b0DF3   LDA f20,X
+b0DF3   LDA playerScore,X
         STA $0260,X
         DEX 
         BPL b0DF3
@@ -992,7 +1008,7 @@ b0DF3   LDA f20,X
         STA a5D
         JMP j0BA1
 
-b0E02   LDA f20,X
+b0E02   LDA playerScore,X
         STA $0250,X
         DEX 
         BPL b0E02
@@ -1476,8 +1492,8 @@ s114E
         LDY #>pA6A0
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
-        LDX #<p48A0
-        LDY #>p48A0
+        LDX #<SCREEN_RAM_HIBANK + $00A0
+        LDY #>SCREEN_RAM_HIBANK + $00A0
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
 b116B   LDA a2F
@@ -1521,8 +1537,8 @@ b11A4   LDA a2F
         DEC a8F
         BPL b11A0
         LDY #$00
-        JSR sB244
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
         LDA a26
         STA aAD
         LDA #>SCREEN_RAM + $0209
@@ -1539,7 +1555,7 @@ b11A4   LDA a2F
         LDA f310A,Y
         STA aAE
         STA a62
-j11E6   JSR sB272
+j11E6   JSR SpinWaitingForJoystickInput
         LDA $D41B    ;Oscillator 3 Output
         AND #$01
         STA aAC
@@ -1557,7 +1573,7 @@ b1205   LDA a2F
         BEQ b1205
 b1209   LDA a2F
         BNE b1209
-        JSR sB019
+        JSR GetJoystickInput
         JSR s1347
         DEC aA7
         BNE b1237
@@ -1580,69 +1596,69 @@ b1237   LDA aAB
         BEQ b1284
         LDY aA9
         LDX f3913,Y
-        LDA fB360,X
+        LDA screenLineHiPtrArray,X
         STA a15
         LDA f340F,X
-        STA a1D
-        LDA fB379,X
+        STA ramHiPtr
+        LDA screenLineLoPtrArray,X
         CLC 
         ADC f391A,Y
         STA a14
-        STA a1C
+        STA ramLoPtr
         BCC b125B
         INC a15
-        INC a1D
+        INC ramHiPtr
 b125B   JSR s1313
         LDY aA9
         LDX f3905,Y
-        LDA fB360,X
+        LDA screenLineHiPtrArray,X
         STA a15
         LDA f340F,X
-        STA a1D
-        LDA fB379,X
+        STA ramHiPtr
+        LDA screenLineLoPtrArray,X
         CLC 
         ADC f390C,Y
         STA a14
-        STA a1C
+        STA ramLoPtr
         BCC b127E
         INC a15
-        INC a1D
+        INC ramHiPtr
 b127E   JSR s1339
         JMP j12CA
 
 b1284   LDY aA9
         LDX f3905,Y
-        LDA fB360,X
+        LDA screenLineHiPtrArray,X
         STA a15
         LDA f340F,X
-        STA a1D
-        LDA fB379,X
+        STA ramHiPtr
+        LDA screenLineLoPtrArray,X
         CLC 
         ADC f390C,Y
         STA a14
-        STA a1C
+        STA ramLoPtr
         BCC b12A4
         INC a15
-        INC a1D
+        INC ramHiPtr
 b12A4   JSR s1313
         LDY aA9
         LDX f3913,Y
-        LDA fB360,X
+        LDA screenLineHiPtrArray,X
         STA a15
         LDA f340F,X
-        STA a1D
-        LDA fB379,X
+        STA ramHiPtr
+        LDA screenLineLoPtrArray,X
         CLC 
         ADC f391A,Y
         STA a14
-        STA a1C
+        STA ramLoPtr
         BCC b12C7
         INC a15
-        INC a1D
+        INC ramHiPtr
 b12C7   JSR s1339
 j12CA   LDA aA8
         BEQ b12E6
-        LDA a18
+        LDA firePressed
         BEQ b12D5
         JMP b1205
 
@@ -1656,9 +1672,9 @@ b12D5   LDA aAB
         JMP j11E6
 
 b12E6   LDY #$00
-        JSR sB244
-        JSR sB244
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
         RTS 
 
 ;-------------------------------------------------------------------
@@ -1694,7 +1710,7 @@ s1313
 b131D   LDA a3928,Y
         STA (p14),Y
         LDA f3930,X
-        STA (p1C),Y
+        STA (ramLoPtr),Y
         DEY 
         BPL b131D
         RTS 
@@ -1702,7 +1718,7 @@ b131D   LDA a3928,Y
 b132B   LDA f392C,Y
         STA (p14),Y
         LDA f3930,X
-        STA (p1C),Y
+        STA (ramLoPtr),Y
         DEY 
         BPL b132B
         RTS 
@@ -1715,7 +1731,7 @@ s1339
 b133B   LDA #$20
         STA (p14),Y
         LDA #$F0
-        STA (p1C),Y
+        STA (ramLoPtr),Y
         DEY 
         BPL b133B
         RTS 
@@ -1782,10 +1798,10 @@ b13A1   LDA f7848,Y
 ; s13B1
 ;-------------------------------------------------------------------
 s13B1   
-        JSR sB019
-        JSR s22D3
+        JSR GetJoystickInput
+        JSR MaybeChangeTitleDecal
         LDY #$18
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
         INC a62
         RTS 
 
@@ -1796,11 +1812,11 @@ b13BF   LDA a2F
         JSR s2BEB
         JSR s2ED7
         JSR s2FC8
-        JSR sB019
+        JSR GetJoystickInput
         JSR s2B6D
         LDA a5F
         STA a17
-        JSR s22D3
+        JSR MaybeChangeTitleDecal
         INC a62
         JSR s292F
         JSR s2576
@@ -1814,7 +1830,7 @@ b13EB   LDA a2F
         JSR s2BEB
         JSR s2ED7
         JSR s2FC8
-        JSR sB019
+        JSR GetJoystickInput
         LDA #$00
         STA a16
         STA a17
@@ -1881,36 +1897,36 @@ b1473   JSR s15D4
         BNE b1487
         JMP j15BD
 
-b1487   JSR s17CC
+b1487   JSR SetInterruptToIRQInterrupt1
         LDA #$30
-        JSR s2397
-        LDX #<$D8A0
-        LDY #>$D8A0
-        STX a1C
-        STY a1D
+        JSR Write21LinesOfAccumulatorValToScreen
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
         LDX #<p378D
         LDY #>p378D
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         LDY #$14
-        JSR s23A5
+        JSR WriteSourceValueToRam
         LDX #$15
         LDY #$38
-        JSR sB295
+        JSR WriteToScreen
         LDA #$17
         STA a91
         LDY #$00
-        JSR sB244
-        JSR sB244
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
         LDX #$31
         LDY #$38
-        JSR sB295
+        JSR WriteToScreen
         LDA #$18
         STA a92
         LDY #$00
-        JSR sB244
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
         LDA #$0D
         STA a3868
         LDA a87
@@ -1920,12 +1936,12 @@ b1487   JSR s17CC
         JSR s176E
         LDX #$51
         LDY #$38
-        JSR sB295
+        JSR WriteToScreen
         LDA #$19
         STA a92
         LDY #$00
-        JSR sB244
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
         LDA #$13
         STA a3868
         LDA aAD
@@ -1936,7 +1952,7 @@ b1487   JSR s17CC
         LDA #$C0
         STA a62
 b1504   JSR s13B1
-        LDA a18
+        LDA firePressed
         BEQ b150F
         LDA a62
         BMI b1504
@@ -1946,7 +1962,7 @@ b150F   LDA #$FF
         JSR s173B
         JSR s2532
         JSR s2F33
-        JSR s17E2
+        JSR SetInterrupToIRQInterrupt2
         LDA #$C0
         STA $D015    ;Sprite display Enable
         LDA #<p2322
@@ -1958,7 +1974,7 @@ b150F   LDA #$FF
         LDA #$01
         STA a5F
         LDY #$80
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
 b153E   JSR b13BF
         JSR s2713
         LDA a2936
@@ -1983,7 +1999,7 @@ b155A   JSR b13BF
 b156D   JSR b13BF
         JSR s268C
         JSR s2713
-        JSR sB1B4
+        JSR UpdatePlayerScore
         LDA a2A
         CMP #$0E
         BCS b1582
@@ -2038,20 +2054,20 @@ a15D1   INC a32
 s15D4   
         LDA a2F
         BNE s15D4
-        LDX #<p48A0
-        LDY #>p48A0
-        STX a1A
-        STY a1B
-        LDX #<$D8A0
-        LDY #>$D8A0
+        LDX #<SCREEN_RAM_HIBANK + $00A0
+        LDY #>SCREEN_RAM_HIBANK + $00A0
+        STX srcLoPtr
+        STY srcHiPtr
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
         STX a12
         STY a13
         LDA #$1E
         STA a8F
 b15EC   LDY #$01
-b15EE   LDA (p1A),Y
+b15EE   LDA (srcLoPtr),Y
         DEY 
-        STA (p1A),Y
+        STA (srcLoPtr),Y
         INY 
         LDA (p12),Y
         DEY 
@@ -2062,15 +2078,15 @@ b15EE   LDA (p1A),Y
         BCC b15EE
         DEY 
         LDA #$20
-        STA (p1A),Y
+        STA (srcLoPtr),Y
         LDA #$F8
         STA (p12),Y
         CLC 
-        LDA a1A
+        LDA srcLoPtr
         ADC #$28
-        STA a1A
+        STA srcLoPtr
         BCC b1613
-        INC a1B
+        INC srcHiPtr
 b1613   CLC 
         LDA a12
         ADC #$28
@@ -2087,20 +2103,20 @@ b161E   DEC a8F
 ; s1627
 ;-------------------------------------------------------------------
 s1627   
-        LDX #<p48A0
-        LDY #>p48A0
-        STX a1A
-        STY a1B
-        LDX #<$D8A0
-        LDY #>$D8A0
+        LDX #<SCREEN_RAM_HIBANK + $00A0
+        LDY #>SCREEN_RAM_HIBANK + $00A0
+        STX srcLoPtr
+        STY srcHiPtr
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
         STX a12
         STY a13
         LDA #$1D
         STA a8F
 b163B   LDY #$26
-b163D   LDA (p1A),Y
+b163D   LDA (srcLoPtr),Y
         INY 
-        STA (p1A),Y
+        STA (srcLoPtr),Y
         DEY 
         LDA (p12),Y
         INY 
@@ -2110,11 +2126,11 @@ b163D   LDA (p1A),Y
         CPY a8F
         BCS b163D
         CLC 
-        LDA a1A
+        LDA srcLoPtr
         ADC #$28
-        STA a1A
+        STA srcLoPtr
         BCC b1659
-        INC a1B
+        INC srcHiPtr
 b1659   CLC 
         LDA a12
         ADC #$28
@@ -2166,7 +2182,7 @@ b16A9   DEY
         BPL b169A
 b16AC   LDX #$50
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         RTS 
 
         LDA a88
@@ -2180,7 +2196,7 @@ b16BC   LDA a62
         BNE b1675
         LDX #$5E
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         LDA #$8F
         STA a91
         RTS 
@@ -2305,32 +2321,32 @@ j178F   SEC
 
 b179D   LDX #$68
         LDY #$38
-        JSR sB295
+        JSR WriteToScreen
         LDA a59
         BNE b17B3
         LDY #$00
-        JSR sB244
-        JSR sB244
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
+        JSR WasteCyclesUsingXAndY
 b17B3   INC a59
         LDA a8F
         BEQ b17CB
         LDY #$04
         JSR s19F5
-        JSR sB1B4
+        JSR UpdatePlayerScore
         LDY #$20
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
         DEC a8F
         JMP s176E
 
 b17CB   RTS 
 
 ;-------------------------------------------------------------------
-; s17CC
+; SetInterruptToIRQInterrupt1
 ;-------------------------------------------------------------------
-s17CC   
+SetInterruptToIRQInterrupt1   
         LDA a2F
-        BNE s17CC
+        BNE SetInterruptToIRQInterrupt1
         LDA #$F0
         STA $D021    ;Background Color 0
         SEI 
@@ -2342,16 +2358,16 @@ s17CC
         RTS 
 
 ;-------------------------------------------------------------------
-; s17E2
+; SetInterrupToIRQInterrupt2
 ;-------------------------------------------------------------------
-s17E2   
+SetInterrupToIRQInterrupt2   
         LDA a2F
-        BNE s17E2
+        BNE SetInterrupToIRQInterrupt2
         LDA #$FC
         STA $D012    ;Raster Position
         SEI 
-        LDX #<p3F00
-        LDY #>p3F00
+        LDX #<IRQInterrupt2
+        LDY #>IRQInterrupt2
         STX $FFFE    ;IRQ
         STY $FFFF    ;IRQ
         CLI 
@@ -2365,14 +2381,14 @@ s17F8
         STA a85
         LDX #<p368A
         LDY #>p368A
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         LDX #<pA400
         LDY #>pA400
         STX a14
         STY a15
 j180C   LDY #$12
-b180E   LDA (p1A),Y
+b180E   LDA (srcLoPtr),Y
         CMP @wf000E,Y
         BCC b181F
         BEQ b181A
@@ -2382,23 +2398,23 @@ b181A   INY
         CMP #$16
         BCC b180E
 b181F   LDY #$05
-b1821   LDA (p1A),Y
+b1821   LDA (srcLoPtr),Y
         STA (p14),Y
         INY 
         CPY #$16
         BCC b1821
         DEC a85
-        LDX a1A
-        LDY a1B
+        LDX srcLoPtr
+        LDY srcHiPtr
         STX a14
         STY a15
-        LDA a1A
+        LDA srcLoPtr
         SEC 
         SBC #$16
-        STA a1A
-        LDA a1B
+        STA srcLoPtr
+        LDA srcHiPtr
         SBC #$00
-        STA a1B
+        STA srcHiPtr
         LDA a85
         CMP #$01
         BEQ b1851
@@ -2416,13 +2432,13 @@ b1851   LDX #$00
         JSR sC900
         LDX #$50
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         LDX #$9C
         LDY #$38
-        JSR sB295
+        JSR WriteToScreen
         LDX #$7A
         LDY #$38
-        JSR sB295
+        JSR WriteToScreen
         LDA #$1F
         STA a91
         STA a93
@@ -2445,7 +2461,7 @@ b1891   LDA f38BA,X
         BCC b1891
         LDX #$03
         LDY #$15
-b18A0   LDA f20,X
+b18A0   LDA playerScore,X
         STA (p14),Y
         DEY 
         DEX 
@@ -2456,7 +2472,7 @@ b18A0   LDA f20,X
         LDX #>p30
         STX a10
 b18B2   LDX a10
-        LDA f20,X
+        LDA playerScore,X
         LSR 
         LSR 
         LSR 
@@ -2466,7 +2482,7 @@ b18B2   LDX a10
 j18BE   STA (p14),Y
         INY 
         LDX a10
-        LDA f20,X
+        LDA playerScore,X
         AND #$0F
         BNE b18E0
         LDA a0F
@@ -2542,12 +2558,12 @@ b193E   STA a11
         STA f38BC,X
         LDX #$BA
         LDY #$38
-        JSR sB295
+        JSR WriteToScreen
         LDA a62
         BNE b1958
         DEC a59
         BEQ b1973
-b1958   LDA a18
+b1958   LDA firePressed
         BNE b1922
 b195C   JSR s13B1
         JSR s13B1
@@ -2556,7 +2572,7 @@ b195C   JSR s13B1
         BNE b196D
         DEC a59
         BEQ b1973
-b196D   LDA a18
+b196D   LDA firePressed
         BEQ b195C
         INC a10
 b1973   RTS 
@@ -2584,14 +2600,14 @@ s1974
         STA a37A2
         LDX #<a37A2
         LDY #>a37A2
-        STX a1A
-        STY a1B
-        LDX #<$D8A0
-        LDY #>$D8A0
-        STX a1C
-        STY a1D
+        STX srcLoPtr
+        STY srcHiPtr
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
         LDY #$10
-        JSR s23A5
+        JSR WriteSourceValueToRam
         RTS 
 
 ;-------------------------------------------------------------------
@@ -2615,7 +2631,7 @@ b19C8   STX a3142
         STA a3143
         LDX #$3A
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         RTS 
 
 b19DA   LDA a25
@@ -2631,7 +2647,7 @@ b19E3   STX a3149
         STA a314A
         LDX #$45
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         RTS 
 
 ;-------------------------------------------------------------------
@@ -2743,7 +2759,7 @@ b1A93   LDA #$00
 b1A97   RTS 
 
 b1A98   LDA #$00
-        STA a1B
+        STA srcHiPtr
         LDA #$80
         STA a6C
         LDA #$AE
@@ -2763,17 +2779,17 @@ b1AB9   INC a24
         LDX #$00
         STX a68
 j1ABF   ASL 
-        ROL a1B
+        ROL srcHiPtr
         ASL 
-        ROL a1B
+        ROL srcHiPtr
         ASL 
-        ROL a1B
+        ROL srcHiPtr
         ASL 
-        ROL a1B
-        STA a1A
-        LDA a1B
+        ROL srcHiPtr
+        STA srcLoPtr
+        LDA srcHiPtr
         ADC #$C2
-        STA a1B
+        STA srcHiPtr
         LDA #$FF
         STA a08
         STA a0B
@@ -2781,7 +2797,7 @@ j1ABF   ASL
         LDA a4F
         STA a0D
         LDY #$0E
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         STA a7E
         TAX 
         LDA f36F3,X
@@ -2817,7 +2833,7 @@ j1ABF   ASL
         LDA f3743,X
         STA a65
         DEY 
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         BEQ b1B45
         CMP #$FF
         BEQ b1B36
@@ -2865,7 +2881,7 @@ b1B5B   LDA #$A2
         LDA #$FF
         STA a6B
 j1B83   LDY #$0C
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         STA a7C
         LDA #$00
         STA a7D
@@ -2875,7 +2891,7 @@ j1B83   LDY #$0C
         STX a10
 b1B95   LDY a11
         STY a04
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         BEQ b1BC0
         LDX a10
         TAY 
@@ -2898,7 +2914,7 @@ b1BC0   TYA
         CLC 
         ADC #$06
         TAY 
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         BNE b1BCB
         LDA a33
 b1BCB   STA a07
@@ -3185,28 +3201,28 @@ b1DF3   CMP #$06
         JMP j1EA2
 
 b1DFA   TAX 
-        LDA fB360,X
-        STA a1B
-        LDA fB379,X
+        LDA screenLineHiPtrArray,X
+        STA srcHiPtr
+        LDA screenLineLoPtrArray,X
         CLC 
         ADC a0F
-        STA a1A
+        STA srcLoPtr
         BCC b1E0C
-        INC a1B
+        INC srcHiPtr
 b1E0C   LDY #$00
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         CMP #$20
         BCC b1E2D
         INY 
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         CMP #$20
         BCC b1E2D
         LDY #$28
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         CMP #$20
         BCC b1E2D
         INY 
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         CMP #$20
         BCC b1E2D
         JMP j1EA2
@@ -3216,12 +3232,12 @@ b1E2D   AND #$0F
         LDA fA460,X
         BEQ b1E4B
         LDA fA430,X
-        STA a1C
+        STA ramLoPtr
         LDA fA440,X
-        STA a1D
+        STA ramHiPtr
         LDY #$00
         LDA fA450,X
-        STA (p1C),Y
+        STA (ramLoPtr),Y
         LDA #$00
         STA fA460,X
 b1E4B   LDA a68
@@ -3626,7 +3642,7 @@ s20EC
         STA $D02E    ;Sprite 7 Color
         LDA #$2F
         STA a3F4A
-        JSR s17E2
+        JSR SetInterrupToIRQInterrupt2
         RTS 
 
 ;-------------------------------------------------------------------
@@ -3637,16 +3653,16 @@ s2150
         STA a59
         LDA #$00
         STA a62
-b2158   JSR sB019
-        JSR sB1FD
+b2158   JSR GetJoystickInput
+        JSR DoMoreWithJoystickInput
         JSR sB31B
-        JSR s22D3
+        JSR MaybeChangeTitleDecal
         JSR s2342
         JSR s23B5
         LDY #$0C
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
         INC a62
-        LDA a18
+        LDA firePressed
         BEQ b217D
         LDA a62
         BNE b2158
@@ -3666,14 +3682,14 @@ b2182   LDA a2F
         JSR s2BEB
         JSR s2ED7
         JSR s2FC8
-        JSR sB019
-        JSR sB1FD
-        JSR s22D3
+        JSR GetJoystickInput
+        JSR DoMoreWithJoystickInput
+        JSR MaybeChangeTitleDecal
         JSR sB31B
         JSR s23B5
         JSR s2342
         INC a62
-        LDA a18
+        LDA firePressed
         BEQ b21B4
         LDA a2A
         CMP #$0E
@@ -3711,13 +3727,13 @@ s21B5
         STA a59
         LDX #<p32C1
         LDY #>p32C1
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         JSR sB287
         LDA a3319
-        STA a1B
+        STA srcHiPtr
         LDA a330F
-        STA a1A
+        STA srcLoPtr
         JSR sB287
         LDA a4E
         STA $D025    ;Sprite Multi-Color Register 0
@@ -3739,10 +3755,10 @@ b2216   LDA a2F
         JSR s2FC8
         JSR s1BFD
         JSR s1A75
-        JSR sB019
-        JSR sB1FD
+        JSR GetJoystickInput
+        JSR DoMoreWithJoystickInput
         JSR sB31B
-        LDA a18
+        LDA firePressed
         BEQ b227B
         LDA #$00
         STA a22
@@ -3756,7 +3772,7 @@ b2216   LDA a2F
         STA a2255
 a2254   =*+$01
 a2255   =*+$02
-        JSR s22D3
+        JSR MaybeChangeTitleDecal
         JSR s2287
         JSR s292F
         JSR s2576
@@ -3770,12 +3786,12 @@ a2255   =*+$02
         DEC a59
         BNE b2216
         LDA #$10
-        STA a18
+        STA firePressed
         JSR s3086
 b227B   RTS 
 
 b227C   LDA #$10
-        STA a18
+        STA firePressed
         JSR s245B
         JSR s3086
         RTS 
@@ -3785,13 +3801,13 @@ b227C   LDA #$10
 ;-------------------------------------------------------------------
 s2287   
         LDA a8E
-        STA a18
+        STA firePressed
         LDA $D41B    ;Oscillator 3 Output
         CMP #$BE
         BCC b229A
-        LDA a18
+        LDA firePressed
         EOR #$10
-        STA a18
+        STA firePressed
         STA a8E
 b229A   LDA a5E
         STA a16
@@ -3826,9 +3842,9 @@ b22CE   STY a17
 b22D2   RTS 
 
 ;-------------------------------------------------------------------
-; s22D3
+; MaybeChangeTitleDecal
 ;-------------------------------------------------------------------
-s22D3   
+MaybeChangeTitleDecal   
         LDA a62
         AND #$7F
         BNE b231C
@@ -3852,43 +3868,44 @@ s22D3
         BEQ b2335
 b22FC   LDA a5C
         TAY 
-        LDA f3573,Y
-        LDX f3570,Y
+        LDA scrollingTitleScreenDataHiPtrArray,Y
+        LDX scrollingTitleScreenDataLoPtrArray,Y
         TAY 
-        JSR sB295
+        JSR WriteToScreen
         LDA a61
         BEQ b2315
+
         LDX #$F5
         LDY #$34
-        JSR sB295
+        JSR WriteToScreen
         RTS 
 
 b2315   LDX #$F1
         LDY #$34
-        JSR sB295
+        JSR WriteToScreen
 b231C   RTS 
 
 b231D   LDX #$F9
         LDY #$34
 p2322   =*+$01
-        JSR sB295
+        JSR WriteToScreen
         RTS 
 
 b2325   LDX #$10
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         RTS 
 
 b232D   LDX #$26
         LDY #$35
-        JSR sB295
+        JSR WriteToScreen
         RTS 
 
 b2335   LDY a26
         LDX $E050,Y
         LDA $E060,Y
         TAY 
-        JSR sB295
+        JSR WriteToScreen
         RTS 
 
 ;-------------------------------------------------------------------
@@ -3918,7 +3935,7 @@ b2351   LDX #<$DC00
         STA a5C
         LDX #$D0
         LDY #$34
-        JSR sB295
+        JSR WriteToScreen
 j2374   LDA a5B
         CMP #$03
         BEQ b22FC
@@ -3928,37 +3945,37 @@ b237B   LDA #$00
         STA a5C
         LDX #$DB
         LDY #$34
-        JSR sB295
+        JSR WriteToScreen
         JMP j2374
 
 b2389   LDA #$01
         STA a5C
         LDX #$E5
         LDY #$34
-        JSR sB295
+        JSR WriteToScreen
         JMP j2374
 
 ;-------------------------------------------------------------------
-; s2397
+; Write21LinesOfAccumulatorValToScreen
 ;-------------------------------------------------------------------
-s2397   
-        LDX #<p48A0
-        LDY #>p48A0
-        STX a1C
-        STY a1D
+Write21LinesOfAccumulatorValToScreen   
+        LDX #<SCREEN_RAM_HIBANK + $00A0
+        LDY #>SCREEN_RAM_HIBANK + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
         LDX #$15
-        JSR sB189
+        JSR WriteToRam
         RTS 
 
 ;-------------------------------------------------------------------
-; s23A5
+; WriteSourceValueToRam
 ;-------------------------------------------------------------------
-s23A5   
+WriteSourceValueToRam   
         STY a8F
 b23A7   LDY a8F
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         LDX #$01
-        JSR sB189
+        JSR WriteToRam
         DEC a8F
         BPL b23A7
         RTS 
@@ -3974,10 +3991,10 @@ s23B5
         BPL b23D7
         LDX #$A0
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDA #$00
         STA a61
-        JSR s23EF
+        JSR PaintPlayerScoreColors
         LDA a5B
         CMP #$03
         BNE b23D6
@@ -3987,10 +4004,10 @@ b23D6   RTS
 
 b23D7   LDX #$AD
         LDY #$36
-        JSR sB295
+        JSR WriteToScreen
         LDA #$FF
         STA a61
-        JSR s23EF
+        JSR PaintPlayerScoreColors
         LDA a5B
         CMP #$03
         BNE b23D6
@@ -3999,25 +4016,25 @@ b23D7   LDX #$AD
         RTS 
 
 ;-------------------------------------------------------------------
-; s23EF
+; PaintPlayerScoreColors
 ;-------------------------------------------------------------------
-s23EF   
+PaintPlayerScoreColors   
         LDA a61
         BEQ b2402
         LDA #$F1
-        STA $D85A
-        STA $D85B
-        STA $D882
-        STA $D883
+        STA COLOR_RAM + $005A
+        STA COLOR_RAM + $005B
+        STA COLOR_RAM + $0082
+        STA COLOR_RAM + $0083
         RTS 
 
 b2402   LDA #$F2
-        STA $D85A
-        STA $D85B
+        STA COLOR_RAM + $005A
+        STA COLOR_RAM + $005B
         LDA #<$F6F5
-        STA $D882
+        STA COLOR_RAM + $0082
         LDA #>$F6F5
-        STA $D883
+        STA COLOR_RAM + $0083
         RTS 
 
 ;-------------------------------------------------------------------
@@ -4032,13 +4049,13 @@ b241B   LDY f349F,X
         LDA pC000,Y
         CLC 
         ADC #$60
-        STA a1A
+        STA srcLoPtr
         LDA #$C0
         ADC #$00
-        STA a1B
+        STA srcHiPtr
         LDY #$00
         LDX a11
-b2432   LDA (p1A),Y
+b2432   LDA (srcLoPtr),Y
         BEQ b243A
         STA f8010,X
         INX 
@@ -4052,6 +4069,7 @@ b243A   INY
         INC a10
         LDX a10
         BPL b241B
+
 b244D   LDX a11
         LDY #$03
         LDA #$00
@@ -4079,8 +4097,8 @@ s245B
         STA $D025    ;Sprite Multi-Color Register 0
         LDX #<p32E2
         LDY #>p32E2
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         JSR sB287
         LDA a33
         STA a07
@@ -4151,11 +4169,11 @@ b2506   STA a2D
 j2508   LDA a5A
         CMP #$02
         BEQ b2515
-        LDA a18
+        LDA firePressed
         BEQ b2523
         JMP j2518
 
-b2515   JSR sB1B4
+b2515   JSR UpdatePlayerScore
 j2518   DEC a59
         LDA a59
         CMP #$F0
@@ -4178,31 +4196,31 @@ b2523   RTS
 ; s2532
 ;-------------------------------------------------------------------
 s2532   
-        LDX #<p48A0
-        LDY #>p48A0
-        STX a1C
-        STY a1D
+        LDX #<SCREEN_RAM_HIBANK + $00A0
+        LDY #>SCREEN_RAM_HIBANK + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
         LDA #$30
         STA a10
         JSR s2F15
         CLC 
-        LDA a1C
+        LDA ramLoPtr
         ADC #$28
-        STA a1C
+        STA ramLoPtr
         BCC b254C
-        INC a1D
+        INC ramHiPtr
 b254C   JSR s2F15
         LDX #<p4B98
         LDY #>p4B98
-        STX a1C
-        STY a1D
+        STX ramLoPtr
+        STY ramHiPtr
         JSR s2F15
         CLC 
-        LDA a1C
+        LDA ramLoPtr
         ADC #$28
-        STA a1C
+        STA ramLoPtr
         BCC b2565
-        INC a1D
+        INC ramHiPtr
 b2565   JSR s2F15
         LDY #$05
         LDA #$20
@@ -4287,28 +4305,28 @@ b25DF   LDA #$81
 s25E5   
         LDX #<p5000
         LDY #>p5000
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         LDX #<p5C00
         LDY #>p5C00
-        STX a1C
-        STY a1D
+        STX ramLoPtr
+        STY ramHiPtr
         LDY #$00
-b25F7   LDA (p1A),Y
+b25F7   LDA (srcLoPtr),Y
         AND #$AA
         LSR 
         STA a0F
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         AND #$55
         ASL 
         ORA a0F
-        ORA (p1A),Y
-        STA (p1C),Y
+        ORA (srcLoPtr),Y
+        STA (ramLoPtr),Y
         INY 
         BNE b25F7
-        INC a1B
-        INC a1D
-        LDA a1B
+        INC srcHiPtr
+        INC ramHiPtr
+        LDA srcHiPtr
         CMP #$5C
         BCC b25F7
         RTS 
@@ -4635,9 +4653,9 @@ s2839
         JSR s2918
         LDX #$07
 b283E   LDA f3306,X
-        STA a1A
+        STA srcLoPtr
         LDA f3310,X
-        STA a1B
+        STA srcHiPtr
         LDA f3306,X
         JSR sB287
         DEX 
@@ -4662,9 +4680,9 @@ b2860   LDA #$06
         BCC b2860
         JSR s2918
         LDA a3318
-        STA a1B
+        STA srcHiPtr
         LDA a330E
-        STA a1A
+        STA srcLoPtr
         JSR sB287
         LDA #$07
         STA a92
@@ -4724,9 +4742,9 @@ b28E0   JSR sB05D
         LDA #$40
         STA $D015    ;Sprite display Enable
         LDA a3319
-        STA a1B
+        STA srcHiPtr
         LDA a330F
-        STA a1A
+        STA srcLoPtr
         JSR sB287
         LDA a4E
         STA $D025    ;Sprite Multi-Color Register 0
@@ -4738,10 +4756,10 @@ b28E0   JSR sB05D
 s2918   
         LDA a2F
         BNE s2918
-        JSR sB019
+        JSR GetJoystickInput
         JSR s2B6D
-        JSR sB1FD
-        JSR s22D3
+        JSR DoMoreWithJoystickInput
+        JSR MaybeChangeTitleDecal
         INC a62
 b292A   LDA a2F
         BEQ b292A
@@ -4757,13 +4775,13 @@ s292F
 a2936   =*+$01
         LDA #$07
         STA a49
-        LDA a18
+        LDA firePressed
         BNE b2942
         STA a48
         JSR s2959
 b2942   RTS 
 
-b2943   LDA a18
+b2943   LDA firePressed
         BEQ b294D
         INC a48
         JSR s2959
@@ -4900,11 +4918,11 @@ s2A17
 b2A1B   LDA fA460,X
         BEQ b2A2F
         LDA fA430,X
-        STA a1C
+        STA ramLoPtr
         LDA fA440,X
-        STA a1D
+        STA ramHiPtr
         LDA fA450,X
-        STA (p1C),Y
+        STA (ramLoPtr),Y
 b2A2F   DEX 
         BPL b2A1B
         INX 
@@ -4912,15 +4930,15 @@ b2A33   LDA fA460,X
         BEQ b2AA3
         JSR s2AC9
         STA fA440,X
-        STA a1D
+        STA ramHiPtr
         ROR 
-        LDA a1C
+        LDA ramLoPtr
         ROR 
         CMP a50
         BCC b2ABD
         CMP a51
         BCS b2ABD
-        LDA (p1C),Y
+        LDA (ramLoPtr),Y
         BPL b2A5E
         CMP #$90
         BCC b2AB9
@@ -4964,7 +4982,7 @@ b2A88   LDA f7800,Y
         TXA 
 a2AA0   =*+$01
         ORA #$10
-        STA (p1C),Y
+        STA (ramLoPtr),Y
 b2AA3   INX 
         CPX #$06
         BCC b2A33
@@ -4991,7 +5009,7 @@ s2AC9
         CLC 
         ADC fA430,X
         STA fA430,X
-        STA a1C
+        STA ramLoPtr
         LDA fA440,X
         ADC #$00
         RTS 
@@ -4999,7 +5017,7 @@ s2AC9
 b2ADA   CLC 
         ADC fA430,X
         STA fA430,X
-        STA a1C
+        STA ramLoPtr
         LDA fA440,X
         ADC #$FF
         RTS 
@@ -5012,10 +5030,10 @@ s2AE9
         LDA fA430,X
         SEC 
         SBC f33C6,Y
-        STA a1A
+        STA srcLoPtr
         LDA fA440,X
         SBC f33D6,Y
-        STA a1B
+        STA srcHiPtr
         LDA f33E6,Y
         STA a11
         STA a8F
@@ -5027,20 +5045,20 @@ s2AE9
         LDA #$1B
         STA a92
 j2B11   LDY a11
-b2B13   LDA (p1A),Y
+b2B13   LDA (srcLoPtr),Y
         CMP #$20
         BCC b2B33
         CMP #$F0
         BCS b2B22
         SEC 
         SBC #$20
-        STA (p1A),Y
+        STA (srcLoPtr),Y
 b2B22   DEY 
         BPL b2B13
         DEC a8F
         BMI b2B30
-        INC a1B
-        INC a1B
+        INC srcHiPtr
+        INC srcHiPtr
         JMP j2B11
 
 b2B30   LDY #$00
@@ -5093,13 +5111,13 @@ s2B6D
         BNE b2BBE
         LDX #$65
         LDY #$B2
-        JSR sB295
+        JSR WriteToScreen
         LDA #$00
         STA a90
         LDA #$03
         STA a5A
 b2B85   LDY #$1C
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
         JSR s2F9D
         LDA a60
         AND #$80
@@ -5112,15 +5130,15 @@ j2B9B   JSR s2F9D
         LDA a60
         AND #$08
         BEQ b2BBF
-        JSR sB019
-        JSR s22D3
+        JSR GetJoystickInput
+        JSR MaybeChangeTitleDecal
         LDY #$18
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
         INC a62
         LDA a60
         AND #$80
         BEQ b2BC2
-        LDA a18
+        LDA firePressed
         BEQ b2BC2
         JMP j2B9B
 
@@ -5128,17 +5146,17 @@ b2BBE   RTS
 
 b2BBF   JMP jC909
 
-b2BC2   JSR sB019
+b2BC2   JSR GetJoystickInput
         JSR s2F9D
         LDX #$50
         LDY #$31
-        JSR sB295
+        JSR WriteToScreen
         LDY #$1C
-        JSR sB244
+        JSR WasteCyclesUsingXAndY
         LDA a60
         AND #$80
         BEQ b2BC2
-        LDA a18
+        LDA firePressed
         BEQ b2BC2
         LDA a2B
         STA a62
@@ -5172,9 +5190,9 @@ s2BEB
         STA a2C21
         LDA a31
         STA a2C20
-        LDA #>p48F0
+        LDA #>SCREEN_RAM_HIBANK + $00F0
         STA a2C24
-        LDA #<p48F0
+        LDA #<SCREEN_RAM_HIBANK + $00F0
         STA a2C23
         LDX #$11
 b2C1D   LDY #$26
@@ -5183,7 +5201,7 @@ a2C21   =*+$02
 b2C1F   LDA f8200,Y
 a2C23   =*+$01
 a2C24   =*+$02
-        STA p48F0,Y
+        STA SCREEN_RAM_HIBANK + $00F0,Y
         DEY 
         BPL b2C1F
         DEX 
@@ -5228,34 +5246,34 @@ b2C42   LDA a31
 s2C66   
         LDX #<$E100
         LDY #>$E100
-        STX a1A
-        STY a1B
+        STX srcLoPtr
+        STY srcHiPtr
         LDX #$01
 b2C70   LDY #$00
         STY a11
-        LDA a1A
+        LDA srcLoPtr
         STA pA400,X
-        LDA a1B
+        LDA srcHiPtr
         STA fA500,X
         INX 
         BEQ b2CA4
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         BEQ b2CA4
         STA a8F
         INC a11
 b2C89   LDY a11
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         SEC 
         ADC a11
         STA a11
         DEC a8F
         BNE b2C89
-        LDA a1A
+        LDA srcLoPtr
         CLC 
         ADC a11
-        STA a1A
+        STA srcLoPtr
         BCC b2C70
-        INC a1B
+        INC srcHiPtr
         JMP b2C70
 
 b2CA4   RTS 
@@ -5308,46 +5326,46 @@ b2CE8   LDY #$00
         BEQ b2D57
         TAX 
         LDA fA500,X
-        STA a1B
+        STA srcHiPtr
         LDA pA400,X
-        STA a1A
+        STA srcLoPtr
         CLC 
         LDA a12
         ADC #$01
         STA a12
         BCC b2D04
         INC a13
-b2D04   LDA (p1A),Y
+b2D04   LDA (srcLoPtr),Y
         INY 
         STA a8F
 b2D09   LDA a14
-        STA a1C
+        STA ramLoPtr
         LDA a15
-        STA a1D
-        LDA (p1A),Y
+        STA ramHiPtr
+        LDA (srcLoPtr),Y
         INY 
         AND #$1F
         TAX 
-b2D17   LDA (p1A),Y
+b2D17   LDA (srcLoPtr),Y
         INY 
         STY a11
         LDY #$00
-        STA (p1C),Y
+        STA (ramLoPtr),Y
         LDY a11
-        DEC a1D
-        DEC a1D
+        DEC ramHiPtr
+        DEC ramHiPtr
         DEX 
         BNE b2D17
-j2D29   LDA a1D
+j2D29   LDA ramHiPtr
         CMP #$82
         BCC b2D40
         STY a11
         LDY #$00
         LDA #$20
-        STA (p1C),Y
+        STA (ramLoPtr),Y
         LDY a11
-        DEC a1D
-        DEC a1D
+        DEC ramHiPtr
+        DEC ramHiPtr
         JMP j2D29
 
 b2D40   CLC 
@@ -5363,9 +5381,9 @@ b2D4B   LDA a15
         BNE b2D09
         BEQ b2CE8
 b2D57   LDA aA401
-        STA a1A
+        STA srcLoPtr
         LDA aA501
-        STA a1B
+        STA srcHiPtr
         LDY #$00
         JMP b2D04
 
@@ -5390,9 +5408,9 @@ b2D73   LDA (p12),Y
         BEQ b2DE3
         TAX 
         LDA fA500,X
-        STA a1B
+        STA srcHiPtr
         LDA pA400,X
-        STA a1A
+        STA srcLoPtr
         CLC 
         LDA a12
         ADC #$03
@@ -5400,28 +5418,28 @@ b2D73   LDA (p12),Y
         BCC b2D9F
         INC a13
 b2D9F   LDY #$00
-        LDA (p1A),Y
+        LDA (srcLoPtr),Y
         INY 
         STA a8F
 b2DA6   LDA a14
-        STA a1C
+        STA ramLoPtr
         LDA a15
-        STA a1D
-        LDA (p1A),Y
+        STA ramHiPtr
+        LDA (srcLoPtr),Y
         INY 
         AND #$1F
         TAX 
-b2DB4   LDA (p1A),Y
+b2DB4   LDA (srcLoPtr),Y
         INY 
         STY a11
         LDY #$00
         CMP #$20
         BEQ b2DC1
-        STA (p1C),Y
+        STA (ramLoPtr),Y
 b2DC1   JSR s2DE4
         LDY a11
-        DEC a1D
-        DEC a1D
+        DEC ramHiPtr
+        DEC ramHiPtr
         BPL b2DE3
         DEX 
         BNE b2DB4
@@ -5451,17 +5469,17 @@ s2DE4
         CPY #$10
         BCS b2E16
         STY a54
-        LDA a1D
+        LDA ramHiPtr
         AND #$01
         STA $0230,Y
-        LDA a1D
+        LDA ramHiPtr
         SEC 
         SBC #$82
         CLC 
         ADC #$0C
         LSR 
         STA $0220,Y
-        LDA a1C
+        LDA ramLoPtr
         STA $0210,Y
         ROR 
         STA $0200,Y
@@ -5492,9 +5510,9 @@ b2E29   LDX a10
         LDA fA500,X
         BEQ b2E3E
         JSR s2EA5
-b2E3E   LDA fB360,X
+b2E3E   LDA screenLineHiPtrArray,X
         STA pA400,Y
-        LDA fB379,X
+        LDA screenLineLoPtrArray,X
         STA fA410,Y
         LDA f340F,X
         STA fA480,Y
@@ -5626,7 +5644,7 @@ b2F17   LDX a10
         CPX #$F8
         BCS b2F2D
         ADC #$01
-b2F2D   STA (p1C),Y
+b2F2D   STA (ramLoPtr),Y
         DEY 
         BPL b2F17
         RTS 
@@ -5637,8 +5655,8 @@ b2F2D   STA (p1C),Y
 s2F33   
         LDX #<p3372
         LDY #>p3372
-        STX a1C
-        STY a1D
+        STX ramLoPtr
+        STY ramHiPtr
         LDA #$00
         STA a8F
         LDA a61
@@ -5648,15 +5666,15 @@ s2F33
         BEQ b2F5B
         STA a8F
 b2F4C   CLC 
-        LDA a1C
+        LDA ramLoPtr
         ADC #$05
-        STA a1C
+        STA ramLoPtr
         BCC b2F57
-        INC a1D
+        INC ramHiPtr
 b2F57   DEC a8F
         BNE b2F4C
 b2F5B   LDY #$04
-b2F5D   LDA (p1C),Y
+b2F5D   LDA (ramLoPtr),Y
         STA @wf004B,Y
         DEY 
         BPL b2F5D
@@ -5671,19 +5689,19 @@ b2F5D   LDA (p1C),Y
         LDA a4D
         AND #$F7
         STA a58
-        LDX #<$D8A0
-        LDY #>$D8A0
-        STX a1C
-        STY a1D
+        LDX #<COLOR_RAM + $00A0
+        LDY #>COLOR_RAM + $00A0
+        STX ramLoPtr
+        STY ramHiPtr
         LDX #$02
         LDA a58
-        JSR sB189
+        JSR WriteToRam
         LDX #$11
         LDA a4D
-        JSR sB189
+        JSR WriteToRam
         LDX #$02
         LDA a58
-        JSR sB189
+        JSR WriteToRam
         RTS 
 
 ;-------------------------------------------------------------------
@@ -5719,7 +5737,7 @@ s2FC8
 b2FCC   LDY $0220,X
         LDA f340F,Y
         STA a1F
-        LDA fB379,Y
+        LDA screenLineLoPtrArray,Y
         STA a1E
         LDY $0240,X
         BMI b2FE2
@@ -5898,28 +5916,34 @@ f310A   .BYTE $00,$90,$98,$A0,$A8,$B0,$B8,$C0
         .BYTE $C4,$C8,$CC,$D0,$D4,$D8,$DC,$E0
         .BYTE $E4,$E8,$EC,$F0
 f311E   .BYTE $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
+f3126
         .BYTE $00,$01,$49,$15,$0A,$22,$0E,$1B
-        .BYTE $01,$FF,$00,$1F,$49,$15,$0A,$22
-        .BYTE $0E,$1B,$02,$FF,$00,$01,$01,$1E
+        .BYTE $01,$FF
+f3130
+        .BYTE $00,$1F,$49,$15,$0A,$22
+        .BYTE $0E,$1B,$02,$FF
+        .BYTE $00,$01,$01,$1E
         .BYTE $19,$30,$7A,$7B
 a3142   .BYTE $30
-a3143   .BYTE $03,$FF,$00,$1F,$7A,$7B
+a3143   .BYTE $03,$FF
+        .BYTE $00,$1F,$7A,$7B
 a3149   .BYTE $30
-a314A   .BYTE $03,$30,$02,$1E,$19,$FF,$00,$0F
+a314A   .BYTE $03,$30,$02,$1E,$19,$FF
+        .BYTE $00,$0F
         .BYTE $30,$30,$30,$30,$30,$30,$30,$30
         .BYTE $30,$30,$30,$FF,$00,$0F,$45,$0A
         .BYTE $17,$0D,$30,$17,$18,$54,$25,$FF
-f316A   .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
+playerLinesColorScheme1   .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
         .BYTE $0E,$0E,$0A,$0A,$0A,$0A,$0A,$0A
         .BYTE $0A,$0A,$0A,$0A,$0A,$0A,$0A,$0A
         .BYTE $0A,$0A,$0A,$0A,$0A,$0A,$0E,$0E
         .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-f3192   .BYTE $0D,$0D,$0D,$0D,$0D,$0D,$0D,$0D
+playerLinesColorScheme2   .BYTE $0D,$0D,$0D,$0D,$0D,$0D,$0D,$0D
         .BYTE $0D,$0D,$01,$01,$01,$01,$01,$01
         .BYTE $01,$01,$01,$01,$01,$01,$01,$01
         .BYTE $01,$01,$01,$01,$01,$01,$0D,$0D
         .BYTE $0D,$0D,$0D,$0D,$0D,$0D,$0D,$0D
-f31BA   .BYTE $05,$05,$05,$05,$05,$05,$05,$05
+playerLinesColorScheme3   .BYTE $05,$05,$05,$05,$05,$05,$05,$05
         .BYTE $05,$05,$07,$07,$07,$07,$07,$07
         .BYTE $07,$07,$07,$07,$07,$07,$07,$07
         .BYTE $07,$07,$07,$07,$07,$07,$05,$05
@@ -6036,11 +6060,18 @@ f34C3   .BYTE $01,$02,$00,$00,$00,$30,$3A,$3E
         .BYTE $30,$55,$55,$30,$56,$30,$30,$FF
         .BYTE $00,$0F,$30,$55,$55,$30,$56,$56
         .BYTE $30,$FF,$00,$0F,$30,$30,$30,$55
-        .BYTE $30,$56,$30,$30,$30,$FF,$02,$0A
-        .BYTE $57,$FF,$02,$0A,$58,$FF,$02,$0A
+        .BYTE $30,$56,$30,$30,$30,$FF
+f34F1
+        .BYTE $02,$0A,$57,$FF
+f34F5
+        .BYTE $02,$0A,$58,$FF
+uridiumDecal
+        .BYTE $02,$0A
         .BYTE $30,$30,$30,$30,$30,$31,$32,$33
         .BYTE $34,$35,$36,$37,$38,$39,$7D,$30
-        .BYTE $30,$30,$30,$30,$FF,$02,$0A,$30
+        .BYTE $30,$30,$30,$30,$FF
+f3510
+        .BYTE $02,$0A,$30
         .BYTE $30,$30,$30,$30,$41,$12,$2E,$1C
         .BYTE $0C,$18,$1B,$0E,$30,$30,$30,$30
         .BYTE $30,$30,$FF
@@ -6054,8 +6085,9 @@ f352A   .BYTE $30,$30,$30,$01,$02,$00,$00,$00
         .BYTE $30,$30,$56,$FF,$02,$0C,$30,$30
         .BYTE $30,$30,$30,$55,$55,$30,$30,$30
         .BYTE $30,$30,$30,$30,$56,$FF
-f3570   .BYTE $3A,$4B,$5E
-f3573   .BYTE $35,$35,$35,$06,$0E,$41,$3E,$50
+scrollingTitleScreenDataLoPtrArray   .BYTE $3A,$4B,$5E
+scrollingTitleScreenDataHiPtrArray   .BYTE $35,$35,$35
+        .BYTE $06,$0E,$41,$3E,$50
         .BYTE $4C,$48,$47,$FF,$09,$10,$19,$1B
         .BYTE $0E,$1C,$0E,$17,$1D,$1C,$FF,$0C
         .BYTE $0F,$31,$32,$33,$34,$35,$36,$37
@@ -6100,8 +6132,10 @@ p368A   .BYTE $17,$0B,$08,$28,$30,$30,$30,$30
         .BYTE $0F,$30,$30,$3D,$0E,$42,$18,$30
         .BYTE $30,$30,$FF
 f36C5   .BYTE $FE,$FC,$FB,$FD,$FF,$FD,$FB,$FC
-f36CD   .BYTE $D3,$75,$B4,$6D,$BE,$7F,$24,$6D
-f36D5   .BYTE $22,$1A,$B1,$2B,$2B,$1F,$25,$2B
+
+screenWriteJumpTableLoPtr   .BYTE $D3,$75,$B4,$6D,$BE,$7F,$24,$6D
+screenWriteJumpTableHiPtr   .BYTE $22,$1A,$B1,$2B,$2B,$1F,$25,$2B
+
 f36DD   .BYTE $D3,$7F,$B5,$42
 f36E1   .BYTE $22,$1F,$23,$23
 f36E5   .BYTE $BE
@@ -6125,7 +6159,7 @@ f374F   .BYTE $05,$06,$06,$07,$00,$02,$05,$09
 p3763   .BYTE $FD,$F5,$F5,$F3,$F3,$FE,$FE,$F4
         .BYTE $F4,$F2,$F2,$F8,$F8,$F7,$F7,$F1
         .BYTE $F0,$FD,$F5,$F0,$F0
-p3778   .BYTE $FE,$FE,$F3,$FE,$F0,$FE,$F6,$F0
+colorsForSomething1   .BYTE $FE,$FE,$F3,$FE,$F0,$FE,$F6,$F0
         .BYTE $F6,$F4,$F0,$F4,$F2,$F0,$F2,$F8
         .BYTE $F0,$F8,$F7,$F0,$F0
 p378D   .BYTE $FE,$FE,$FE,$FE,$F7,$F5,$F0,$F5
@@ -6399,7 +6433,11 @@ a3E9A   .BYTE $FE,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00
-p3F00   PHA 
+;---------------------------------------------------------------------------------
+; IRQInterrupt2   
+;---------------------------------------------------------------------------------
+IRQInterrupt2   
+        PHA 
         LDA #$C0
         STA $D016    ;VIC Control Register 2
         LDA #$2D
@@ -6467,9 +6505,9 @@ p3F73   PHA
         STA $D011    ;VIC Control Register 1
         LDA #$00
         STA a2F
-        LDA #<p3F00
+        LDA #<IRQInterrupt2
         STA $FFFE    ;IRQ
-        LDA #>p3F00
+        LDA #>IRQInterrupt2
         STA $FFFF    ;IRQ
         PLA 
         RTI 
@@ -8832,9 +8870,9 @@ InitializeSomePointers
         RTS 
 
 ;-------------------------------------------------------------------
-; sB019
+; GetJoystickInput
 ;-------------------------------------------------------------------
-sB019   
+GetJoystickInput   
         LDA #$00
         STA a16
         STA a17
@@ -8865,7 +8903,7 @@ bB04A   DEC a16
         BNE jB050
 bB04E   INC a16
 jB050   AND #$10
-        STA a18
+        STA firePressed
         RTS 
 
 aB055   .BYTE $01
@@ -9028,66 +9066,66 @@ bB185   STA $D015    ;Sprite display Enable
         RTS 
 
 ;-------------------------------------------------------------------
-; sB189
+; WriteToRam
 ;-------------------------------------------------------------------
-sB189   
+WriteToRam   
         STA a0D
 jB18B   LDY #$00
-bB18D   STA (p1C),Y
+bB18D   STA (ramLoPtr),Y
         INY 
         CPY #$28
         BCC bB18D
         DEX 
         BEQ bB1A7
         CLC 
-        LDA a1C
+        LDA ramLoPtr
         ADC #$28
-        STA a1C
+        STA ramLoPtr
         BCC bB1A2
-        INC a1D
+        INC ramHiPtr
 bB1A2   LDA a0D
         JMP jB18B
 
 bB1A7   CLC 
         CLC 
-        LDA a1C
+        LDA ramLoPtr
         ADC #$28
-        STA a1C
+        STA ramLoPtr
         BCC bB1B3
-        INC a1D
+        INC ramHiPtr
 bB1B3   RTS 
 
 ;-------------------------------------------------------------------
-; sB1B4
+; UpdatePlayerScore
 ;-------------------------------------------------------------------
-sB1B4   
-        LDA #<$0202
-        STA aB4
+UpdatePlayerScore   
+        LDA #$02
+        STA currentCharYPos
 aB1B9   =*+$01
-        LDA #>$0202
-        STA aB5
-        LDX #>p30
+        LDA #$02
+        STA currentCharXPos
+        LDX #$00
         STX a10
-        LDA #<p30
+        LDA #$30
         STA a0F
-bB1C4   LDA f20,X
+bB1C4   LDA playerScore,X
         LSR 
         LSR 
         LSR 
         LSR 
         BNE bB1EF
         LDA a0F
-jB1CE   STA aB6
-        JSR sB2C6
+jB1CE   STA charToWrite
+        JSR WriteCharacterToScreen
         LDX a10
-        LDA f20,X
+        LDA playerScore,X
         AND #$0F
         BNE bB1F6
         CPX #$03
         BEQ bB1F6
         LDA a0F
-jB1E1   STA aB6
-        JSR sB2C6
+jB1E1   STA charToWrite
+        JSR WriteCharacterToScreen
         INC a10
         LDX a10
         CPX #$04
@@ -9103,9 +9141,9 @@ bB1F6   LDY #$00
         JMP jB1E1
 
 ;-------------------------------------------------------------------
-; sB1FD
+; DoMoreWithJoystickInput
 ;-------------------------------------------------------------------
-sB1FD   
+DoMoreWithJoystickInput   
         LDA #$FF
         STA $DC02    ;CIA1: Data Direction Register A
         LDA #$00
@@ -9139,13 +9177,13 @@ bB233   LDA #$FF
         RTS 
 
 ;-------------------------------------------------------------------
-; sB244
+; WasteCyclesUsingXAndY
 ;-------------------------------------------------------------------
-sB244   
+WasteCyclesUsingXAndY   
         DEX 
-        BNE sB244
+        BNE WasteCyclesUsingXAndY
         DEY 
-        BNE sB244
+        BNE WasteCyclesUsingXAndY
         RTS 
 
 ;-------------------------------------------------------------------
@@ -9171,16 +9209,16 @@ bB25A   LDA a94
         .BYTE $00,$0F,$30,$30,$49,$0A,$1E,$1C
         .BYTE $0E,$30,$30,$30,$FF
 ;-------------------------------------------------------------------
-; sB272
+; SpinWaitingForJoystickInput
 ;-------------------------------------------------------------------
-sB272   
+SpinWaitingForJoystickInput   
         LDA #$08
         STA a8F
-bB276   JSR sB019
+bB276   JSR GetJoystickInput
         LDY #$08
-        JSR sB244
-        LDA a18
-        BEQ sB272
+        JSR WasteCyclesUsingXAndY
+        LDA firePressed
+        BEQ SpinWaitingForJoystickInput
         DEC a8F
         BNE bB276
         RTS 
@@ -9190,7 +9228,7 @@ bB276   JSR sB019
 ;-------------------------------------------------------------------
 sB287   
         LDY #$0A
-bB289   LDA (p1A),Y
+bB289   LDA (srcLoPtr),Y
         STA @wf0004,Y
         DEY 
         BPL bB289
@@ -9198,71 +9236,102 @@ bB289   LDA (p1A),Y
         RTS 
 
 ;-------------------------------------------------------------------
-; sB295
+; WriteToScreen
 ;-------------------------------------------------------------------
-sB295   
-        STX aBE
-        STY aBF
+WriteToScreen   
+        STX dataLoPtr
+        STY dataHiPtr
+
+        ;Get the Y Pos from the first byte
 bB299   LDY #$00
-        LDA (pBE),Y
-        STA aB4
+        LDA (dataLoPtr),Y
+        STA currentCharYPos
 bB2A0   =*+$01
+        ; Return early if the Y Pos is invalid
         CMP #$18
         BCS bB2C5
+
+        ; Get the X pos from the second byte
         INY 
-        LDA (pBE),Y
-        STA aB5
+        LDA (dataLoPtr),Y
+        STA currentCharXPos
+
+        ; Get the character to write. Only use the lowest 7 bits for
+        ; some reason.
         INY 
-        LDA (pBE),Y
+        LDA (dataLoPtr),Y
         AND #$7F
+        ; Skip to the entry point of the loop for reading in the
+        ; characters to write.
         JMP jB2B4
 
-jB2B0   LDY aBA
-        LDA (pBE),Y
+WriteCharsLoop
+        LDY aBA
+        LDA (dataLoPtr),Y
 jB2B4   INY 
         STY aBA
+
+        ; Stop writing if the leftmost bit is set on aBA. This means
+        ; the most bytes we'll write is 128.
         BMI bB2C5
+        ; Stop writing if the leftmost bit is set on the char to write.
         CMP #$00
         BMI bB2C5
-        STA aB6
-        JSR sB2C6
-        JMP jB2B0
+
+        ; Write the character to screen.
+        STA charToWrite
+        JSR WriteCharacterToScreen
+        JMP WriteCharsLoop
 
 bB2C5   RTS 
 
 ;-------------------------------------------------------------------
-; sB2C6
+; WriteCharacterToScreen
 ;-------------------------------------------------------------------
-sB2C6   
-        LDY aB4
-        LDA fB360,Y
+WriteCharacterToScreen   
+        ; Move the ptr to the x/y position.
+        LDY currentCharYPos
+        LDA screenLineHiPtrArray,Y
         STA tempHiPtrCopyTo
-        LDA fB379,Y
+        LDA screenLineLoPtrArray,Y
         CLC 
-        ADC aB5
+        ADC currentCharXPos
         STA tempLoPtrCopyTo
+
         LDA #$00
         ADC tempHiPtrCopyTo
         STA tempHiPtrCopyTo
-        LDA aB6
+
+        ; Write the top half of the character
+        LDA charToWrite
         LDY #$00
         STA (tempLoPtrCopyTo),Y
+
+        ; Write the bottom half of the character
         ORA #$80
         LDY #$28
         STA (tempLoPtrCopyTo),Y
-        INC aB5
+
+        ; Check if the byte encodes a second half.
+        INC currentCharXPos
         AND #$7F
         CMP #$3A
         BCC bB301
+
         CMP #$5A
         BCS bB301
+
+        ; The byte encodes a second half. Write the top half of it.
         LDY #$01
         ADC #$20
         STA (tempLoPtrCopyTo),Y
+
+        ; Write the bottom half of it.
         ORA #$80
         LDY #$29
         STA (tempLoPtrCopyTo),Y
-        INC aB5
+
+        INC currentCharXPos
 bB301   RTS 
 
 ;-------------------------------------------------------------------
@@ -9324,23 +9393,26 @@ jB34D   STY aB3C1
         LDA a95
         STA aEF
         NOP 
-        LDX #$B8
-        LDY #$B3
-        JSR sB295
+        LDX #<pB3B8
+        LDY #>pB3B8
+        JSR WriteToScreen
 bB35F   RTS 
 
-fB360   .BYTE $48,$48,$48,$48,$48,$48,$48,$49
-        .BYTE $49,$49,$49,$49,$49,$4A,$4A,$4A
-        .BYTE $4A,$4A,$4A,$4A,$4B,$4B,$4B,$4B
-        .BYTE $4B
-fB379   .BYTE $00,$28,$50,$78,$A0,$C8,$F0,$18
-        .BYTE $40,$68,$90,$B8,$E0,$08,$30,$58
-        .BYTE $80,$A8,$D0,$F8,$20,$48,$70,$98
-        .BYTE $C0,$02,$0C,$0A,$0B,$42,$18,$17
+screenLineHiPtrArray .BYTE $48,$48,$48,$48,$48,$48,$48,$49
+                     .BYTE $49,$49,$49,$49,$49,$4A,$4A,$4A
+                     .BYTE $4A,$4A,$4A,$4A,$4B,$4B,$4B,$4B
+                     .BYTE $4B
+screenLineLoPtrArray .BYTE $00,$28,$50,$78,$A0,$C8,$F0,$18
+                     .BYTE $40,$68,$90,$B8,$E0,$08,$30,$58
+                     .BYTE $80,$A8,$D0,$F8,$20,$48,$70,$98
+                     .BYTE $C0
+        .BYTE $02,$0C,$0A,$0B,$42,$18,$17
         .BYTE $30,$2A,$30,$00,$00,$00,$00,$30
         .BYTE $2E,$30,$00,$00,$FF,$FD,$FB,$DF
         .BYTE $DF,$F7,$EF,$20,$20,$80,$10,$20
-        .BYTE $80,$53,$46,$9D,$1D,$91,$11,$00
+        .BYTE $80,$53,$46,$9D,$1D,$91,$11
+pB3B8                     
+        .BYTE $00
         .BYTE $0F,$4F,$18,$15,$1E,$42,$0E,$30
 aB3C1   .BYTE $00
 aB3C2   .BYTE $05,$FF,$20,$44,$B5,$85,$BD,$C9
