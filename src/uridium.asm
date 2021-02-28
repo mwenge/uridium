@@ -1958,10 +1958,10 @@ b1504   JSR s13B1
         BMI b1504
 b150F   LDA #$FF
         STA a54
-        JSR s1A54
+        JSR UpdateCharsetForSomething
         JSR s173B
-        JSR s2532
-        JSR s2F33
+        JSR GenerateStarfield
+        JSR UpdateScreenColors
         JSR SetInterrupToIRQInterrupt2
         LDA #$C0
         STA $D015    ;Sprite display Enable
@@ -2039,9 +2039,9 @@ s15B8
         RTS 
 
 j15BD   JSR s19B7
-        JSR s2532
-        JSR s1A54
-        JSR s2F33
+        JSR GenerateStarfield
+        JSR UpdateCharsetForSomething
+        JSR UpdateScreenColors
         JSR s2BEB
         LDA #$C0
         STA $D015    ;Sprite display Enable
@@ -2710,13 +2710,13 @@ s1A38
         LDA #$80
         STA a6C
         STA a68
-        JSR s1A54
+        JSR UpdateCharsetForSomething
         RTS 
 
 ;-------------------------------------------------------------------
-; s1A54
+; UpdateCharsetForSomething
 ;-------------------------------------------------------------------
-s1A54   
+UpdateCharsetForSomething   
         SEI 
         LDA #$24
         STA a01
@@ -3609,11 +3609,11 @@ s20EC
         STA a2A
         JSR s2CB2
         JSR s2CA5
-        JSR s2F33
+        JSR UpdateScreenColors
         JSR s2E17
         JSR s2BEB
         JSR s2ED7
-        JSR s2532
+        JSR GenerateStarfield
         LDA #$FB
         STA $D025    ;Sprite Multi-Color Register 0
         LDA #$00
@@ -4193,9 +4193,9 @@ b2523   RTS
         RTS 
 
 ;-------------------------------------------------------------------
-; s2532
+; GenerateStarfield
 ;-------------------------------------------------------------------
-s2532   
+GenerateStarfield   
         LDX #<SCREEN_RAM_HIBANK + $00A0
         LDY #>SCREEN_RAM_HIBANK + $00A0
         STX ramLoPtr
@@ -5651,9 +5651,9 @@ b2F2D   STA (ramLoPtr),Y
         RTS 
 
 ;-------------------------------------------------------------------
-; s2F33
+; UpdateScreenColors
 ;-------------------------------------------------------------------
-s2F33   
+UpdateScreenColors   
         LDX #<p3372
         LDY #>p3372
         STX ramLoPtr
