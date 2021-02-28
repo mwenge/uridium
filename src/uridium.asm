@@ -1750,26 +1750,26 @@ a134B   DEC aA8
         STA a91
         LDA aAE
         STA a62
-        LDA a491C
+        LDA SCREEN_RAM_HIBANK + $011C
         SEC 
         SBC #$02
-        STA a491C
-        STA a493A
-        LDA a491D
+        STA SCREEN_RAM_HIBANK + $011C
+        STA SCREEN_RAM_HIBANK + $013A
+        LDA SCREEN_RAM_HIBANK + $011D
         SEC 
         SBC #$02
-        STA a491D
-        STA a493B
-        LDA a4944
+        STA SCREEN_RAM_HIBANK + $011D
+        STA SCREEN_RAM_HIBANK + $013B
+        LDA SCREEN_RAM_HIBANK + $0144
         SEC 
         SBC #$02
-        STA a4944
-        STA a4962
-        LDA a4945
+        STA SCREEN_RAM_HIBANK + $0144
+        STA SCREEN_RAM_HIBANK + $0162
+        LDA SCREEN_RAM_HIBANK + $0145
         SEC 
         SBC #$02
-        STA a4945
-        STA a4963
+        STA SCREEN_RAM_HIBANK + $0145
+        STA SCREEN_RAM_HIBANK + $0163
 b138D   RTS 
 
 ;-------------------------------------------------------------------
@@ -2177,7 +2177,7 @@ b169A   LDA fA490,Y
         LDA #$06
         STA fA490,Y
         LDA #$14
-        STA f4BF8,Y
+        STA SCREEN_RAM_HIBANK + $03F8,Y
 b16A9   DEY 
         BPL b169A
 b16AC   LDX #<f3150
@@ -4202,30 +4202,31 @@ s2532
         STY ramHiPtr
         LDA #$30
         STA a10
-        JSR s2F15
+        JSR WriteStuffToScreen
         CLC 
         LDA ramLoPtr
         ADC #$28
         STA ramLoPtr
         BCC b254C
         INC ramHiPtr
-b254C   JSR s2F15
-        LDX #<p4B98
-        LDY #>p4B98
+b254C   JSR WriteStuffToScreen
+        LDX #<SCREEN_RAM_HIBANK + $0398
+        LDY #>SCREEN_RAM_HIBANK + $0398
         STX ramLoPtr
         STY ramHiPtr
-        JSR s2F15
+        JSR WriteStuffToScreen
         CLC 
         LDA ramLoPtr
         ADC #$28
         STA ramLoPtr
         BCC b2565
         INC ramHiPtr
-b2565   JSR s2F15
+b2565   JSR WriteStuffToScreen
+
         LDY #$05
         LDA #$20
-b256C   STA f4BAC,Y
-        STA f4BD4,Y
+b256C   STA SCREEN_RAM_HIBANK + $03AC,Y
+        STA SCREEN_RAM_HIBANK + $03D4,Y
         DEY 
         BPL b256C
         RTS 
@@ -5629,9 +5630,9 @@ b2F0B   LDA fA480,X
         JMP j2EF7
 
 ;-------------------------------------------------------------------
-; s2F15
+; WriteStuffToScreen
 ;-------------------------------------------------------------------
-s2F15   
+WriteStuffToScreen   
         LDY #$26
 b2F17   LDX a10
         LDA p0800,X
@@ -7024,72 +7025,6 @@ p5C00   .BYTE $00,$00,$2E,$3B,$2E,$3B,$2E,$3B
 .include "charset.asm"
 
 
-f7800   .BYTE $00,$00,$FC,$FE,$0E,$06,$06,$06
-        .BYTE $00,$00,$03,$03,$03,$03,$03,$03
-        .BYTE $00,$00,$3F,$3F,$38,$30,$30,$33
-        .BYTE $00,$00,$F1,$FA,$3A,$19,$38,$F9
-        .BYTE $00,$00,$9F,$5F,$40,$80,$00,$98
-        .BYTE $00,$00,$F8,$FD,$1D,$0C,$0C,$0C
-        .BYTE $00,$00,$CC,$2C,$2C,$CC,$0C,$CC
-        .BYTE $00,$00,$06,$06,$06,$06,$06,$06
-        .BYTE $00,$00,$3C,$7E,$77,$63,$61,$60
-f7848   .BYTE $00,$00,$3C,$7E,$EE,$C6,$86,$06
-f7850   .BYTE $07,$07,$03,$00,$00,$FF,$FF,$00
-        .BYTE $07,$FF,$FE,$00,$00,$FF,$FF,$00
-        .BYTE $33,$31,$30,$30,$70,$F0,$E0,$00
-        .BYTE $F1,$E1,$F1,$79,$3D,$1F,$0F,$00
-        .BYTE $9C,$9F,$8F,$80,$80,$FF,$FF,$00
-        .BYTE $1C,$FC,$F8,$00,$01,$FF,$FF,$00
-        .BYTE $CE,$CF,$C7,$C0,$C0,$C3,$83,$00
-        .BYTE $0E,$FE,$FC,$00,$00,$FF,$FF,$00
-        .BYTE $60,$60,$60,$60,$E0,$E0,$C0,$00
-f7898   .BYTE $06,$06,$06,$06,$06,$06,$06,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $15,$15,$15,$15,$15,$15,$2A,$AA
-        .BYTE $15,$15,$15,$15,$15,$15,$15,$15
-        .BYTE $00,$00,$15,$15,$15,$15,$15,$15
-        .BYTE $55,$55,$55,$55,$55,$55,$AA,$AA
-        .BYTE $55,$55,$55,$55,$55,$55,$55,$55
-        .BYTE $00,$00,$55,$55,$55,$55,$55,$55
-        .BYTE $56,$56,$56,$56,$56,$56,$AA,$AA
-        .BYTE $56,$56,$56,$56,$56,$56,$56,$56
-        .BYTE $00,$02,$56,$56,$56,$56,$56,$56
-        .BYTE $15,$55,$55,$55,$55,$55,$55,$55
-        .BYTE $FF,$FF,$FF,$FF,$FC,$F0,$C1,$05
-        .BYTE $FC,$F0,$C1,$05,$15,$55,$55,$55
-        .BYTE $54,$55,$55,$55,$55,$55,$55,$55
-        .BYTE $FF,$FF,$FF,$FF,$FF,$3F,$4F,$53
-        .BYTE $FF,$3F,$4F,$53,$54,$55,$55,$55
-        .BYTE $E5,$F9,$FE,$FF,$FF,$FF,$FF,$FF
-        .BYTE $55,$55,$55,$55,$55,$55,$55,$95
-        .BYTE $55,$55,$55,$95,$E5,$F9,$FE,$FF
-        .BYTE $5A,$6B,$AF,$BF,$FF,$FF,$FF,$FF
-        .BYTE $55,$55,$55,$55,$55,$55,$55,$56
-        .BYTE $55,$55,$55,$56,$5A,$6B,$AF,$BF
-        .BYTE $55,$55,$55,$55,$54,$50,$41,$05
-        .BYTE $54,$50,$41,$05,$15,$55,$55,$55
-        .BYTE $55,$55,$55,$55,$55,$15,$45,$51
-        .BYTE $55,$15,$45,$51,$54,$55,$55,$55
-        .BYTE $65,$59,$56,$55,$55,$55,$55,$55
-        .BYTE $55,$55,$55,$95,$65,$59,$56,$55
-        .BYTE $5A,$69,$A5,$95,$55,$55,$55,$55
-        .BYTE $55,$55,$55,$56,$5A,$69,$A5,$95
-        .BYTE $55,$55,$55,$55,$55,$55,$95,$15
-        .BYTE $15,$15,$55,$55,$55,$55,$55,$55
-        .BYTE $55,$55,$55,$55,$55,$55,$56,$56
-        .BYTE $56,$54,$55,$55,$55,$55,$55,$55
         .BYTE $FF,$FF,$FF,$FF,$FF
 a7A15   .BYTE $3F,$FF,$FF,$FF,$FF
 a7A1A   .BYTE $3F
@@ -8988,7 +8923,7 @@ sB05D
         STA a03
         LDA $D027,Y  ;Sprite 0 Color
         STA a0D
-        LDA f4BF8,Y
+        LDA SCREEN_RAM_HIBANK + $03F8,Y
         STA a0E
         TYA 
         ASL 
@@ -9018,7 +8953,7 @@ sB092
         STA a03
         LDA $D027,Y  ;Sprite 0 Color
         STA a0D
-        LDA f4BF8,Y
+        LDA SCREEN_RAM_HIBANK + $03F8,Y
         STA a0E
         TYA 
         ASL 
@@ -9102,7 +9037,7 @@ sB13F
         EOR #$FF
         STA a03
         LDA a0E
-        STA f4BF8,Y
+        STA SCREEN_RAM_HIBANK + $03F8,Y
         TYA 
         ASL 
         TAY 
