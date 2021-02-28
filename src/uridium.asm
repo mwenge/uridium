@@ -378,14 +378,14 @@ b08D7   STA @wf0001,Y
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
         LDX #$D3
-        .BYTE $02    ;JAM 
+        .BYTE $02    ;JAM
         .BYTE $B3,$A2 ;LAX (pA2),Y
         BRK #$A0
         CPY #$86
         BCS b087C
         LDA (pA2),Y
         BPL b091C
-        .BYTE $02    ;JAM 
+        .BYTE $02    ;JAM
         .BYTE $B3,$A2 ;LAX (pA2),Y
         .BYTE $00
 
@@ -568,11 +568,11 @@ b0A3D   LDA playerLinesColorScheme1,Y
         DEY 
         BPL b0A3D
 
-        LDX #<$3126
-        LDY #>$3126
+        LDX #<f3126
+        LDY #>f3126
         JSR WriteToScreen
-        LDX #<$3130
-        LDY #>$3130
+        LDX #<f3130
+        LDY #>f3130
         JSR WriteToScreen
         JSR PaintPlayerScoreColors
 
@@ -604,26 +604,26 @@ j0A6F   JSR SetInterruptToIRQInterrupt1
         LDY #$14
         JSR WriteSourceValueToRam
 
-        LDX #<$3576
-        LDY #>$3576
+        LDX #<f3576
+        LDY #>f3576
         JSR WriteToScreen
-        LDX #<$357F
-        LDY #>$357F
+        LDX #<f357F
+        LDY #>f357F
         JSR WriteToScreen
-        LDX #<$358A
-        LDY #>$358A
+        LDX #<f358A
+        LDY #>f358A
         JSR WriteToScreen
-        LDX #<$3597
-        LDY #>$3597
+        LDX #<f3597
+        LDY #>f3597
         JSR WriteToScreen
-        LDX #<$35B0
-        LDY #>$35B0
+        LDX #<f35B0
+        LDY #>f35B0
         JSR WriteToScreen
-        LDX #<$35CD
-        LDY #>$35CD
+        LDX #<f35CD
+        LDY #>f35CD
         JSR WriteToScreen
-        LDX #<$3150
-        LDY #>$3150
+        LDX #<f3150
+        LDY #>f3150
         JSR WriteToScreen
 
         JSR s2150
@@ -658,38 +658,38 @@ b0AED   JSR SetInterruptToIRQInterrupt1
         LDY #$14
         JSR WriteSourceValueToRam
 
-        LDX #<$35E1
-        LDY #>$35E1
+        LDX #<f35E1
+        LDY #>f35E1
         JSR WriteToScreen
-        LDX #<$35F0
-        LDY #>$35F0
+        LDX #<f35F0
+        LDY #>f35F0
         JSR WriteToScreen
-        LDX #<$3606
-        LDY #>$3606
+        LDX #<f3606
+        LDY #>f3606
         JSR WriteToScreen
-        LDX #<$361C
-        LDY #>$361C
+        LDX #<f361C
+        LDY #>f361C
         JSR WriteToScreen
-        LDX #<$3632
-        LDY #>$3632
+        LDX #<f3632
+        LDY #>f3632
         JSR WriteToScreen
-        LDX #<$3648
-        LDY #>$3648
+        LDX #<f3648
+        LDY #>f3648
         JSR WriteToScreen
-        LDX #<$365E
-        LDY #>$365E
+        LDX #<f365E
+        LDY #>f365E
         JSR WriteToScreen
-        LDX #<$3674
-        LDY #>$3674
+        LDX #<f3674
+        LDY #>f3674
         JSR WriteToScreen
-        LDX #<$368A
-        LDY #>$368A
+        LDX #<f368A
+        LDY #>f368A
         JSR WriteToScreen
         JSR s2150
         LDA firePressed
         BEQ j0B65
-        LDX #<$36B9
-        LDY #>$36B9
+        LDX #<f36B9
+        LDY #>f36B9
         JSR WriteToScreen
         LDA #$13
         STA a90
@@ -782,8 +782,8 @@ b0C09   LDX #<$DC01
 j0C13   STX aB028
         STY aB029
 b0C19   JSR SetInterruptToIRQInterrupt1
-        LDX #<$3150
-        LDY #>$3150
+        LDX #<f3150
+        LDY #>f3150
         JSR WriteToScreen
         JSR s19B7
         JSR s3008
@@ -801,19 +801,19 @@ b0C19   JSR SetInterruptToIRQInterrupt1
         STY ramHiPtr
         LDY #$0D
         JSR WriteSourceValueToRam
-        LDX #<$37EE
-        LDY #>$37EE
+        LDX #<f37EE
+        LDY #>f37EE
         JSR WriteToScreen
         LDA a5D
         CMP #$01
         BEQ b0C5F
-        LDX #<$37E3
-        LDY #>$37E3
+        LDX #<f37E3
+        LDY #>f37E3
         JSR WriteToScreen
         JMP j0C66
 
-b0C5F   LDX #<$37D8
-        LDY #>$37D8
+b0C5F   LDX #<f37D8
+        LDY #>f37D8
         JSR WriteToScreen
 j0C66   LDA a25
         LDX #$30
@@ -827,11 +827,11 @@ b0C71   STX a37FB
         LDA a25
         AND #$0F
         STA a37FC
-        LDX #<$37F9
-        LDY #>$37F9
+        LDX #<f37F9
+        LDY #>f37F9
         JSR WriteToScreen
-        LDX #<$34F9
-        LDY #>$34F9
+        LDX #<uridiumDecal
+        LDY #>uridiumDecal
         JSR WriteToScreen
         LDA #$F1
         STA $D026    ;Sprite Multi-Color Register 1
@@ -966,19 +966,19 @@ a0D7C   =*+$01
         LDA a5D
         CMP #$01
         BEQ b0DB2
-        LDX #<$37E3
-        LDY #>$37E3
+        LDX #<f37E3
+        LDY #>f37E3
         JSR WriteToScreen
         JMP j0DB9
 
-b0DB2   LDX #<$37D8
-        LDY #>$37D8
+b0DB2   LDX #<f37D8
+        LDY #>f37D8
         JSR WriteToScreen
-j0DB9   LDX #<$3808
-        LDY #>$3808
+j0DB9   LDX #<f3808
+        LDY #>f3808
         JSR WriteToScreen
-        LDX #<$3150
-        LDY #>$3150
+        LDX #<f3150
+        LDY #>f3150
         JSR WriteToScreen
         LDA #<p1D1C
         STA a91
@@ -1910,8 +1910,8 @@ b1487   JSR SetInterruptToIRQInterrupt1
         STY srcHiPtr
         LDY #$14
         JSR WriteSourceValueToRam
-        LDX #<$3815
-        LDY #>$3815
+        LDX #<f3815
+        LDY #>f3815
         JSR WriteToScreen
         LDA #$17
         STA a91
@@ -1919,8 +1919,8 @@ b1487   JSR SetInterruptToIRQInterrupt1
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
-        LDX #<$3831
-        LDY #>$3831
+        LDX #<f3831
+        LDY #>f3831
         JSR WriteToScreen
         LDA #$18
         STA a92
@@ -1928,14 +1928,14 @@ b1487   JSR SetInterruptToIRQInterrupt1
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
         LDA #$0D
-        STA a3868
+        STA f3868
         LDA a87
         STA a8F
         LDA #$00
         STA a59
         JSR s176E
-        LDX #<$3851
-        LDY #>$3851
+        LDX #<f3851
+        LDY #>f3851
         JSR WriteToScreen
         LDA #$19
         STA a92
@@ -1943,7 +1943,7 @@ b1487   JSR SetInterruptToIRQInterrupt1
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
         LDA #$13
-        STA a3868
+        STA f3868
         LDA aAD
         STA a8F
         LDA #$00
@@ -2180,8 +2180,8 @@ b169A   LDA fA490,Y
         STA f4BF8,Y
 b16A9   DEY 
         BPL b169A
-b16AC   LDX #<$3150
-        LDY #>$3150
+b16AC   LDX #<f3150
+        LDY #>f3150
         JSR WriteToScreen
         RTS 
 
@@ -2194,8 +2194,8 @@ b16BC   LDA a62
         BEQ b16AC
         CMP #$10
         BNE b1675
-        LDX #<$315E
-        LDY #>$315E
+        LDX #<f315E
+        LDY #>f315E
         JSR WriteToScreen
         LDA #$8F
         STA a91
@@ -2319,8 +2319,8 @@ j178F   SEC
         INC a3876
         JMP j178F
 
-b179D   LDX #<$3868
-        LDY #>$3868
+b179D   LDX #<f3868
+        LDY #>f3868
         JSR WriteToScreen
         LDA a59
         BNE b17B3
@@ -2379,8 +2379,8 @@ SetInterrupToIRQInterrupt2
 s17F8   
         LDA #$09
         STA a85
-        LDX #<p368A
-        LDY #>p368A
+        LDX #<f368A
+        LDY #>f368A
         STX srcLoPtr
         STY srcHiPtr
         LDX #<pA400
@@ -2430,14 +2430,14 @@ b1851   LDX #$00
         LDA #$28
         STA a38BD
         JSR sC900
-        LDX #<$3150
-        LDY #>$3150
+        LDX #<f3150
+        LDY #>f3150
         JSR WriteToScreen
-        LDX #<$389C
-        LDY #>$389C
+        LDX #<f389C
+        LDY #>f389C
         JSR WriteToScreen
-        LDX #<$387A
-        LDY #>$387A
+        LDX #<f387A
+        LDY #>f387A
         JSR WriteToScreen
         LDA #$1F
         STA a91
@@ -2556,8 +2556,8 @@ b193E   STA a11
         LDA f38C3,Y
         LDX a10
         STA f38BC,X
-        LDX #<$38BA
-        LDY #>$38BA
+        LDX #<f38BA
+        LDY #>f38BA
         JSR WriteToScreen
         LDA a62
         BNE b1958
@@ -2629,8 +2629,8 @@ b19C8   STX a3142
         LDA a25
         AND #$0F
         STA a3143
-        LDX #<$313A
-        LDY #>$313A
+        LDX #<f313A
+        LDY #>f313A
         JSR WriteToScreen
         RTS 
 
@@ -2645,8 +2645,8 @@ b19E3   STX a3149
         LDA a25
         AND #$0F
         STA a314A
-        LDX #<$3145
-        LDY #>$3145
+        LDX #<f3145
+        LDY #>f3145
         JSR WriteToScreen
         RTS 
 
@@ -3875,13 +3875,13 @@ b22FC   LDA a5C
         LDA a61
         BEQ b2315
 
-        LDX #<$34F5
-        LDY #>$34F5
+        LDX #<f34F5
+        LDY #>f34F5
         JSR WriteToScreen
         RTS 
 
-b2315   LDX #<$34F1
-        LDY #>$34F1
+b2315   LDX #<f34F1
+        LDY #>f34F1
         JSR WriteToScreen
 b231C   RTS 
 
@@ -3891,13 +3891,13 @@ p2322   =*+$01
         JSR WriteToScreen
         RTS 
 
-b2325   LDX #<$3510
-        LDY #>$3510
+b2325   LDX #<f3510
+        LDY #>f3510
         JSR WriteToScreen
         RTS 
 
-b232D   LDX #<$3526
-        LDY #>$3526
+b232D   LDX #<f3526
+        LDY #>f3526
         JSR WriteToScreen
         RTS 
 
@@ -3933,8 +3933,8 @@ b2351   LDX #<$DC00
         BMI b2389
         LDA #$02
         STA a5C
-        LDX #<$34D0
-        LDY #>$34D0
+        LDX #<f34D0
+        LDY #>f34D0
         JSR WriteToScreen
 j2374   LDA a5B
         CMP #$03
@@ -3943,15 +3943,15 @@ j2374   LDA a5B
 
 b237B   LDA #$00
         STA a5C
-        LDX #<$34DB
-        LDY #>$34DB
+        LDX #<f34DB
+        LDY #>f34DB
         JSR WriteToScreen
         JMP j2374
 
 b2389   LDA #$01
         STA a5C
-        LDX #<$34E5
-        LDY #>$34E5
+        LDX #<f34E5
+        LDY #>f34E5
         JSR WriteToScreen
         JMP j2374
 
@@ -3989,8 +3989,8 @@ s23B5
         BNE b23D6
         LDA a19
         BPL b23D7
-        LDX #<$36A0
-        LDY #>$36A0
+        LDX #<f36A0
+        LDY #>f36A0
         JSR WriteToScreen
         LDA #$00
         STA a61
@@ -4002,8 +4002,8 @@ s23B5
 
 b23D6   RTS 
 
-b23D7   LDX #<$36AD
-        LDY #>$36AD
+b23D7   LDX #<f36AD
+        LDY #>f36AD
         JSR WriteToScreen
         LDA #$FF
         STA a61
@@ -5148,8 +5148,8 @@ b2BBF   JMP jC909
 
 b2BC2   JSR GetJoystickInput
         JSR s2F9D
-        LDX #<$3150
-        LDY #>$3150
+        LDX #<f3150
+        LDY #>f3150
         JSR WriteToScreen
         LDY #$1C
         JSR WasteCyclesUsingXAndY
@@ -5922,16 +5922,21 @@ f3126
 f3130
         .BYTE $00,$1F,$49,$15,$0A,$22
         .BYTE $0E,$1B,$02,$FF
+f313A
         .BYTE $00,$01,$01,$1E
         .BYTE $19,$30,$7A,$7B
 a3142   .BYTE $30
 a3143   .BYTE $03,$FF
+f3145
         .BYTE $00,$1F,$7A,$7B
 a3149   .BYTE $30
 a314A   .BYTE $03,$30,$02,$1E,$19,$FF
+f3150
         .BYTE $00,$0F
         .BYTE $30,$30,$30,$30,$30,$30,$30,$30
-        .BYTE $30,$30,$30,$FF,$00,$0F,$45,$0A
+        .BYTE $30,$30,$30,$FF
+f315E
+        .BYTE $00,$0F,$45,$0A
         .BYTE $17,$0D,$30,$17,$18,$54,$25,$FF
 playerLinesColorScheme1   .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
         .BYTE $0E,$0E,$0A,$0A,$0A,$0A,$0A,$0A
@@ -6056,10 +6061,15 @@ f349F   .BYTE $4E,$1B,$12,$0D,$12,$1E,$42,$30
         .BYTE $11,$30,$2E
 f34C2   .BYTE $30
 f34C3   .BYTE $01,$02,$00,$00,$00,$30,$3A,$3E
-        .BYTE $3B,$FF,$FF,$FF,$FF,$00,$0F,$30
+        .BYTE $3B,$FF,$FF,$FF,$FF
+f34D0
+        .BYTE $00,$0F,$30
         .BYTE $30,$55,$55,$30,$56,$30,$30,$FF
+f34DB
         .BYTE $00,$0F,$30,$55,$55,$30,$56,$56
-        .BYTE $30,$FF,$00,$0F,$30,$30,$30,$55
+        .BYTE $30,$FF
+f34E5
+        .BYTE $00,$0F,$30,$30,$30,$55
         .BYTE $30,$56,$30,$30,$30,$FF
 f34F1
         .BYTE $02,$0A,$57,$FF
@@ -6075,7 +6085,8 @@ f3510
         .BYTE $30,$30,$30,$30,$41,$12,$2E,$1C
         .BYTE $0C,$18,$1B,$0E,$30,$30,$30,$30
         .BYTE $30,$30,$FF
-f3526   .BYTE $02,$0A,$30,$30
+f3526
+        .BYTE $02,$0A,$30,$30
 f352A   .BYTE $30,$30,$30,$01,$02,$00,$00,$00
         .BYTE $30,$3A,$3E,$3B,$30,$30,$30,$FF
         .BYTE $02,$0C,$30,$30,$30,$30,$30,$55
@@ -6087,48 +6098,81 @@ f352A   .BYTE $30,$30,$30,$01,$02,$00,$00,$00
         .BYTE $30,$30,$30,$30,$56,$FF
 scrollingTitleScreenDataLoPtrArray   .BYTE $3A,$4B,$5E
 scrollingTitleScreenDataHiPtrArray   .BYTE $35,$35,$35
+f3576
         .BYTE $06,$0E,$41,$3E,$50
-        .BYTE $4C,$48,$47,$FF,$09,$10,$19,$1B
-        .BYTE $0E,$1C,$0E,$17,$1D,$1C,$FF,$0C
+        .BYTE $4C,$48,$47,$FF
+f357F
+        .BYTE $09,$10,$19,$1B
+        .BYTE $0E,$1C,$0E,$17,$1D,$1C,$FF
+f358A
+        .BYTE $0C
         .BYTE $0F,$31,$32,$33,$34,$35,$36,$37
-        .BYTE $38,$39,$7D,$FF,$0F,$07,$59,$30
+        .BYTE $38,$39,$7D,$FF
+f3597
+        .BYTE $0F,$07,$59,$30
         .BYTE $40,$1B,$0A,$0F,$1D,$10,$18,$15
         .BYTE $0D,$30,$45,$1D,$0D,$28,$30,$01
-        .BYTE $09,$08,$06,$28,$FF,$12,$05,$3D
+        .BYTE $09,$08,$06,$28,$FF
+f35B0
+        .BYTE $12,$05,$3D
         .BYTE $0E,$1C,$12,$10,$17,$0E,$0D,$30
         .BYTE $0A,$17,$0D,$30,$19,$1B,$18,$10
         .BYTE $1B,$0A,$42,$42,$0E,$0D,$30,$0B
-        .BYTE $22,$FF,$15,$0B,$3A,$17,$0D,$1B
+        .BYTE $22,$FF
+f35CD
+        .BYTE $15,$0B,$3A,$17,$0D,$1B
         .BYTE $0E,$54,$30,$3B,$1B,$0A,$22,$0B
-        .BYTE $1B,$18,$18,$14,$28,$FF,$06,$0C
+        .BYTE $1B,$18,$18,$14,$28,$FF
+f35E1
+        .BYTE $06,$0C
         .BYTE $41,$0A,$15,$15,$30,$18,$0F,$30
         .BYTE $3F,$0A,$42,$0E,$FF
-f35F0   .BYTE $09,$0B,$01,$28,$30
+f35F0
+        .BYTE $09,$0B,$01,$28,$30
 f35F5   .BYTE $30,$30,$30,$01,$02,$00,$00,$00
         .BYTE $30,$3A,$3E,$3B,$FF,$00,$01,$20
-        .BYTE $00,$0B,$0B,$02,$28,$30,$30,$30
+        .BYTE $00
+f3606
+        .BYTE $0B,$0B,$02,$28,$30,$30,$30
         .BYTE $30,$01,$01,$00,$00,$00,$30,$30
-        .BYTE $30,$30,$FF,$00,$01,$10,$00,$0D
+        .BYTE $30,$30,$FF,$00,$01,$10,$00
+f361C
+        .BYTE $0D
         .BYTE $0B,$03,$28,$30,$30,$30,$30,$01
         .BYTE $00,$00,$00,$00,$30,$30,$30,$30
-        .BYTE $FF,$00,$01,$00,$00,$0F,$0B,$04
+        .BYTE $FF,$00,$01,$00,$00
+f3632
+        .BYTE $0F,$0B,$04
         .BYTE $28,$30,$30,$30,$30,$30,$09,$00
         .BYTE $00,$00,$30,$30,$30,$30,$FF,$00
-        .BYTE $00,$90,$00,$11,$0B,$05,$28,$30
+        .BYTE $00,$90,$00
+f3648
+        .BYTE $11,$0B,$05,$28,$30
         .BYTE $30,$30,$30,$30,$08,$00,$00,$00
         .BYTE $30,$30,$30,$30,$FF,$00,$00,$80
-        .BYTE $00,$13,$0B,$06,$28,$30,$30,$30
+        .BYTE $00
+f365E
+        .BYTE $13,$0B,$06,$28,$30,$30,$30
         .BYTE $30,$30,$07,$00,$00,$00,$30,$30
-        .BYTE $30,$30,$FF,$00,$00,$70,$00,$15
+        .BYTE $30,$30,$FF,$00,$00,$70,$00
+f3674
+        .BYTE $15
         .BYTE $0B,$07,$28,$30,$30,$30,$30,$30
         .BYTE $06,$00,$00,$00,$30,$30,$30,$30
         .BYTE $FF,$00,$00,$60,$00
-p368A   .BYTE $17,$0B,$08,$28,$30,$30,$30,$30
+f368A
+        .BYTE $17,$0B,$08,$28,$30,$30,$30,$30
         .BYTE $30,$05,$00,$00,$00,$30,$30,$30
-        .BYTE $30,$FF,$00,$00,$50,$00,$00,$0F
+        .BYTE $30,$FF,$00,$00,$50,$00
+f36A0
+        .BYTE $00,$0F
         .BYTE $30,$30,$3C,$18,$15,$18,$1E,$1B
-        .BYTE $30,$30,$FF,$00,$0F,$3B,$15,$0C
-        .BYTE $14,$2E,$50,$11,$1D,$0E,$FF,$00
+        .BYTE $30,$30,$FF
+f36AD
+        .BYTE $00,$0F,$3B,$15,$0C
+        .BYTE $14,$2E,$50,$11,$1D,$0E,$FF
+f36B9
+        .BYTE $00
         .BYTE $0F,$30,$30,$3D,$0E,$42,$18,$30
         .BYTE $30,$30,$FF
 f36C5   .BYTE $FE,$FC,$FB,$FD,$FF,$FD,$FB,$FC
@@ -6181,40 +6225,62 @@ f37B7   .BYTE $FE,$F3,$FD,$F5,$F7,$F8,$F2,$F4
 p37BF   .BYTE $FF,$F1,$F0,$F1,$FF,$F0,$FF,$FC
         .BYTE $F0,$F0,$F0,$F0,$F0,$F0
 p37CD   .BYTE $F3,$FD,$F0,$FD,$F5,$F0,$F0,$F0
-        .BYTE $F0,$F0,$F0,$0A,$0F,$49,$15,$0A
-        .BYTE $22,$0E,$1B,$30,$01,$FF,$0A,$0F
+        .BYTE $F0,$F0,$F0
+f37D8
+        .BYTE $0A,$0F,$49,$15,$0A
+        .BYTE $22,$0E,$1B,$30,$01,$FF
+f37E3
+        .BYTE $0A,$0F
         .BYTE $49,$15,$0A,$22,$0E,$1B,$30,$02
-        .BYTE $FF,$0D,$0E,$40,$0A,$42,$0E,$30
-        .BYTE $48,$17,$25,$FF,$10,$0E
+        .BYTE $FF
+f37EE
+        .BYTE $0D,$0E,$40,$0A,$42,$0E,$30
+        .BYTE $48,$17,$25,$FF
+f37F9
+        .BYTE $10,$0E
 a37FB   .BYTE $30
 a37FC   .BYTE $03,$30,$30,$30,$30,$30,$15,$0E
-        .BYTE $0F,$1D,$28,$FF,$0D,$0D,$40,$0A
+        .BYTE $0F,$1D,$28,$FF
+f3808
+        .BYTE $0D,$0D,$40,$0A
         .BYTE $42,$0E,$30,$48,$1F,$0E,$1B,$25
-        .BYTE $FF,$07,$07,$3D,$0E,$1C,$1D,$1B
+        .BYTE $FF
+f3815
+        .BYTE $07,$07,$3D,$0E,$1C,$1D,$1B
         .BYTE $1E,$0C,$1D,$30,$1C,$0E,$1A,$1E
         .BYTE $0E,$17,$0C,$0E,$30,$19,$1B,$12
-        .BYTE $42,$0E,$0D,$25,$FF,$0A,$05,$3F
+        .BYTE $42,$0E,$0D,$25,$FF
+f3831
+        .BYTE $0A,$05,$3F
         .BYTE $18,$1B,$42,$0A,$1D,$12,$18,$17
         .BYTE $30,$0A,$17,$17,$12,$11,$12,$15
         .BYTE $0A,$1D,$12,$18,$17,$30,$0B,$18
-        .BYTE $17,$1E,$1C,$2A,$FF,$10,$0A,$4C
+        .BYTE $17,$1E,$1C,$2A,$FF
+f3851
+        .BYTE $10,$0A,$4C
         .BYTE $11,$12,$19,$30,$0D,$0E,$1C,$1D
         .BYTE $1B,$1E,$0C,$1D,$30,$0B,$18,$17
         .BYTE $1E,$1C,$2A,$FF
-a3868   .BYTE $0D,$0D,$01,$00,$00,$30,$51,$30
+f3868
+        .BYTE $0D,$0D,$01,$00,$00,$30,$51,$30
 a3870   .BYTE $00
 a3871   .BYTE $00,$30,$2F,$30
 a3875   .BYTE $00
-a3876   .BYTE $00,$00,$00,$FF,$0D,$04,$52,$18
+a3876   .BYTE $00,$00,$00,$FF
+f387A
+        .BYTE $0D,$04,$52,$18
         .BYTE $1E,$30,$11,$0A,$1F,$0E,$30,$0A
         .BYTE $42,$0A,$1C,$1C,$0E,$0D,$30,$0A
         .BYTE $30,$10,$1B,$0E,$0A,$1D,$30,$1C
-        .BYTE $0C,$18,$1B,$0E,$25,$FF,$10,$06
+        .BYTE $0C,$18,$1B,$0E,$25,$FF
+f389C
+        .BYTE $10,$06
         .BYTE $49,$15,$0E,$0A,$1C,$0E,$30,$0E
         .BYTE $17,$1D,$0E,$1B,$30,$22,$18,$1E
         .BYTE $1B,$30,$12,$17,$12,$1D,$12,$0A
         .BYTE $15,$1C,$28,$FF
-f38BA   .BYTE $13,$11
+f38BA
+        .BYTE $13,$11
 f38BC   .BYTE $3A
 a38BD   .BYTE $28
 a38BE   .BYTE $28,$30,$30,$30,$FF
@@ -9207,7 +9273,9 @@ bB25A   LDA a94
         RTS 
 
         .BYTE $00,$0F,$30,$30,$49,$0A,$1E,$1C
-        .BYTE $0E,$30,$30,$30,$FF
+        .BYTE $0E,$30,$30
+fB265
+        .BYTE $30,$FF
 ;-------------------------------------------------------------------
 ; SpinWaitingForJoystickInput
 ;-------------------------------------------------------------------
