@@ -549,12 +549,12 @@ j0A20   LDX #$FF
         ; Store pointers to joysticks 1 and 2
         LDX #<$DC00
         LDY #>$DC00
-        STX aB025
-        STY aB026
+        STX joystick1LoPtr
+        STY joystick1HiPtr
         LDX #<$DC01
         LDY #>$DC01
-        STX aB028
-        STY aB029
+        STX joystick2LoPtr
+        STY joystick2HiPtr
 
         LDY #$26
 b0A3D   LDA playerLinesColorScheme1,Y
@@ -568,11 +568,11 @@ b0A3D   LDA playerLinesColorScheme1,Y
         DEY 
         BPL b0A3D
 
-        LDX #<f3126
-        LDY #>f3126
+        LDX #<player1Text
+        LDY #>player1Text
         JSR WriteToScreen
-        LDX #<f3130
-        LDY #>f3130
+        LDX #<player2Text
+        LDY #>player2Text
         JSR WriteToScreen
         JSR PaintPlayerScoreColors
 
@@ -771,16 +771,16 @@ b0BF2   LDA a5C
         BEQ b0C09
         LDX #<$DC00
         LDY #>$DC00
-        STX aB025
-        STY aB026
+        STX joystick1LoPtr
+        STY joystick1HiPtr
         JMP j0C13
 
 b0C09   LDX #<$DC01
         LDY #>$DC01
-        STX aB025
-        STY aB026
-j0C13   STX aB028
-        STY aB029
+        STX joystick1LoPtr
+        STY joystick1HiPtr
+j0C13   STX joystick2LoPtr
+        STY joystick2HiPtr
 b0C19   JSR SetInterruptToIRQInterrupt1
         LDX #<f3150
         LDY #>f3150
@@ -3923,12 +3923,12 @@ s2342
 
 b2351   LDX #<$DC00
         LDY #>$DC00
-        STX aB025
-        STY aB026
+        STX joystick1LoPtr
+        STY joystick1HiPtr
         LDX #<$DC01
         LDY #>$DC01
-        STX aB028
-        STY aB029
+        STX joystick2LoPtr
+        STY joystick2HiPtr
         LDA a19
         BMI b2389
         LDA #$02
@@ -5917,12 +5917,11 @@ f310A   .BYTE $00,$90,$98,$A0,$A8,$B0,$B8,$C0
         .BYTE $C4,$C8,$CC,$D0,$D4,$D8,$DC,$E0
         .BYTE $E4,$E8,$EC,$F0
 f311E   .BYTE $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
-f3126
-        .BYTE $00,$01,$49,$15,$0A,$22,$0E,$1B
+
+player1Text   .BYTE $00,$01,$49,$15,$0A,$22,$0E,$1B
         .BYTE $01,$FF
-f3130
-        .BYTE $00,$1F,$49,$15,$0A,$22
-        .BYTE $0E,$1B,$02,$FF
+player2Text   .BYTE $00,$1F,$49,$15,$0A,$22,$0E,$1B
+        .BYTE $02,$FF
 f313A
         .BYTE $00,$01,$01,$1E
         .BYTE $19,$30,$7A,$7B
@@ -6099,6 +6098,7 @@ f352A   .BYTE $30,$30,$30,$01,$02,$00,$00,$00
         .BYTE $30,$30,$30,$30,$56,$FF
 scrollingTitleScreenDataLoPtrArray   .BYTE $3A,$4B,$5E
 scrollingTitleScreenDataHiPtrArray   .BYTE $35,$35,$35
+
 f3576
         .BYTE $06,$0E,$41,$3E,$50
         .BYTE $4C,$48,$47,$FF
@@ -8879,11 +8879,11 @@ GetJoystickInput
         STA a17
         LDA #$FF
         STA $DC00    ;CIA1: Data Port Register A
-aB025   =*+$01
-aB026   =*+$02
+joystick1LoPtr   =*+$01
+joystick1HiPtr   =*+$02
         LDA $DC00    ;CIA1: Data Port Register A
-aB028   =*+$01
-aB029   =*+$02
+joystick2LoPtr   =*+$01
+joystick2HiPtr   =*+$02
         AND $DC01    ;CIA1: Data Port Register B
         BIT aB057
         BEQ bB037
