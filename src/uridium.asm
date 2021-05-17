@@ -6311,7 +6311,8 @@ a3929   .BYTE $80,$80,$80
 f392C   .BYTE $A0,$A1,$A2,$A3
 f3930   .BYTE $F2,$F2,$F7,$F6,$F4,$F3,$F5
 
-.include "game_data1.asm"
+.include "game_data.asm"
+
 *=$3F00
 ;---------------------------------------------------------------------------------
 ; IRQInterrupt2   
@@ -6447,13 +6448,11 @@ p3FD6   RTI
 
 .include "explosion_sprites.asm"
 .include "ship_sprites.asm"
-.include "game_data2.asm"
 
 
 .include "enemy_sprites.asm"
 .include "charset.asm"
 
-.include "game_data3.asm"
 
 *=$A900
 fA900   STA a38BE
@@ -6579,7 +6578,6 @@ bA9F7   LDA #$01
         STA a85
         JMP jC9EB
 
-.include "game_data4.asm"
 
 *=$B000
 ;-------------------------------------------------------------------
@@ -7131,7 +7129,6 @@ jB34D   STY aB3C1
         JSR WriteToScreen
 bB35F   RTS 
 
-.include "game_data5.asm"
 
 *=$C1B8
 ;-------------------------------------------------------------------
@@ -7510,7 +7507,6 @@ jC4CD   LDA #<pC4DA
 pC4DA   RTI 
 
 
-.include "game_data6.asm"
 
 *=$C900
 ;-------------------------------------------------------------------
