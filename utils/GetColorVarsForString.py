@@ -39,9 +39,7 @@ colormap = {
     "$0F": "GRAY3",
     }
 
-s = """
-mifSnakeColorArray  .BYTE $02,$08,$07,$05,$0E,$04,$06,$00
-"""
+s = sys.stdin.read()
 ls = re.split("([, #\n])", s)
 
 r = [colormap[c]  if c in colormap else c for c in ls]

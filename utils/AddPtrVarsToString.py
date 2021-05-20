@@ -4,10 +4,10 @@ import re
 
 
 s1 = """
-dnaColorSchemeLoPtr   .BYTE $1C,$23,$42,$50,$56,$5C,$64,$72
+screenWriteJumpTableLoPtr   .BYTE $D3,$75,$B4,$6D,$BE,$7F,$24,$6D
 """
 s2 = """
-dnaColorSchemeHiPtr   .BYTE $0F,$0F,$13,$13,$13,$13,$13,$13
+screenWriteJumpTableHiPtr   .BYTE $22,$1A,$B1,$2B,$2B,$1F,$25,$2B
 """
 ls1 = re.split("([, \n])", s1)
 ls2 = re.split("([, \n])", s2)

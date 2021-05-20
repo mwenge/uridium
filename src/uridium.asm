@@ -35,19 +35,19 @@ fFC = $FC
 ; **** ZP ABSOLUTE ADRESSES **** 
 ;
 a01 = $01
-a02 = $02
+currentSpriteMSB = $02
 a03 = $03
-a04 = $04
-a05 = $05
+spriteIndex = $04
+currentSpriteXPos = $05
 a06 = $06
-a07 = $07
-a08 = $08
-a09 = $09
-a0A = $0A
-a0B = $0B
-a0C = $0C
-a0D = $0D
-a0E = $0E
+currentSpriteYPos = $07
+currentSpriteDisplayEnable = $08
+currentSpriteExpandVertical = $09
+currentSpriteBackgroundDisplayPriority = $0A
+currentSpriteMultiColorMode = $0B
+currentSpriteExpandHorizontal = $0C
+currentSpriteColor = $0D
+currentSpriteValue = $0E
 a0F = $0F
 a10 = $10
 a11 = $11
@@ -126,11 +126,11 @@ a59 = $59
 a5A = $5A
 a5B = $5B
 a5C = $5C
-a5D = $5D
+currentPlayer = $5D
 a5E = $5E
 a5F = $5F
 a60 = $60
-a61 = $61
+monochromEnabled = $61
 a62 = $62
 a63 = $63
 a64 = $64
@@ -162,7 +162,7 @@ a89 = $89
 a8A = $8A
 a8D = $8D
 a8E = $8E
-a8F = $8F
+initialValueOfY = $8F
 a90 = $90
 a91 = $91
 a92 = $92
@@ -244,14 +244,35 @@ e00FD = $00FD
 COLOR_RAM = $D800
 SCREEN_RAM = $0400
 SCREEN_RAM_HIBANK = $4800
+sprite0Ptr = SCREEN_RAM_HIBANK + $03F8
 
+BLACK                                   = $00
+WHITE                                   = $01
+RED                                     = $02
+CYAN                                    = $03
+PURPLE                                  = $04
+GREEN                                   = $05
+BLUE                                    = $06
+YELLOW                                  = $07
+ORANGE                                  = $08
+BROWN                                   = $09
+LTRED                                   = $0A
+GRAY1                                   = $0B
+GRAY2                                   = $0C
+LTGREEN                                 = $0D
+LTBLUE                                  = $0E
+GRAY3                                   = $0F
 ;-------------------------------------------------------------------
-; Game begins executing from LaunchGame below
+; Game begins executing from LaunchUridium below
 ;-------------------------------------------------------------------
 * = $0800
 
 
-p0800   .BYTE $00
+;--------------------------------------------------------------------
+; p0800   
+;--------------------------------------------------------------------
+p0800   
+        .BYTE $00
         LDY #$00
         SEI 
         INC a01
@@ -282,7 +303,7 @@ f0829   =*+$02
         LDA #$37
         STA a01
         CLI 
-        JMP jC1B8
+        JMP DreadnoughDestructionSequence
 
 b083D   RTS 
 
@@ -312,7 +333,7 @@ b083E   INX
         BEQ b08B4
         CMP #$71
         BEQ b08BC
-b0872   STA LaunchGame,Y
+b0872   STA LaunchUridium,Y
         INY 
         BNE b087B
         INC $0147
@@ -390,9 +411,9 @@ b08D7   STA @wf0001,Y
         .BYTE $00
 
 ;-------------------------------------------------------------------
-; LaunchGame
+; LaunchUridium
 ;-------------------------------------------------------------------
-LaunchGame
+LaunchUridium
         SEI 
 
         LDA #$0B
@@ -580,7 +601,12 @@ b0A3D   LDA playerLinesColorScheme1,Y
 
         LDA #$03
         STA a5B
-j0A6F   JSR SetInterruptToIRQInterrupt1
+
+;--------------------------------------------------------------------
+; TitleScreenLoop   
+;--------------------------------------------------------------------
+TitleScreenLoop   
+        JSR SetInterruptToIRQInterrupt1
 
         LDA #$00
         STA $D015    ;Sprite display Enable
@@ -604,46 +630,56 @@ j0A6F   JSR SetInterruptToIRQInterrupt1
         LDY #$14
         JSR WriteSourceValueToRam
 
-        LDX #<f3576
-        LDY #>f3576
+        LDX #<hewson
+        LDY #>hewson
         JSR WriteToScreen
-        LDX #<f357F
-        LDY #>f357F
+        LDX #<presents
+        LDY #>presents
         JSR WriteToScreen
-        LDX #<f358A
-        LDY #>f358A
+        LDX #<uridiumTitlePlaceholder
+        LDY #>uridiumTitlePlaceholder
         JSR WriteToScreen
-        LDX #<f3597
-        LDY #>f3597
+        LDX #<graftgoldLtd
+        LDY #>graftgoldLtd
         JSR WriteToScreen
-        LDX #<f35B0
-        LDY #>f35B0
+        LDX #<designedAndProgrammedBy
+        LDY #>designedAndProgrammedBy
         JSR WriteToScreen
-        LDX #<f35CD
-        LDY #>f35CD
+        LDX #<andrewBraybrook
+        LDY #>andrewBraybrook
         JSR WriteToScreen
-        LDX #<f3150
-        LDY #>f3150
+        LDX #<spaces
+        LDY #>spaces
         JSR WriteToScreen
 
-        JSR s2150
+        JSR TitleScreenWaitForFireToBePressed
         LDA firePressed
-        BNE b0AD4
-        JMP j0B65
+        BNE PrepareLargeScrollingCreditAndHiScore
 
-b0AD4   LDA #$00
+        ; Player has pressed fire. Start the game.
+        JMP DrawEnterLevelSequence
+
+;--------------------------------------------------------------------
+; PrepareLargeScrollingCreditAndHiScore   
+;--------------------------------------------------------------------
+PrepareLargeScrollingCreditAndHiScore   
+        LDA #$00
         STA a26
         LDA #$0F
         STA a8D
-        JSR s20EC
+        JSR SetUpScreenForScrolling
         LDA #$FC
         STA a2E
-        JSR s217E
+        JSR ShowLargeScrollingCreditAndHiScore
         LDA firePressed
-        BNE b0AED
-        JMP j0B65
+        BNE DrawHiScoreScreen
+        JMP DrawEnterLevelSequence
 
-b0AED   JSR SetInterruptToIRQInterrupt1
+;--------------------------------------------------------------------
+; DrawHiScoreScreen   
+;--------------------------------------------------------------------
+DrawHiScoreScreen   
+        JSR SetInterruptToIRQInterrupt1
         LDA #$30
         JSR Write21LinesOfAccumulatorValToScreen
 
@@ -658,47 +694,53 @@ b0AED   JSR SetInterruptToIRQInterrupt1
         LDY #$14
         JSR WriteSourceValueToRam
 
-        LDX #<f35E1
-        LDY #>f35E1
+        LDX #<hallOfFame
+        LDY #>hallOfFame
         JSR WriteToScreen
-        LDX #<f35F0
-        LDY #>f35F0
+        LDX #<firstInHallofFame
+        LDY #>firstInHallofFame
         JSR WriteToScreen
-        LDX #<f3606
-        LDY #>f3606
+        LDX #<secondInHallOfFame
+        LDY #>secondInHallOfFame
         JSR WriteToScreen
-        LDX #<f361C
-        LDY #>f361C
+        LDX #<thirdInHallofFame
+        LDY #>thirdInHallofFame
         JSR WriteToScreen
-        LDX #<f3632
-        LDY #>f3632
+        LDX #<fourthInHallofFame
+        LDY #>fourthInHallofFame
         JSR WriteToScreen
-        LDX #<f3648
-        LDY #>f3648
+        LDX #<fifthInHallOfFame
+        LDY #>fifthInHallOfFame
         JSR WriteToScreen
-        LDX #<f365E
-        LDY #>f365E
+        LDX #<sixthInHallOfFame
+        LDY #>sixthInHallOfFame
         JSR WriteToScreen
-        LDX #<f3674
-        LDY #>f3674
+        LDX #<seventhInHallOfFame
+        LDY #>seventhInHallOfFame
         JSR WriteToScreen
-        LDX #<f368A
-        LDY #>f368A
+        LDX #<eighthInHallOfFame
+        LDY #>eighthInHallOfFame
         JSR WriteToScreen
-        JSR s2150
+        JSR TitleScreenWaitForFireToBePressed
+
         LDA firePressed
-        BEQ j0B65
-        LDX #<f36B9
-        LDY #>f36B9
+        BEQ DrawEnterLevelSequence
+
+        LDX #<demoLabel
+        LDY #>demoLabel
         JSR WriteToScreen
         LDA #$13
         STA a90
-        JSR s21B5
+        JSR EnterDemoModeUntilDeadOrPlayerPressesFire
         LDA firePressed
-        BEQ j0B65
-        JMP j0A6F
+        BEQ DrawEnterLevelSequence
+        JMP TitleScreenLoop
 
-j0B65   LDX #$08
+;--------------------------------------------------------------------
+; DrawEnterLevelSequence   
+;--------------------------------------------------------------------
+DrawEnterLevelSequence   
+        LDX #$08
 b0B67   LDA f3496,X
         STA $0250,X
         STA $0260,X
@@ -708,12 +750,12 @@ b0B67   LDA f3496,X
         LDA #$12
         STA a90
         LDA #$02
-        STA a5D
-        JSR s19B7
+        STA currentPlayer
+        JSR UpdateOneUpOrTwoUpText
         LDA #$2F
         STA a3F4A
         LDA #$01
-        STA a5D
+        STA currentPlayer
         LDA #$02
         STA a5A
         LDA #$09
@@ -728,7 +770,7 @@ j0BA1   LDX #$08
         LDA a5C
         CMP #$01
         BEQ b0BCC
-        LDA a5D
+        LDA currentPlayer
         CMP #$01
         BEQ b0BCC
 b0BAF   LDA $0260,X
@@ -740,7 +782,7 @@ b0BAF   LDA $0260,X
         LDA a25
         BNE b0BF2
         LDX #$08
-        DEC a5D
+        DEC currentPlayer
         LDA $0255
         BNE b0BCC
         JMP jC909
@@ -759,14 +801,14 @@ b0BCC   LDA $0250,X
         BNE b0BE8
         JMP jC909
 
-b0BE8   INC a5D
+b0BE8   INC currentPlayer
         LDA $0265
         BNE b0BAF
         JMP jC909
 
 b0BF2   LDA a5C
         BNE b0C19
-        LDA a5D
+        LDA currentPlayer
         CMP #$01
         BEQ b0C09
         LDX #<$DC00
@@ -782,15 +824,16 @@ b0C09   LDX #<$DC01
 j0C13   STX joystick2LoPtr
         STY joystick2HiPtr
 b0C19   JSR SetInterruptToIRQInterrupt1
-        LDX #<f3150
-        LDY #>f3150
+        LDX #<spaces
+        LDY #>spaces
         JSR WriteToScreen
-        JSR s19B7
+        JSR UpdateOneUpOrTwoUpText
         JSR s3008
         LDA #$00
         STA $D015    ;Sprite display Enable
         LDA #$30
         JSR Write21LinesOfAccumulatorValToScreen
+
         LDX #<p37BF
         LDY #>p37BF
         STX srcLoPtr
@@ -801,19 +844,20 @@ b0C19   JSR SetInterruptToIRQInterrupt1
         STY ramHiPtr
         LDY #$0D
         JSR WriteSourceValueToRam
-        LDX #<f37EE
-        LDY #>f37EE
+
+        LDX #<gameOn
+        LDY #>gameOn
         JSR WriteToScreen
-        LDA a5D
+        LDA currentPlayer
         CMP #$01
         BEQ b0C5F
-        LDX #<f37E3
-        LDY #>f37E3
+        LDX #<player2
+        LDY #>player2
         JSR WriteToScreen
         JMP j0C66
 
-b0C5F   LDX #<f37D8
-        LDY #>f37D8
+b0C5F   LDX #<player1
+        LDY #>player1
         JSR WriteToScreen
 j0C66   LDA a25
         LDX #$30
@@ -823,12 +867,12 @@ j0C66   LDA a25
         LSR 
         BEQ b0C71
         TAX 
-b0C71   STX a37FB
+b0C71   STX tensLivesLeftDisplayed
         LDA a25
         AND #$0F
-        STA a37FC
-        LDX #<f37F9
-        LDY #>f37F9
+        STA livesLeftDisplayed
+        LDX #<livesLeftText
+        LDY #>livesLeftText
         JSR WriteToScreen
         LDX #<uridiumDecal
         LDY #>uridiumDecal
@@ -844,6 +888,7 @@ b0C71   STX a37FB
         JSR sB287
         JSR SpinWaitingForJoystickInput
         JSR s3086
+
         LDA #<SCREEN_RAM + $0003
         STA a91
         LDA #>SCREEN_RAM + $0003
@@ -852,30 +897,35 @@ b0C71   STX a37FB
         STA a93
         LDA #$BF
         STA a62
-j0CB4   JSR s13B1
+
+SpinningShipAnimationLoop
+        JSR CheckInputMaybeUpdateDecal
         LDA firePressed
         BEQ b0CD7
         LDA a62
         BEQ b0CD7
-        JSR s2B6D
-        JSR sB05D
-        INC a0E
-        LDA a0E
+        JSR MaybeShowPauseScreen
+        JSR StoreSpriteContentColorAndPosition
+        INC currentSpriteValue
+        LDA currentSpriteValue
         CMP #$50
         BCC b0CD1
         LDA #$40
-        STA a0E
-b0CD1   JSR sB13F
-        JMP j0CB4
+        STA currentSpriteValue
+b0CD1   JSR UpdateSpriteContentAndPosition
+        JMP SpinningShipAnimationLoop
 
+        ; The spinning ship sequence is over, or the user has pressed
+        ; fire so start the ship deployment sequence.
 b0CD7   LDA #$12
         STA a90
         SEI 
-        JSR s0E23
+        JSR PlayTitleTune
         CLI 
-        JSR s20EC
+        JSR SetUpScreenForScrolling
         JSR s1A38
-        JSR s2839
+        JSR PlayShipDeploymentSequence
+
         LDA a4B
         STA $D02E    ;Sprite 7 Color
         LDY #$07
@@ -883,16 +933,23 @@ b0CF0   LDA f32ED,Y
         STA @wf0035,Y
         DEY 
         BPL b0CF0
-b0CF9   LDA a2F
-        BNE b0CF9
+
+;--------------------------------------------------------------------
+; MainGameLoop   
+;--------------------------------------------------------------------
+MainGameLoop   
+        LDA a2F
+        BNE MainGameLoop
+
         JSR s2A17
         JSR s2B40
-        JSR s2BEB
+        JSR ScrollShipSurface
         JSR s2ED7
         JSR s2FC8
         JSR s1BFD
         INC a62
         JSR GetJoystickInput
+
         LDA a62
         AND #$07
         TAY 
@@ -903,6 +960,7 @@ b0CF9   LDA a2F
 a0D26   =*+$01
 a0D27   =*+$02
         JSR MaybeChangeTitleDecal
+
         JSR s292F
         JSR s2576
         JSR s2635
@@ -914,8 +972,13 @@ a0D27   =*+$02
         JMP j0E19
 
 b0D41   LDA a32
-        BEQ b0CF9
-j0D45   LDA a27
+        BEQ MainGameLoop
+
+;--------------------------------------------------------------------
+; j0D45   
+;--------------------------------------------------------------------
+j0D45   
+        LDA a27
         CMP a26
         BEQ b0D69
         STA a26
@@ -934,7 +997,7 @@ b0D62   LDA #$00
         STA a24
         JMP b0C19
 
-b0D69   JSR s245B
+b0D69   JSR ShipHasBeenHit
         LDA a24
         SEC 
         SBC #$04
@@ -949,7 +1012,7 @@ a0D7C   =*+$01
         STA a25
         CLD 
         BNE b0DE8
-        JSR s19B7
+        JSR UpdateOneUpOrTwoUpText
         JSR SetInterruptToIRQInterrupt1
         LDA #$30
         JSR Write21LinesOfAccumulatorValToScreen
@@ -963,22 +1026,27 @@ a0D7C   =*+$01
         STY srcHiPtr
         LDY #$0A
         JSR WriteSourceValueToRam
-        LDA a5D
+
+        LDA currentPlayer
         CMP #$01
-        BEQ b0DB2
-        LDX #<f37E3
-        LDY #>f37E3
+        BEQ DrawGameOverScreen
+        LDX #<player2
+        LDY #>player2
         JSR WriteToScreen
         JMP j0DB9
 
-b0DB2   LDX #<f37D8
-        LDY #>f37D8
+;--------------------------------------------------------------------
+; DrawGameOverScreen   
+;--------------------------------------------------------------------
+DrawGameOverScreen   
+        LDX #<player1
+        LDY #>player1
         JSR WriteToScreen
-j0DB9   LDX #<f3808
-        LDY #>f3808
+j0DB9   LDX #<gameOver
+        LDY #>gameOver
         JSR WriteToScreen
-        LDX #<f3150
-        LDY #>f3150
+        LDX #<spaces
+        LDY #>spaces
         JSR WriteToScreen
         LDA #<p1D1C
         STA a91
@@ -988,16 +1056,16 @@ j0DB9   LDX #<f3808
         STA a93
         LDA #$90
         STA a62
-b0DD7   JSR s13B1
+b0DD7   JSR CheckInputMaybeUpdateDecal
         LDA firePressed
         BEQ b0DE2
         LDA a62
         BNE b0DD7
 b0DE2   JSR SpinWaitingForJoystickInput
         JSR s17F8
-b0DE8   JSR s19B7
+b0DE8   JSR UpdateOneUpOrTwoUpText
         LDX #$08
-        LDA a5D
+        LDA currentPlayer
         CMP #$01
         BEQ b0E02
 b0DF3   LDA playerScore,X
@@ -1005,7 +1073,7 @@ b0DF3   LDA playerScore,X
         DEX 
         BPL b0DF3
         LDA #$01
-        STA a5D
+        STA currentPlayer
         JMP j0BA1
 
 b0E02   LDA playerScore,X
@@ -1013,11 +1081,11 @@ b0E02   LDA playerScore,X
         DEX 
         BPL b0E02
         LDA a5C
-        STA a5D
+        STA currentPlayer
         CMP #$01
         BEQ b0E16
         LDA #$02
-        STA a5D
+        STA currentPlayer
 b0E16   JMP j0BA1
 
 j0E19   JSR s1413
@@ -1026,9 +1094,9 @@ f0E1C   LDA #$00
         JMP j0D45
 
 ;-------------------------------------------------------------------
-; s0E23
+; PlayTitleTune
 ;-------------------------------------------------------------------
-s0E23   
+PlayTitleTune   
         LDA a90
         BEQ b0E67
         CMP #$02
@@ -1051,7 +1119,7 @@ b0E3C   CMP #$11
         BEQ b0E49
         RTS 
 
-b0E49   JSR s1108
+b0E49   JSR PlaySound
         LDA a95
         STA aEF
         LDA #$01
@@ -1062,12 +1130,12 @@ b0E49   JSR s1108
         STA a3E9A
         RTS 
 
-b0E5F   JSR s1108
+b0E5F   JSR PlaySound
         LDA #$0F
         STA aEF
         RTS 
 
-b0E67   JSR s1108
+b0E67   JSR PlaySound
 b0E6A   RTS 
 
 j0E6B   DEC aF2
@@ -1320,7 +1388,7 @@ j103F   LDX a9F
         STA f96,X
         CPX #$02
         BNE b104C
-        JSR s112B
+        JSR PlayNote
 b104C   INC a9F
         LDY a9F
         CPY #$03
@@ -1440,9 +1508,9 @@ s1100
         RTS 
 
 ;-------------------------------------------------------------------
-; s1108
+; PlaySound
 ;-------------------------------------------------------------------
-s1108   
+PlaySound   
         AND #$0F
         STA a90
         LDY #$18
@@ -1458,13 +1526,13 @@ b1110   STA $D400,Y  ;Voice 1: Frequency Control - Low-Byte
         STA a93
         LDA #$80
         STA a0F5F
-        JSR s112B
+        JSR PlayNote
         RTS 
 
 ;-------------------------------------------------------------------
-; s112B
+; PlayNote
 ;-------------------------------------------------------------------
-s112B   
+PlayNote   
         LDA #$FF
         STA $D40E    ;Voice 3: Frequency Control - Low-Byte
         STA $D40F    ;Voice 3: Frequency Control - High-Byte
@@ -1521,20 +1589,20 @@ b116F   LDA a2F
         STA a01
         CLI 
         LDA #$04
-        STA a8F
+        STA initialValueOfY
 b11A0   LDA a2F
         BEQ b11A0
 b11A4   LDA a2F
         BNE b11A4
-        JSR s2B6D
-        LDY a8F
+        JSR MaybeShowPauseScreen
+        LDY initialValueOfY
         LDA f38DE,Y
         STA a4A
         LDA f38E3,Y
         STA $D022    ;Background Color 1, Multi-Color Register 0
         LDA f38E8,Y
         STA $D023    ;Background Color 2, Multi-Color Register 1
-        DEC a8F
+        DEC initialValueOfY
         BPL b11A0
         LDY #$00
         JSR WasteCyclesUsingXAndY
@@ -1795,9 +1863,9 @@ b13A1   LDA f7848,Y
         RTS 
 
 ;-------------------------------------------------------------------
-; s13B1
+; CheckInputMaybeUpdateDecal
 ;-------------------------------------------------------------------
-s13B1   
+CheckInputMaybeUpdateDecal   
         JSR GetJoystickInput
         JSR MaybeChangeTitleDecal
         LDY #$18
@@ -1805,15 +1873,19 @@ s13B1
         INC a62
         RTS 
 
-b13BF   LDA a2F
+;--------------------------------------------------------------------
+; b13BF   
+;--------------------------------------------------------------------
+b13BF   
+        LDA a2F
         BNE b13BF
         JSR s2A17
         JSR s2B40
-        JSR s2BEB
+        JSR ScrollShipSurface
         JSR s2ED7
         JSR s2FC8
         JSR GetJoystickInput
-        JSR s2B6D
+        JSR MaybeShowPauseScreen
         LDA a5F
         STA a17
         JSR MaybeChangeTitleDecal
@@ -1823,11 +1895,15 @@ b13BF   LDA a2F
         JSR s2635
         RTS 
 
-b13EB   LDA a2F
+;--------------------------------------------------------------------
+; b13EB   
+;--------------------------------------------------------------------
+b13EB   
+        LDA a2F
         BNE b13EB
         JSR s2A17
         JSR s2B40
-        JSR s2BEB
+        JSR ScrollShipSurface
         JSR s2ED7
         JSR s2FC8
         JSR GetJoystickInput
@@ -1888,16 +1964,20 @@ b1451   JSR b13BF
         STA a93
         LDA #$06
         STA a92
-b1473   JSR s15D4
-        JSR s1627
+b1473   JSR ScrollScreenRight
+        JSR ScrollScreenLeft
         DEC a0F
         BNE b1473
         JSR s114E
         LDA aA8
-        BNE b1487
+        BNE AwardBonuses
         JMP j15BD
 
-b1487   JSR SetInterruptToIRQInterrupt1
+;--------------------------------------------------------------------
+; AwardBonuses   
+;--------------------------------------------------------------------
+AwardBonuses   
+        JSR SetInterruptToIRQInterrupt1
         LDA #$30
         JSR Write21LinesOfAccumulatorValToScreen
         LDX #<COLOR_RAM + $00A0
@@ -1910,8 +1990,8 @@ b1487   JSR SetInterruptToIRQInterrupt1
         STY srcHiPtr
         LDY #$14
         JSR WriteSourceValueToRam
-        LDX #<f3815
-        LDY #>f3815
+        LDX #<destructSequencePrimed
+        LDY #>destructSequencePrimed
         JSR WriteToScreen
         LDA #$17
         STA a91
@@ -1919,8 +1999,8 @@ b1487   JSR SetInterruptToIRQInterrupt1
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
-        LDX #<f3831
-        LDY #>f3831
+        LDX #<formationAnnihilationBonus
+        LDY #>formationAnnihilationBonus
         JSR WriteToScreen
         LDA #$18
         STA a92
@@ -1928,14 +2008,14 @@ b1487   JSR SetInterruptToIRQInterrupt1
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
         LDA #$0D
-        STA f3868
+        STA scoreBonus
         LDA a87
-        STA a8F
+        STA initialValueOfY
         LDA #$00
         STA a59
         JSR s176E
-        LDX #<f3851
-        LDY #>f3851
+        LDX #<shipDestructBonus
+        LDY #>shipDestructBonus
         JSR WriteToScreen
         LDA #$19
         STA a92
@@ -1943,22 +2023,22 @@ b1487   JSR SetInterruptToIRQInterrupt1
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
         LDA #$13
-        STA f3868
+        STA scoreBonus
         LDA aAD
-        STA a8F
+        STA initialValueOfY
         LDA #$00
         STA a59
         JSR s176E
         LDA #$C0
         STA a62
-b1504   JSR s13B1
+b1504   JSR CheckInputMaybeUpdateDecal
         LDA firePressed
         BEQ b150F
         LDA a62
         BMI b1504
 b150F   LDA #$FF
         STA a54
-        JSR UpdateCharsetForSomething
+        JSR FetchCurrentSurfaceData
         JSR s173B
         JSR GenerateStarfield
         JSR UpdateScreenColors
@@ -2038,22 +2118,26 @@ s15B8
         INC a32
         RTS 
 
-j15BD   JSR s19B7
+;--------------------------------------------------------------------
+; j15BD   
+;--------------------------------------------------------------------
+j15BD   
+        JSR UpdateOneUpOrTwoUpText
         JSR GenerateStarfield
-        JSR UpdateCharsetForSomething
+        JSR FetchCurrentSurfaceData
         JSR UpdateScreenColors
-        JSR s2BEB
+        JSR ScrollShipSurface
         LDA #$C0
         STA $D015    ;Sprite display Enable
 a15D1   INC a32
         RTS 
 
 ;-------------------------------------------------------------------
-; s15D4
+; ScrollScreenRight
 ;-------------------------------------------------------------------
-s15D4   
+ScrollScreenRight   
         LDA a2F
-        BNE s15D4
+        BNE ScrollScreenRight
         LDX #<SCREEN_RAM_HIBANK + $00A0
         LDY #>SCREEN_RAM_HIBANK + $00A0
         STX srcLoPtr
@@ -2062,8 +2146,9 @@ s15D4
         LDY #>COLOR_RAM + $00A0
         STX a12
         STY a13
+
         LDA #$1E
-        STA a8F
+        STA initialValueOfY
 b15EC   LDY #$01
 b15EE   LDA (srcLoPtr),Y
         DEY 
@@ -2074,7 +2159,7 @@ b15EE   LDA (srcLoPtr),Y
         STA (p12),Y
         INY 
         INY 
-        CPY a8F
+        CPY initialValueOfY
         BCC b15EE
         DEY 
         LDA #$20
@@ -2093,16 +2178,16 @@ b1613   CLC
         STA a12
         BCC b161E
         INC a13
-b161E   DEC a8F
-        LDA a8F
+b161E   DEC initialValueOfY
+        LDA initialValueOfY
         CMP #$09
         BCS b15EC
         RTS 
 
 ;-------------------------------------------------------------------
-; s1627
+; ScrollScreenLeft
 ;-------------------------------------------------------------------
-s1627   
+ScrollScreenLeft   
         LDX #<SCREEN_RAM_HIBANK + $00A0
         LDY #>SCREEN_RAM_HIBANK + $00A0
         STX srcLoPtr
@@ -2112,7 +2197,7 @@ s1627
         STX a12
         STY a13
         LDA #$1D
-        STA a8F
+        STA initialValueOfY
 b163B   LDY #$26
 b163D   LDA (srcLoPtr),Y
         INY 
@@ -2123,7 +2208,7 @@ b163D   LDA (srcLoPtr),Y
         STA (p12),Y
         DEY 
         DEY 
-        CPY a8F
+        CPY initialValueOfY
         BCS b163D
         CLC 
         LDA srcLoPtr
@@ -2137,16 +2222,16 @@ b1659   CLC
         STA a12
         BCC b1664
         INC a13
-b1664   DEC a8F
-        LDA a8F
+b1664   DEC initialValueOfY
+        LDA initialValueOfY
         CMP #$09
         BCS b163B
         RTS 
 
 ;-------------------------------------------------------------------
-; s166D
+; MaybeDisplayLandNowWarning
 ;-------------------------------------------------------------------
-s166D
+MaybeDisplayLandNowWarning
         LDA a85
         BEQ b1676
         CMP #$01
@@ -2177,11 +2262,11 @@ b169A   LDA fA490,Y
         LDA #$06
         STA fA490,Y
         LDA #$14
-        STA SCREEN_RAM_HIBANK + $03F8,Y
+        STA sprite0Ptr,Y
 b16A9   DEY 
         BPL b169A
-b16AC   LDX #<f3150
-        LDY #>f3150
+b16AC   LDX #<spaces
+        LDY #>spaces
         JSR WriteToScreen
         RTS 
 
@@ -2194,8 +2279,8 @@ b16BC   LDA a62
         BEQ b16AC
         CMP #$10
         BNE b1675
-        LDX #<f315E
-        LDY #>f315E
+        LDX #<landNowText
+        LDY #>landNowText
         JSR WriteToScreen
         LDA #$8F
         STA a91
@@ -2302,7 +2387,7 @@ s176E
         STA a3871
         STA a3875
         STA a3876
-        LDA a8F
+        LDA initialValueOfY
 j177E   SEC 
         SBC #$0A
         BCC b178C
@@ -2319,8 +2404,8 @@ j178F   SEC
         INC a3876
         JMP j178F
 
-b179D   LDX #<f3868
-        LDY #>f3868
+b179D   LDX #<scoreBonus
+        LDY #>scoreBonus
         JSR WriteToScreen
         LDA a59
         BNE b17B3
@@ -2329,14 +2414,14 @@ b179D   LDX #<f3868
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
 b17B3   INC a59
-        LDA a8F
+        LDA initialValueOfY
         BEQ b17CB
         LDY #$04
         JSR s19F5
         JSR UpdatePlayerScore
         LDY #$20
         JSR WasteCyclesUsingXAndY
-        DEC a8F
+        DEC initialValueOfY
         JMP s176E
 
 b17CB   RTS 
@@ -2379,8 +2464,8 @@ SetInterrupToIRQInterrupt2
 s17F8   
         LDA #$09
         STA a85
-        LDX #<f368A
-        LDY #>f368A
+        LDX #<eighthInHallOfFame
+        LDY #>eighthInHallOfFame
         STX srcLoPtr
         STY srcHiPtr
         LDX #<pA400
@@ -2428,16 +2513,16 @@ j184A   LDA a85
 b1851   LDX #$00
         STX a10
         LDA #$28
-        STA a38BD
+        STA initial2
         JSR sC900
-        LDX #<f3150
-        LDY #>f3150
+        LDX #<spaces
+        LDY #>spaces
         JSR WriteToScreen
-        LDX #<f389C
-        LDY #>f389C
+        LDX #<pleaseEnterYourInitials
+        LDY #>pleaseEnterYourInitials
         JSR WriteToScreen
-        LDX #<f387A
-        LDY #>f387A
+        LDX #<youveAmassedAHighScore
+        LDY #>youveAmassedAHighScore
         JSR WriteToScreen
         LDA #$1F
         STA a91
@@ -2453,7 +2538,7 @@ b1851   LDX #$00
         JSR s191A
         LDX #$02
         LDY #$0E
-b1891   LDA f38BA,X
+b1891   LDA initialsInputField,X
         STA (p14),Y
         INY 
         INX 
@@ -2508,13 +2593,13 @@ j18E7   LDA a85
         RTS 
 
 b18EE   LDX #$0C
-b18F0   LDA f35F5,X
-        STA f352A,X
+b18F0   LDA currentHighestScore,X
+        STA inGameHiScoreDisplay,X
         DEX 
         BPL b18F0
         LDX #$00
         LDY #$00
-b18FD   LDA f35F5,X
+b18FD   LDA currentHighestScore,X
         CMP #$30
         BEQ b1908
         STA f34C3,Y
@@ -2522,7 +2607,7 @@ b18FD   LDA f35F5,X
 b1908   INX 
         CPX #$07
         BCC b18FD
-b190D   LDA f35F5,X
+b190D   LDA currentHighestScore,X
         STA f34C3,Y
         INY 
         INX 
@@ -2538,8 +2623,8 @@ s191A
         BEQ b1973
         LDY #$00
         STY a11
-b1922   JSR s13B1
-        JSR s13B1
+b1922   JSR CheckInputMaybeUpdateDecal
+        JSR CheckInputMaybeUpdateDecal
         JSR s1974
         LDA a16
         ORA a17
@@ -2555,9 +2640,9 @@ b193E   STA a11
         TAY 
         LDA f38C3,Y
         LDX a10
-        STA f38BC,X
-        LDX #<f38BA
-        LDY #>f38BA
+        STA initialOne,X
+        LDX #<initialsInputField
+        LDY #>initialsInputField
         JSR WriteToScreen
         LDA a62
         BNE b1958
@@ -2565,8 +2650,8 @@ b193E   STA a11
         BEQ b1973
 b1958   LDA firePressed
         BNE b1922
-b195C   JSR s13B1
-        JSR s13B1
+b195C   JSR CheckInputMaybeUpdateDecal
+        JSR CheckInputMaybeUpdateDecal
         JSR s1974
         LDA a62
         BNE b196D
@@ -2611,11 +2696,11 @@ s1974
         RTS 
 
 ;-------------------------------------------------------------------
-; s19B7
+; UpdateOneUpOrTwoUpText
 ;-------------------------------------------------------------------
-s19B7   
+UpdateOneUpOrTwoUpText   
         LDX #$30
-        LDA a5D
+        LDA currentPlayer
         CMP #$01
         BNE b19DA
         LDA a25
@@ -2629,8 +2714,8 @@ b19C8   STX a3142
         LDA a25
         AND #$0F
         STA a3143
-        LDX #<f313A
-        LDY #>f313A
+        LDX #<oneUpText
+        LDY #>oneUpText
         JSR WriteToScreen
         RTS 
 
@@ -2645,8 +2730,8 @@ b19E3   STX a3149
         LDA a25
         AND #$0F
         STA a314A
-        LDX #<f3145
-        LDY #>f3145
+        LDX #<twoUpText
+        LDY #>twoUpText
         JSR WriteToScreen
         RTS 
 
@@ -2687,7 +2772,7 @@ b1A21   PLP
         BCS b1A36
         STA a25
         CLD 
-        JSR s19B7
+        JSR UpdateOneUpOrTwoUpText
         LDA #$81
         STA a91
         RTS 
@@ -2710,23 +2795,24 @@ s1A38
         LDA #$80
         STA a6C
         STA a68
-        JSR UpdateCharsetForSomething
+        JSR FetchCurrentSurfaceData
         RTS 
 
+fE040 = $E040
 ;-------------------------------------------------------------------
-; UpdateCharsetForSomething
+; FetchCurrentSurfaceData
 ;-------------------------------------------------------------------
-UpdateCharsetForSomething   
+FetchCurrentSurfaceData   
         SEI 
         LDA #$24
         STA a01
         LDY a26
-        LDA $E040,Y
+        LDA fE040,Y
         STA tempHiPtrCopyFrom
         LDA #$00
         STA tempLoPtrCopyFrom
         STA tempLoPtrCopyTo
-        LDA #$7C
+        LDA #>p7C00
         STA tempHiPtrCopyTo
         LDX #$04
         JSR CopyDataUntilXIsZero
@@ -2791,11 +2877,11 @@ j1ABF   ASL
         ADC #$C2
         STA srcHiPtr
         LDA #$FF
-        STA a08
-        STA a0B
+        STA currentSpriteDisplayEnable
+        STA currentSpriteMultiColorMode
         STA a06
         LDA a4F
-        STA a0D
+        STA currentSpriteColor
         LDY #$0E
         LDA (srcLoPtr),Y
         STA a7E
@@ -2852,19 +2938,19 @@ b1B45   LDA #$00
         LDA a2E
         BMI b1B5B
 b1B4D   LDA #$A4
-        STA a05
+        STA currentSpriteXPos
         LDA a7E
         CLC 
         ADC #$A0
-        STA a0E
+        STA currentSpriteValue
         JMP j1B83
 
 b1B5B   LDA #$A2
-        STA a05
+        STA currentSpriteXPos
         LDA a7E
         CLC 
         ADC #$B0
-        STA a0E
+        STA currentSpriteValue
         LDA a63
         LDX a66
         STX a63
@@ -2890,7 +2976,7 @@ j1B83   LDY #$0C
         LDX #<SCREEN_RAM + $010A
         STX a10
 b1B95   LDY a11
-        STY a04
+        STY spriteIndex
         LDA (srcLoPtr),Y
         BEQ b1BC0
         LDX a10
@@ -2917,8 +3003,8 @@ b1BC0   TYA
         LDA (srcLoPtr),Y
         BNE b1BCB
         LDA a33
-b1BCB   STA a07
-        JSR sB0E3
+b1BCB   STA currentSpriteYPos
+        JSR UpdateSpriteSizeColorAndPriority
         LDY a11
         LDA a6B
         STA fA4E8,Y
@@ -2948,12 +3034,12 @@ s1BFD
         LSR 
         STA a11
         LDA #$FF
-        STA a0B
-        STA a08
+        STA currentSpriteMultiColorMode
+        STA currentSpriteDisplayEnable
         LDA #$00
-        STA a0A
+        STA currentSpriteBackgroundDisplayPriority
 b1C0E   LDY a11
-        STY a04
+        STY spriteIndex
         LDA fA490,Y
         AND #$0E
         BEQ b1C2E
@@ -2962,7 +3048,7 @@ b1C0E   LDY a11
         STA a1C2C
         LDA f36E6,X
         STA a1C2D
-        JSR sB05D
+        JSR StoreSpriteContentColorAndPosition
         LDY a11
 a1C2C   =*+$01
 a1C2D   =*+$02
@@ -2977,16 +3063,16 @@ b1C2E   DEC a10
         LDA a62
         AND #$01
         BNE b1C57
-        INC a0E
-        LDA a0E
+        INC currentSpriteValue
+        LDA currentSpriteValue
         CMP #$1E
         BCC b1C57
         LDA #$00
-        STA a08
+        STA currentSpriteDisplayEnable
         LDY a11
         STA fA490,Y
         DEC a6C
-        JSR sB13F
+        JSR UpdateSpriteContentAndPosition
         RTS 
 
 b1C57   JMP j1EA6
@@ -2998,14 +3084,14 @@ s1C5A
         CLC 
         LDA a2E
         BMI b1C68
-        ADC a05
-        STA a05
+        ADC currentSpriteXPos
+        STA currentSpriteXPos
         BCC b1C67
         INC a06
 b1C67   RTS 
 
-b1C68   ADC a05
-        STA a05
+b1C68   ADC currentSpriteXPos
+        STA currentSpriteXPos
         LDA a06
         ADC #$FF
         STA a06
@@ -3125,7 +3211,7 @@ b1D44   LDA a6F
 b1D5E   LDA a6F
         AND #$40
         BEQ j1DB0
-        LDA a07
+        LDA currentSpriteYPos
         CMP a33
         BEQ b1DA8
         BCC b1D8B
@@ -3161,7 +3247,7 @@ b1DA8   LDA #$00
         STA fA4A0,Y
 j1DB0   LDA a62
         AND #$07
-        CMP a04
+        CMP spriteIndex
         BNE j1DCB
         LDA fA4E8,Y
         CMP #$80
@@ -3173,7 +3259,7 @@ j1DB0   LDA a62
         JSR s1F0F
 j1DCB   LDA a06
         ROR 
-        LDA a05
+        LDA currentSpriteXPos
         ROR 
         LSR 
         LSR 
@@ -3186,7 +3272,7 @@ j1DCB   LDA a06
 b1DDD   STA a0F
         LDA #$80
         STA fA4E8,Y
-        LDA a07
+        LDA currentSpriteYPos
         LSR 
         LSR 
         LSR 
@@ -3250,7 +3336,7 @@ b1E54   LDA #$26
         LDA #$06
         STA fA490,Y
         LDA #$14
-        STA a0E
+        STA currentSpriteValue
         DEC a88
         JMP j1EA2
 
@@ -3260,7 +3346,7 @@ j1E68   LDA a06
         LDA fA4E8,Y
         CMP #$80
         BNE b1E87
-        LDA a05
+        LDA currentSpriteXPos
         BMI b1E80
         LDA #$FF
         STA fA4E8,Y
@@ -3270,33 +3356,33 @@ b1E80   LDA #$00
         BEQ j1EA2
 b1E87   CMP #$FF
         BNE b1E93
-        LDA a05
+        LDA currentSpriteXPos
         CMP #$E8
         BCC j1EA2
         BCS b1E99
-b1E93   LDA a05
+b1E93   LDA currentSpriteXPos
         CMP #$78
         BCS j1EA2
 b1E99   LDA #$00
-        STA a08
+        STA currentSpriteDisplayEnable
         STA fA490,Y
         DEC a6C
-j1EA2   JSR sB13F
+j1EA2   JSR UpdateSpriteContentAndPosition
         RTS 
 
 j1EA6   LDA a06
         AND #$01
         BEQ b1EBF
-        LDA a05
+        LDA currentSpriteXPos
         CMP #$9C
         BCC b1EBF
         CMP #$C4
         BCS b1EBF
         LDA #$00
-        STA a08
+        STA currentSpriteDisplayEnable
         STA fA490,Y
         DEC a6C
-b1EBF   JSR sB13F
+b1EBF   JSR UpdateSpriteContentAndPosition
         RTS 
 
         JSR s1C5A
@@ -3315,7 +3401,7 @@ a1EDF   INC a32
 b1EE1   JMP j1EA6
 
 b1EE4   LDA #$14
-        STA a0E
+        STA currentSpriteValue
         LDA #$06
         STA fA490,Y
         LDA #$0A
@@ -3328,16 +3414,16 @@ b1EE4   LDA #$14
 s1EF4   
         LDA fA498,Y
         CLC 
-        ADC a05
-        STA a05
+        ADC currentSpriteXPos
+        STA currentSpriteXPos
         LDA fA4A8,Y
         ADC a06
         STA a06
         LDA fA4C8,Y
         ASL 
         LDA fA4A0,Y
-        ADC a07
-        STA a07
+        ADC currentSpriteYPos
+        STA currentSpriteYPos
         RTS 
 
 ;-------------------------------------------------------------------
@@ -3352,18 +3438,18 @@ b1F11   LDA fA490,Y
         LDY a11
         RTS 
 
-b1F1C   STY a04
-        LDA a0E
+b1F1C   STY spriteIndex
+        LDA currentSpriteValue
         PHA 
         LDA #$FF
-        STA a08
+        STA currentSpriteDisplayEnable
         LDA a6A
-        STA a0E
-        JSR sB13F
+        STA currentSpriteValue
+        JSR UpdateSpriteContentAndPosition
         LDY a11
         LDA fA498,Y
         LDX fA4A8,Y
-        LDY a04
+        LDY spriteIndex
         CLC 
         ADC a65
         STA fA498,Y
@@ -3378,10 +3464,10 @@ b1F1C   STY a04
         LDA #$A0
         STA fA4B0,Y
         PLA 
-        STA a0E
+        STA currentSpriteValue
         INC a6C
         LDY a11
-        STY a04
+        STY spriteIndex
         LDA #$0B
         STA a92
         RTS 
@@ -3390,16 +3476,20 @@ b1F1C   STY a04
         LDA a62
         AND #$03
         BNE b1F7C
-        DEC a0E
-        LDA a0E
+        DEC currentSpriteValue
+        LDA currentSpriteValue
         CMP #$14
         BCS b1F7C
         LDA #$0A
         STA fA490,Y
         LDA #$11
-        STA a0E
+        STA currentSpriteValue
 b1F7C   JMP j1EA6
 
+;--------------------------------------------------------------------
+; s1F7F   
+;--------------------------------------------------------------------
+s1F7F   
         LDA a6C
         BPL b1F9A
         LDA a69
@@ -3423,11 +3513,11 @@ b1F9D   LDA fA490,Y
         BPL b1F9D
         RTS 
 
-b1FA6   STY a04
+b1FA6   STY spriteIndex
         LDA #$FF
-        STA a08
+        STA currentSpriteDisplayEnable
         LDA #$1D
-        STA a0E
+        STA currentSpriteValue
         LDA #$0D
         STA a92
         LDA #$08
@@ -3448,18 +3538,18 @@ b1FA6   STY a04
         ASL 
         CLC 
         ADC #$2C
-        STA a07
+        STA currentSpriteYPos
         LDA $0240,X
         CLC 
         ADC #$02
         ASL 
         ASL 
         ASL 
-        STA a05
+        STA currentSpriteXPos
         LDA #$00
         ROL 
         STA a06
-        JSR sB13F
+        JSR UpdateSpriteContentAndPosition
         INC a6C
         RTS 
 
@@ -3470,17 +3560,17 @@ s1FF0
         LDA a06
         AND #$01
         BNE b201F
-        LDA a05
+        LDA currentSpriteXPos
         CMP #$A2
         BCC b201F
         CMP #$B2
         BCS b201F
-        LDA a07
+        LDA currentSpriteYPos
         SEC 
         SBC a33
         STA a0F
         CLC 
-        LDX a0E
+        LDX currentSpriteValue
         ADC f374F,X
         SEC 
         SBC #$05
@@ -3506,7 +3596,7 @@ b201F   CLC
         STA fA4B0,Y
         BEQ b204F
         AND #$0F
-        CMP a04
+        CMP spriteIndex
         BNE b203F
         LDA #$0E
         STA a92
@@ -3519,7 +3609,7 @@ a204A   INC a32
 b204C   JMP j1EA6
 
 b204F   LDA #$14
-        STA a0E
+        STA currentSpriteValue
         LDA #$06
         STA fA490,Y
         LDA #$0A
@@ -3533,7 +3623,7 @@ s205F
         LDA a62
         AND #$03
         BNE b20D2
-        LDA a07
+        LDA currentSpriteYPos
         CMP a33
         BCC b2074
         LDA fA4A0,Y
@@ -3548,11 +3638,11 @@ j207A   STA fA4A0,Y
         LDA a06
         AND #$01
         BNE b208B
-        LDA a05
+        LDA currentSpriteXPos
         CMP #$AA
         BCC b2091
         BCS b20A5
-b208B   LDA a05
+b208B   LDA currentSpriteXPos
         CMP #$A0
         BCC b20A5
 b2091   LDA fA498,Y
@@ -3597,9 +3687,9 @@ b20DE   LDA fA498,Y
         STA fA498,Y
         BNE b20C4
 ;-------------------------------------------------------------------
-; s20EC
+; SetUpScreenForScrolling
 ;-------------------------------------------------------------------
-s20EC   
+SetUpScreenForScrolling   
         JSR s2C66
         LDA #$40
         STA a29
@@ -3611,7 +3701,7 @@ s20EC
         JSR s2CA5
         JSR UpdateScreenColors
         JSR s2E17
-        JSR s2BEB
+        JSR ScrollShipSurface
         JSR s2ED7
         JSR GenerateStarfield
         LDA #$FB
@@ -3646,9 +3736,9 @@ s20EC
         RTS 
 
 ;-------------------------------------------------------------------
-; s2150
+; TitleScreenWaitForFireToBePressed
 ;-------------------------------------------------------------------
-s2150   
+TitleScreenWaitForFireToBePressed   
         LDA #$02
         STA a59
         LDA #$00
@@ -3658,7 +3748,7 @@ b2158   JSR GetJoystickInput
         JSR sB31B
         JSR MaybeChangeTitleDecal
         JSR s2342
-        JSR s23B5
+        JSR MaybeUpdateColorScheme
         LDY #$0C
         JSR WasteCyclesUsingXAndY
         INC a62
@@ -3671,22 +3761,22 @@ b2158   JSR GetJoystickInput
 b217D   RTS 
 
 ;-------------------------------------------------------------------
-; s217E
+; ShowLargeScrollingCreditAndHiScore
 ;-------------------------------------------------------------------
-s217E   
+ShowLargeScrollingCreditAndHiScore   
         LDA #$00
         STA a62
 b2182   LDA a2F
         BNE b2182
         JSR s2B40
-        JSR s2BEB
+        JSR ScrollShipSurface
         JSR s2ED7
         JSR s2FC8
         JSR GetJoystickInput
         JSR DoMoreWithJoystickInput
         JSR MaybeChangeTitleDecal
         JSR sB31B
-        JSR s23B5
+        JSR MaybeUpdateColorScheme
         JSR s2342
         INC a62
         LDA firePressed
@@ -3699,9 +3789,9 @@ b2182   LDA a2F
 b21B4   RTS 
 
 ;-------------------------------------------------------------------
-; s21B5
+; EnterDemoModeUntilDeadOrPlayerPressesFire
 ;-------------------------------------------------------------------
-s21B5   
+EnterDemoModeUntilDeadOrPlayerPressesFire   
         LDA #$01
         STA a5A
         LDA #$00
@@ -3721,7 +3811,7 @@ s21B5
         CLC 
         ADC #$01
         STA a26
-        JSR s20EC
+        JSR SetUpScreenForScrolling
         JSR s1A38
         LDA #$08
         STA a59
@@ -3750,7 +3840,7 @@ b2216   LDA a2F
         BNE b2216
         JSR s2A17
         JSR s2B40
-        JSR s2BEB
+        JSR ScrollShipSurface
         JSR s2ED7
         JSR s2FC8
         JSR s1BFD
@@ -3792,7 +3882,7 @@ b227B   RTS
 
 b227C   LDA #$10
         STA firePressed
-        JSR s245B
+        JSR ShipHasBeenHit
         JSR s3086
         RTS 
 
@@ -3872,7 +3962,7 @@ b22FC   LDA a5C
         LDX scrollingTitleScreenDataLoPtrArray,Y
         TAY 
         JSR WriteToScreen
-        LDA a61
+        LDA monochromEnabled
         BEQ b2315
 
         LDX #<f34F5
@@ -3891,13 +3981,13 @@ p2322   =*+$01
         JSR WriteToScreen
         RTS 
 
-b2325   LDX #<f3510
-        LDY #>f3510
+b2325   LDX #<hiScoreLabel
+        LDY #>hiScoreLabel
         JSR WriteToScreen
         RTS 
 
-b232D   LDX #<f3526
-        LDY #>f3526
+b232D   LDX #<inGameBanner
+        LDY #>inGameBanner
         JSR WriteToScreen
         RTS 
 
@@ -3971,29 +4061,29 @@ Write21LinesOfAccumulatorValToScreen
 ; WriteSourceValueToRam
 ;-------------------------------------------------------------------
 WriteSourceValueToRam   
-        STY a8F
-b23A7   LDY a8F
+        STY initialValueOfY
+b23A7   LDY initialValueOfY
         LDA (srcLoPtr),Y
         LDX #$01
         JSR WriteToRam
-        DEC a8F
+        DEC initialValueOfY
         BPL b23A7
         RTS 
 
 ;-------------------------------------------------------------------
-; s23B5
+; MaybeUpdateColorScheme
 ;-------------------------------------------------------------------
-s23B5   
+MaybeUpdateColorScheme   
         LDA a19
         AND #$08
         BNE b23D6
         LDA a19
         BPL b23D7
-        LDX #<f36A0
-        LDY #>f36A0
+        LDX #<colorLabel
+        LDY #>colorLabel
         JSR WriteToScreen
         LDA #$00
-        STA a61
+        STA monochromEnabled
         JSR PaintPlayerScoreColors
         LDA a5B
         CMP #$03
@@ -4002,11 +4092,11 @@ s23B5
 
 b23D6   RTS 
 
-b23D7   LDX #<f36AD
-        LDY #>f36AD
+b23D7   LDX #<blckWhiteLabel
+        LDY #>blckWhiteLabel
         JSR WriteToScreen
         LDA #$FF
-        STA a61
+        STA monochromEnabled
         JSR PaintPlayerScoreColors
         LDA a5B
         CMP #$03
@@ -4019,7 +4109,7 @@ b23D7   LDX #<f36AD
 ; PaintPlayerScoreColors
 ;-------------------------------------------------------------------
 PaintPlayerScoreColors   
-        LDA a61
+        LDA monochromEnabled
         BEQ b2402
         LDA #$F1
         STA COLOR_RAM + $005A
@@ -4080,9 +4170,9 @@ b2453   STA f8010,X
         RTS 
 
 ;-------------------------------------------------------------------
-; s245B
+; ShipHasBeenHit
 ;-------------------------------------------------------------------
-s245B   
+ShipHasBeenHit   
         LDA #$00
         STA $D015    ;Sprite display Enable
         STA a3F
@@ -4101,8 +4191,8 @@ s245B
         STY srcHiPtr
         JSR sB287
         LDA a33
-        STA a07
-        JSR sB13F
+        STA currentSpriteYPos
+        JSR UpdateSpriteContentAndPosition
 j2488   LDA a32
         BPL b2490
         LDA #$00
@@ -4110,41 +4200,44 @@ j2488   LDA a32
 b2490   LDA a59
         BMI b24BF
         LDA #$07
-        STA a04
-        JSR sB092
+        STA spriteIndex
+        JSR StoreShipSpriteState
         LDA a59
-        STA a04
+        STA spriteIndex
         LDA $D41B    ;Oscillator 3 Output
         AND #$0F
         SEC 
         SBC #$08
         CLC 
-        ADC a05
-        STA a05
+        ADC currentSpriteXPos
+        STA currentSpriteXPos
         LDA #$30
-        STA a0E
+        STA currentSpriteValue
         LDA $D41B    ;Oscillator 3 Output
         AND #$0F
         SBC #$08
         CLC 
-        ADC a07
-        STA a07
-        JSR sB0E3
+        ADC currentSpriteYPos
+        STA currentSpriteYPos
+        JSR UpdateSpriteSizeColorAndPriority
 b24BF   JSR b13EB
+
         LDA #$07
-        STA a04
-b24C6   JSR sB092
-        INC a0E
-        LDA a0E
+        STA spriteIndex
+b24C6   JSR StoreShipSpriteState
+        INC currentSpriteValue
+        LDA currentSpriteValue
         CMP #$3B
         BCC b24D5
         LDA #$00
-        STA a08
-b24D5   JSR sB0E3
-        DEC a04
+        STA currentSpriteDisplayEnable
+b24D5   JSR UpdateSpriteSizeColorAndPriority
+        DEC spriteIndex
         BPL b24C6
+
         JSR b13EB
         JSR b13EB
+
         LDA a2E
         BEQ b2506
         BMI b24F8
@@ -4182,6 +4275,10 @@ j2518   DEC a59
 
 b2523   RTS 
 
+;--------------------------------------------------------------------
+; s2524   
+;--------------------------------------------------------------------
+s2524   
         LDA a62
         AND #$38
         LSR 
@@ -4562,30 +4659,30 @@ b2793   DEC a44
         STA a3F
         STA a47
 j27A3   LDA #$06
-        STA a04
-        JSR sB05D
+        STA spriteIndex
+        JSR StoreSpriteContentColorAndPosition
         LDA a40
-        STA a0E
+        STA currentSpriteValue
         CLC 
         ADC #$30
         STA a41
         LDA a33
-        STA a07
-        JSR sB13F
-        INC a04
-        JSR sB05D
+        STA currentSpriteYPos
+        JSR UpdateSpriteContentAndPosition
+        INC spriteIndex
+        JSR StoreSpriteContentColorAndPosition
         LDA a41
-        STA a0E
+        STA currentSpriteValue
         LDA a3D
         LSR 
         CLC 
         ADC a33
-        STA a07
+        STA currentSpriteYPos
         LDA #$AA
         CLC 
         ADC a3D
-        STA a05
-        JSR sB13F
+        STA currentSpriteXPos
+        JSR UpdateSpriteContentAndPosition
 ;-------------------------------------------------------------------
 ; s27D5
 ;-------------------------------------------------------------------
@@ -4648,9 +4745,9 @@ b2834   DEC a53
 b2838   RTS 
 
 ;-------------------------------------------------------------------
-; s2839
+; PlayShipDeploymentSequence
 ;-------------------------------------------------------------------
-s2839   
+PlayShipDeploymentSequence   
         JSR s2918
         LDX #$07
 b283E   LDA f3306,X
@@ -4669,14 +4766,14 @@ b2855   JSR s2918
         LDA #$06
         STA a91
 b2860   LDA #$06
-        STA a04
-        JSR sB05D
-        INC a0E
-        JSR sB13F
+        STA spriteIndex
+        JSR StoreSpriteContentColorAndPosition
+        INC currentSpriteValue
+        JSR UpdateSpriteContentAndPosition
         JSR s2918
         JSR s2918
         JSR s2918
-        LDA a0E
+        LDA currentSpriteValue
         CMP #$0B
         BCC b2860
         JSR s2918
@@ -4688,13 +4785,13 @@ b2860   LDA #$06
         LDA #$07
         STA a92
 b288F   LDA #$06
-        STA a04
-        JSR sB05D
-        INC a05
-        JSR sB13F
+        STA spriteIndex
+        JSR StoreSpriteContentColorAndPosition
+        INC currentSpriteXPos
+        JSR UpdateSpriteContentAndPosition
         JSR s2918
         JSR s2918
-        LDA a05
+        LDA currentSpriteXPos
         CMP #$AA
         BCC b288F
         LDA #$00
@@ -4713,31 +4810,33 @@ b28B8   LDA #$80
         ADC #$FF
         STA a43
         LDA #$07
-        STA a04
-        JSR sB05D
-        LDA a05
+        STA spriteIndex
+        JSR StoreSpriteContentColorAndPosition
+        LDA currentSpriteXPos
         CLC 
         ADC a43
-        STA a05
+        STA currentSpriteXPos
         LDA a06
         ADC #$FF
         STA a06
-        JSR sB13F
+        JSR UpdateSpriteContentAndPosition
+
         LDA #$05
-        STA a04
-b28E0   JSR sB05D
-        LDA a05
+        STA spriteIndex
+b28E0   JSR StoreSpriteContentColorAndPosition
+        LDA currentSpriteXPos
         CLC 
         ADC a43
-        STA a05
+        STA currentSpriteXPos
         LDA a06
         ADC #$FF
         STA a06
-        JSR sB13F
-        DEC a04
+        JSR UpdateSpriteContentAndPosition
+        DEC spriteIndex
         BPL b28E0
+
         JSR s2918
-        LDA a05
+        LDA currentSpriteXPos
         CMP #$84
         BCC b28B8
         LDA #$40
@@ -4758,7 +4857,7 @@ s2918
         LDA a2F
         BNE s2918
         JSR GetJoystickInput
-        JSR s2B6D
+        JSR MaybeShowPauseScreen
         JSR DoMoreWithJoystickInput
         JSR MaybeChangeTitleDecal
         INC a62
@@ -4926,6 +5025,7 @@ b2A1B   LDA fA460,X
         STA (ramLoPtr),Y
 b2A2F   DEX 
         BPL b2A1B
+
         INX 
 b2A33   LDA fA460,X
         BEQ b2AA3
@@ -5002,6 +5102,8 @@ b2ABD   LDA fA460,X
         LDA #$00
         STA fA460,X
         BEQ b2AA3
+        ; Falls through
+
 ;-------------------------------------------------------------------
 ; s2AC9
 ;-------------------------------------------------------------------
@@ -5037,7 +5139,7 @@ s2AE9
         STA srcHiPtr
         LDA f33E6,Y
         STA a11
-        STA a8F
+        STA initialValueOfY
         LDA f33F6,Y
         TAY 
         STX a10
@@ -5056,7 +5158,7 @@ b2B13   LDA (srcLoPtr),Y
         STA (srcLoPtr),Y
 b2B22   DEY 
         BPL b2B13
-        DEC a8F
+        DEC initialValueOfY
         BMI b2B30
         INC srcHiPtr
         INC srcHiPtr
@@ -5103,15 +5205,15 @@ b2B5D   LDA a29
         JMP b2B53
 
 ;-------------------------------------------------------------------
-; s2B6D
+; MaybeShowPauseScreen
 ;-------------------------------------------------------------------
-s2B6D   
-        JSR s2F9D
+MaybeShowPauseScreen   
+        JSR CheckIfPauseOrFireHasBeenPressed
         LDA a60
         AND #$80
         BNE b2BBE
-        LDX #<$B265
-        LDY #>$B265
+        LDX #<pauseText
+        LDY #>pauseText
         JSR WriteToScreen
         LDA #$00
         STA a90
@@ -5119,7 +5221,7 @@ s2B6D
         STA a5A
 b2B85   LDY #$1C
         JSR WasteCyclesUsingXAndY
-        JSR s2F9D
+        JSR CheckIfPauseOrFireHasBeenPressed
         LDA a60
         AND #$80
         BEQ b2B85
@@ -5127,7 +5229,7 @@ b2B85   LDY #$1C
         STA a2B
         LDA #$00
         STA a62
-j2B9B   JSR s2F9D
+j2B9B   JSR CheckIfPauseOrFireHasBeenPressed
         LDA a60
         AND #$08
         BEQ b2BBF
@@ -5148,9 +5250,9 @@ b2BBE   RTS
 b2BBF   JMP jC909
 
 b2BC2   JSR GetJoystickInput
-        JSR s2F9D
-        LDX #<f3150
-        LDY #>f3150
+        JSR CheckIfPauseOrFireHasBeenPressed
+        LDX #<spaces
+        LDY #>spaces
         JSR WriteToScreen
         LDY #$1C
         JSR WasteCyclesUsingXAndY
@@ -5168,9 +5270,9 @@ b2BC2   JSR GetJoystickInput
         RTS 
 
 ;-------------------------------------------------------------------
-; s2BEB
+; ScrollShipSurface
 ;-------------------------------------------------------------------
-s2BEB   
+ScrollShipSurface   
         LDA a29
         CLC 
         ADC #$07
@@ -5195,6 +5297,7 @@ s2BEB
         STA a2C24
         LDA #<SCREEN_RAM_HIBANK + $00F0
         STA a2C23
+
         LDX #$11
 b2C1D   LDY #$26
 a2C20   =*+$01
@@ -5260,14 +5363,14 @@ b2C70   LDY #$00
         BEQ b2CA4
         LDA (srcLoPtr),Y
         BEQ b2CA4
-        STA a8F
+        STA initialValueOfY
         INC a11
 b2C89   LDY a11
         LDA (srcLoPtr),Y
         SEC 
         ADC a11
         STA a11
-        DEC a8F
+        DEC initialValueOfY
         BNE b2C89
         LDA srcLoPtr
         CLC 
@@ -5338,7 +5441,7 @@ b2CE8   LDY #$00
         INC a13
 b2D04   LDA (srcLoPtr),Y
         INY 
-        STA a8F
+        STA initialValueOfY
 b2D09   LDA a14
         STA ramLoPtr
         LDA a15
@@ -5378,7 +5481,7 @@ b2D40   CLC
 b2D4B   LDA a15
         CMP #$A4
         BCS b2D66
-        DEC a8F
+        DEC initialValueOfY
         BNE b2D09
         BEQ b2CE8
 b2D57   LDA aA401
@@ -5421,7 +5524,7 @@ b2D73   LDA (p12),Y
 b2D9F   LDY #$00
         LDA (srcLoPtr),Y
         INY 
-        STA a8F
+        STA initialValueOfY
 b2DA6   LDA a14
         STA ramLoPtr
         LDA a15
@@ -5450,7 +5553,7 @@ b2DC1   JSR s2DE4
         STA a14
         BCC b2DDA
         INC a15
-b2DDA   DEC a8F
+b2DDA   DEC initialValueOfY
         BNE b2DA6
         LDY #$00
         JMP b2D73
@@ -5563,7 +5666,7 @@ b2E9E   STA fA500,Y
 ;-------------------------------------------------------------------
 s2EA5   
         LDA a8D
-        STA a8F
+        STA initialValueOfY
 b2EA9   TXA 
         CLC 
         ADC #$07
@@ -5571,7 +5674,7 @@ b2EA9   TXA
         BCC b2EB3
         SBC #$10
 b2EB3   TAX 
-        DEC a8F
+        DEC initialValueOfY
         BEQ b2EBD
         LDA fA500,X
         BNE b2EA9
@@ -5582,7 +5685,7 @@ b2EBD   RTS
 ;-------------------------------------------------------------------
 s2EBE   
         LDA a8D
-        STA a8F
+        STA initialValueOfY
 b2EC2   TXA 
         CLC 
         ADC #$07
@@ -5590,7 +5693,7 @@ b2EC2   TXA
         BCC b2ECC
         SBC #$27
 b2ECC   TAX 
-        DEC a8F
+        DEC initialValueOfY
         BEQ b2ED6
         LDA fA518,X
         BNE b2EC2
@@ -5659,23 +5762,24 @@ UpdateScreenColors
         STX ramLoPtr
         STY ramHiPtr
         LDA #$00
-        STA a8F
-        LDA a61
+        STA initialValueOfY
+        LDA monochromEnabled
         BNE b2F5B
         LDY a26
         LDA $E030,Y
         BEQ b2F5B
-        STA a8F
+        STA initialValueOfY
 b2F4C   CLC 
         LDA ramLoPtr
         ADC #$05
         STA ramLoPtr
         BCC b2F57
         INC ramHiPtr
-b2F57   DEC a8F
+b2F57   DEC initialValueOfY
         BNE b2F4C
 b2F5B   LDY #$04
-b2F5D   LDA (ramLoPtr),Y
+b2F5D
+        LDA (ramLoPtr),Y
         STA @wf004B,Y
         DEY 
         BPL b2F5D
@@ -5706,9 +5810,9 @@ b2F5D   LDA (ramLoPtr),Y
         RTS 
 
 ;-------------------------------------------------------------------
-; s2F9D
+; CheckIfPauseOrFireHasBeenPressed
 ;-------------------------------------------------------------------
-s2F9D   
+CheckIfPauseOrFireHasBeenPressed   
         LDA #$FF
         STA a60
         STA $DC00    ;CIA1: Data Port Register A
@@ -5764,6 +5868,7 @@ b3000   RTS
 b3001   LDA #$FF
         STA $0240,X
         BNE b2FFD
+
 ;-------------------------------------------------------------------
 ; s3008
 ;-------------------------------------------------------------------
@@ -5772,7 +5877,7 @@ s3008
         LDA a5C
         CMP #$01
         BEQ b3062
-        LDA a5D
+        LDA currentPlayer
         CMP #$01
         BEQ b303C
 b3016   LDA #$F1
@@ -5855,7 +5960,7 @@ CopyDataFromp7000Top7400
         STY a13
 
         LDA #$80
-        STA a8F
+        STA initialValueOfY
 b30B4   LDX #$07
         STX a10
 
@@ -5908,51 +6013,79 @@ b30D8   LDA #$00
 
         BCC b3105
         INC a13
-b3105   DEC a8F
+b3105   DEC initialValueOfY
         BNE b30B4
 
         RTS 
+
+.enc "petscii"  ;define an ascii->petscii encoding
+        .cdef "  ", $30  ;characters
+        .cdef "..", $28  ;characters
+        .cdef ",,", $29  ;characters
+        .cdef "::", $2A  ;characters
+        .cdef "!!", $25  ;characters
+        .cdef "??", $24  ;characters
+        .cdef "--", $2E  ;characters
+        .cdef "==", $2F  ;characters
+        .cdef "AH", $3A
+        .cdef "FF", $3F
+        .cdef "II", $16
+        .cdef "LZ", $45
+        .cdef "mm", $42
+        .cdef "al", $0A
+        .cdef "nv", $17
+        .cdef "ww", $54
+        .cdef "xz", $21
+        .cdef "09", $00
 
 f310A   .BYTE $00,$90,$98,$A0,$A8,$B0,$B8,$C0
         .BYTE $C4,$C8,$CC,$D0,$D4,$D8,$DC,$E0
         .BYTE $E4,$E8,$EC,$F0
 f311E   .BYTE $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
 
-player1Text   .BYTE $00,$01,$49,$15,$0A,$22,$0E,$1B
-        .BYTE $01,$FF
-player2Text   .BYTE $00,$1F,$49,$15,$0A,$22,$0E,$1B
-        .BYTE $02,$FF
-f313A
-        .BYTE $00,$01,$01,$1E
-        .BYTE $19,$30,$7A,$7B
+player1Text
+        .BYTE $00,$01
+        .TEXT "Player1", $FF
+player2Text
+        .BYTE $00,$1F
+        .TEXT "Player2", $FF
+oneUpText
+        .BYTE $00,$01
+        .TEXT "1up ", $7A, $7B
 a3142   .BYTE $30
 a3143   .BYTE $03,$FF
-f3145
-        .BYTE $00,$1F,$7A,$7B
-a3149   .BYTE $30
-a314A   .BYTE $03,$30,$02,$1E,$19,$FF
-f3150
+
+a3149 = *+$04
+a314A = *+$05
+twoUpText
+        .BYTE $00,$1F
+        .TEXT "", $7A, "", $7B, " 3 2up", $FF, ""
+spaces
         .BYTE $00,$0F
-        .BYTE $30,$30,$30,$30,$30,$30,$30,$30
-        .BYTE $30,$30,$30,$FF
-f315E
-        .BYTE $00,$0F,$45,$0A
-        .BYTE $17,$0D,$30,$17,$18,$54,$25,$FF
-playerLinesColorScheme1   .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0A,$0A,$0A,$0A,$0A,$0A
-        .BYTE $0A,$0A,$0A,$0A,$0A,$0A,$0A,$0A
-        .BYTE $0A,$0A,$0A,$0A,$0A,$0A,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-playerLinesColorScheme2   .BYTE $0D,$0D,$0D,$0D,$0D,$0D,$0D,$0D
-        .BYTE $0D,$0D,$01,$01,$01,$01,$01,$01
-        .BYTE $01,$01,$01,$01,$01,$01,$01,$01
-        .BYTE $01,$01,$01,$01,$01,$01,$0D,$0D
-        .BYTE $0D,$0D,$0D,$0D,$0D,$0D,$0D,$0D
-playerLinesColorScheme3   .BYTE $05,$05,$05,$05,$05,$05,$05,$05
-        .BYTE $05,$05,$07,$07,$07,$07,$07,$07
-        .BYTE $07,$07,$07,$07,$07,$07,$07,$07
-        .BYTE $07,$07,$07,$07,$07,$07,$05,$05
-        .BYTE $05,$05,$05,$05,$05,$05,$05,$05
+        .TEXT "           ", $FF
+landNowText
+        .BYTE $00,$0F
+        .TEXT "Land now!", $FF
+
+playerLinesColorScheme1   
+        .BYTE LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE
+        .BYTE LTBLUE,LTBLUE,LTRED,LTRED,LTRED,LTRED,LTRED,LTRED
+        .BYTE LTRED,LTRED,LTRED,LTRED,LTRED,LTRED,LTRED,LTRED
+        .BYTE LTRED,LTRED,LTRED,LTRED,LTRED,LTRED,LTBLUE,LTBLUE
+        .BYTE LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE
+playerLinesColorScheme2   
+        .BYTE LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN
+        .BYTE LTGREEN,LTGREEN,WHITE,WHITE,WHITE,WHITE,WHITE,WHITE
+        .BYTE WHITE,WHITE,WHITE,WHITE,WHITE,WHITE,WHITE,WHITE
+        .BYTE WHITE,WHITE,WHITE,WHITE,WHITE,WHITE,LTGREEN,LTGREEN
+        .BYTE LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN
+playerLinesColorScheme3   
+        .BYTE GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN
+        .BYTE GREEN,GREEN,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW
+        .BYTE YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW
+        .BYTE YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,GREEN,GREEN
+        .BYTE GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN
+
         .BYTE $04,$4D,$4E,$4F,$40,$00,$FF,$04
         .BYTE $45,$44,$43,$42,$00,$FF,$04,$41
         .BYTE $42,$43,$44,$00,$FF,$04,$41,$42
@@ -6059,18 +6192,17 @@ f349F   .BYTE $4E,$1B,$12,$0D,$12,$1E,$42,$30
         .BYTE $54,$30,$3B,$1B,$0A,$22,$0B,$1B
         .BYTE $18,$18,$14,$28,$30,$41,$12,$10
         .BYTE $11,$30,$2E
-f34C2   .BYTE $30
-f34C3   .BYTE $01,$02,$00,$00,$00,$30,$3A,$3E
-        .BYTE $3B,$FF,$FF,$FF,$FF
+f34C3 = *+$01   
+hiScoreForScrollingBanner   .TEXT " 12000 AEB", $FF, $FF, $FF, $FF
 f34D0
-        .BYTE $00,$0F,$30
-        .BYTE $30,$55,$55,$30,$56,$30,$30,$FF
+        .BYTE $00,$0F
+        .TEXT "  ", $55, $55, " ", $56, "  ", $FF
 f34DB
-        .BYTE $00,$0F,$30,$55,$55,$30,$56,$56
-        .BYTE $30,$FF
+        .BYTE $00,$0F
+        .TEXT " ", $55, $55, " ", $56, $56, " ", $FF
 f34E5
-        .BYTE $00,$0F,$30,$30,$30,$55
-        .BYTE $30,$56,$30,$30,$30,$FF
+        .BYTE $00,$0F
+        .TEXT "   ", $55, " ", $56, "   ", $FF
 f34F1
         .BYTE $02,$0A,$57,$FF
 f34F5
@@ -6080,106 +6212,92 @@ uridiumDecal
         .BYTE $30,$30,$30,$30,$30,$31,$32,$33
         .BYTE $34,$35,$36,$37,$38,$39,$7D,$30
         .BYTE $30,$30,$30,$30,$FF
-f3510
-        .BYTE $02,$0A,$30
-        .BYTE $30,$30,$30,$30,$41,$12,$2E,$1C
-        .BYTE $0C,$18,$1B,$0E,$30,$30,$30,$30
-        .BYTE $30,$30,$FF
-f3526
-        .BYTE $02,$0A,$30,$30
-f352A   .BYTE $30,$30,$30,$01,$02,$00,$00,$00
-        .BYTE $30,$3A,$3E,$3B,$30,$30,$30,$FF
-        .BYTE $02,$0C,$30,$30,$30,$30,$30,$55
-        .BYTE $55,$30,$30,$30,$30,$30,$56,$56
-        .BYTE $FF,$02,$0C,$30,$30,$30,$30,$30
-        .BYTE $55,$30,$30,$30,$30,$30,$30,$30
-        .BYTE $30,$30,$56,$FF,$02,$0C,$30,$30
-        .BYTE $30,$30,$30,$55,$55,$30,$30,$30
-        .BYTE $30,$30,$30,$30,$56,$FF
+hiScoreLabel
+        .BYTE $02,$0A
+        .TEXT "     Hi-score      ", $FF
+
+inGameHiScoreDisplay =*+$04
+inGameBanner
+        .BYTE $02,$0A
+        .TEXT "     12000 AEB   ", $FF, "2c    "
+        .TEXT " ", $55, $55, "     ", $56, $56, $FF, "2c     ", $55, " "
+        .TEXT "        ", $56, $FF, "2c     ", $55, $55, " "
+        .TEXT "      ", $56, $FF
 scrollingTitleScreenDataLoPtrArray   .BYTE $3A,$4B,$5E
 scrollingTitleScreenDataHiPtrArray   .BYTE $35,$35,$35
 
-f3576
-        .BYTE $06,$0E,$41,$3E,$50
-        .BYTE $4C,$48,$47,$FF
-f357F
-        .BYTE $09,$10,$19,$1B
-        .BYTE $0E,$1C,$0E,$17,$1D,$1C,$FF
-f358A
-        .BYTE $0C
-        .BYTE $0F,$31,$32,$33,$34,$35,$36,$37
-        .BYTE $38,$39,$7D,$FF
-f3597
-        .BYTE $0F,$07,$59,$30
-        .BYTE $40,$1B,$0A,$0F,$1D,$10,$18,$15
-        .BYTE $0D,$30,$45,$1D,$0D,$28,$30,$01
-        .BYTE $09,$08,$06,$28,$FF
-f35B0
-        .BYTE $12,$05,$3D
-        .BYTE $0E,$1C,$12,$10,$17,$0E,$0D,$30
-        .BYTE $0A,$17,$0D,$30,$19,$1B,$18,$10
-        .BYTE $1B,$0A,$42,$42,$0E,$0D,$30,$0B
-        .BYTE $22,$FF
-f35CD
-        .BYTE $15,$0B,$3A,$17,$0D,$1B
-        .BYTE $0E,$54,$30,$3B,$1B,$0A,$22,$0B
-        .BYTE $1B,$18,$18,$14,$28,$FF
-f35E1
+hewson
+        .BYTE $06,$0E
+        .TEXT "HEWSON", $FF
+presents
+        .BYTE $09,$10
+        .TEXT "presents", $FF
+uridiumTitlePlaceholder
+        .BYTE $0C,$0F
+        .TEXT "", $31, "", $32, "", $33, "", $34, "", $35, "", $36, "", $37, "", $38, "", $39, "", $7D, "", $FF, ""
+graftgoldLtd
+        .BYTE $0F,$07
+        .TEXT "", $59, " Graftgold Ltd. 1986.", $FF
+designedAndProgrammedBy
+        .BYTE $12,$05
+        .TEXT "Designed and programmed by", $FF
+andrewBraybrook
+        .BYTE $15,$0B
+        .TEXT "Andrew Braybrook.", $FF
+hallOfFame
         .BYTE $06,$0C
-        .BYTE $41,$0A,$15,$15,$30,$18,$0F,$30
-        .BYTE $3F,$0A,$42,$0E,$FF
-f35F0
-        .BYTE $09,$0B,$01,$28,$30
-f35F5   .BYTE $30,$30,$30,$01,$02,$00,$00,$00
-        .BYTE $30,$3A,$3E,$3B,$FF,$00,$01,$20
+        .TEXT "Hall of Fame", $FF
+
+currentHighestScore =*+$05
+firstInHallofFame
+        .BYTE $09,$0B
+        .TEXT "1.    12000 AEB", $FF
+        .BYTE $00,$01,$20
         .BYTE $00
-f3606
-        .BYTE $0B,$0B,$02,$28,$30,$30,$30
-        .BYTE $30,$01,$01,$00,$00,$00,$30,$30
-        .BYTE $30,$30,$FF,$00,$01,$10,$00
-f361C
-        .BYTE $0D
-        .BYTE $0B,$03,$28,$30,$30,$30,$30,$01
-        .BYTE $00,$00,$00,$00,$30,$30,$30,$30
-        .BYTE $FF,$00,$01,$00,$00
-f3632
-        .BYTE $0F,$0B,$04
-        .BYTE $28,$30,$30,$30,$30,$30,$09,$00
-        .BYTE $00,$00,$30,$30,$30,$30,$FF,$00
-        .BYTE $00,$90,$00
-f3648
-        .BYTE $11,$0B,$05,$28,$30
-        .BYTE $30,$30,$30,$30,$08,$00,$00,$00
-        .BYTE $30,$30,$30,$30,$FF,$00,$00,$80
-        .BYTE $00
-f365E
-        .BYTE $13,$0B,$06,$28,$30,$30,$30
-        .BYTE $30,$30,$07,$00,$00,$00,$30,$30
-        .BYTE $30,$30,$FF,$00,$00,$70,$00
-f3674
-        .BYTE $15
-        .BYTE $0B,$07,$28,$30,$30,$30,$30,$30
-        .BYTE $06,$00,$00,$00,$30,$30,$30,$30
-        .BYTE $FF,$00,$00,$60,$00
-f368A
-        .BYTE $17,$0B,$08,$28,$30,$30,$30,$30
-        .BYTE $30,$05,$00,$00,$00,$30,$30,$30
-        .BYTE $30,$FF,$00,$00,$50,$00
-f36A0
+secondInHallOfFame
+        .BYTE $0B,$0B
+        .TEXT "2.    11000    ", $FF
+        .BYTE $00,$01,$10,$00
+thirdInHallofFame
+        .BYTE $0D,$0B
+        .TEXT "3.    10000    ", $FF
+        .BYTE $00,$01,$00,$00
+fourthInHallofFame
+        .BYTE $0F,$0B
+        .TEXT "4.     9000    ", $FF
+        .BYTE $00,$00,$90,$00
+fifthInHallOfFame
+        .BYTE $11,$0B
+        .TEXT "5.     8000    ", $FF
+        .BYTE $00,$00,$80,$00
+sixthInHallOfFame
+        .BYTE $13,$0B
+        .TEXT "6.     7000    ", $FF
+        .BYTE $00,$00,$70,$00
+seventhInHallOfFame
+        .BYTE $15,$0B
+        .TEXT "7.     6000    ", $FF
+        .BYTE $00,$00,$60,$00
+eighthInHallOfFame
+        .BYTE $17,$0B
+        .TEXT "8.     5000    ", $FF
+        .BYTE $00,$00,$50,$00
+colorLabel
         .BYTE $00,$0F
-        .BYTE $30,$30,$3C,$18,$15,$18,$1E,$1B
-        .BYTE $30,$30,$FF
-f36AD
-        .BYTE $00,$0F,$3B,$15,$0C
-        .BYTE $14,$2E,$50,$11,$1D,$0E,$FF
-f36B9
-        .BYTE $00
-        .BYTE $0F,$30,$30,$3D,$0E,$42,$18,$30
-        .BYTE $30,$30,$FF
+        .TEXT "  Colour  ", $FF
+blckWhiteLabel
+        .BYTE $00,$0F
+        .TEXT "Blck-Whte", $FF
+demoLabel
+        .BYTE $00,$0F
+        .TEXT "  Demo   ", $FF
 f36C5   .BYTE $FE,$FC,$FB,$FD,$FF,$FD,$FB,$FC
 
-screenWriteJumpTableLoPtr   .BYTE $D3,$75,$B4,$6D,$BE,$7F,$24,$6D
-screenWriteJumpTableHiPtr   .BYTE $22,$1A,$B1,$2B,$2B,$1F,$25,$2B
+screenWriteJumpTableLoPtr   .BYTE <MaybeChangeTitleDecal,<s1A75,<UpdatePlayerScore,<MaybeShowPauseScreen
+                            .BYTE <b2BBE,<s1F7F,<s2524,<MaybeShowPauseScreen
+screenWriteJumpTableHiPtr   .BYTE >MaybeChangeTitleDecal,>s1A75,>UpdatePlayerScore,>MaybeShowPauseScreen
+                            .BYTE >b2BBE,>s1F7F,>s2524,>MaybeShowPauseScreen
+
 
 f36DD   .BYTE $D3,$7F,$B5,$42
 f36E1   .BYTE $22,$1F,$23,$23
@@ -6223,68 +6341,64 @@ f37B4   .BYTE $F8
 f37B5   .BYTE $F2
 f37B6   .BYTE $F4
 f37B7   .BYTE $FE,$F3,$FD,$F5,$F7,$F8,$F2,$F4
+
 p37BF   .BYTE $FF,$F1,$F0,$F1,$FF,$F0,$FF,$FC
         .BYTE $F0,$F0,$F0,$F0,$F0,$F0
+
 p37CD   .BYTE $F3,$FD,$F0,$FD,$F5,$F0,$F0,$F0
         .BYTE $F0,$F0,$F0
-f37D8
-        .BYTE $0A,$0F,$49,$15,$0A
-        .BYTE $22,$0E,$1B,$30,$01,$FF
-f37E3
+player1
         .BYTE $0A,$0F
-        .BYTE $49,$15,$0A,$22,$0E,$1B,$30,$02
-        .BYTE $FF
-f37EE
-        .BYTE $0D,$0E,$40,$0A,$42,$0E,$30
-        .BYTE $48,$17,$25,$FF
-f37F9
+        .TEXT "Player 1", $FF
+player2
+        .BYTE $0A,$0F
+        .TEXT "Player 2", $FF
+gameOn
+        .BYTE $0D,$0E
+        .TEXT "Game On!", $FF
+
+tensLivesLeftDisplayed = *+$02
+livesLeftDisplayed = *+$03
+livesLeftText
         .BYTE $10,$0E
-a37FB   .BYTE $30
-a37FC   .BYTE $03,$30,$30,$30,$30,$30,$15,$0E
-        .BYTE $0F,$1D,$28,$FF
-f3808
-        .BYTE $0D,$0D,$40,$0A
-        .BYTE $42,$0E,$30,$48,$1F,$0E,$1B,$25
-        .BYTE $FF
-f3815
-        .BYTE $07,$07,$3D,$0E,$1C,$1D,$1B
-        .BYTE $1E,$0C,$1D,$30,$1C,$0E,$1A,$1E
-        .BYTE $0E,$17,$0C,$0E,$30,$19,$1B,$12
-        .BYTE $42,$0E,$0D,$25,$FF
-f3831
-        .BYTE $0A,$05,$3F
-        .BYTE $18,$1B,$42,$0A,$1D,$12,$18,$17
-        .BYTE $30,$0A,$17,$17,$12,$11,$12,$15
-        .BYTE $0A,$1D,$12,$18,$17,$30,$0B,$18
-        .BYTE $17,$1E,$1C,$2A,$FF
-f3851
-        .BYTE $10,$0A,$4C
-        .BYTE $11,$12,$19,$30,$0D,$0E,$1C,$1D
-        .BYTE $1B,$1E,$0C,$1D,$30,$0B,$18,$17
-        .BYTE $1E,$1C,$2A,$FF
-f3868
-        .BYTE $0D,$0D,$01,$00,$00,$30,$51,$30
-a3870   .BYTE $00
-a3871   .BYTE $00,$30,$2F,$30
-a3875   .BYTE $00
-a3876   .BYTE $00,$00,$00,$FF
-f387A
-        .BYTE $0D,$04,$52,$18
-        .BYTE $1E,$30,$11,$0A,$1F,$0E,$30,$0A
-        .BYTE $42,$0A,$1C,$1C,$0E,$0D,$30,$0A
-        .BYTE $30,$10,$1B,$0E,$0A,$1D,$30,$1C
-        .BYTE $0C,$18,$1B,$0E,$25,$FF
-f389C
+        .TEXT " 3     left.", $FF
+gameOver
+        .BYTE $0D,$0D
+        .TEXT "Game Over!", $FF
+
+destructSequencePrimed
+        .BYTE $07,$07
+        .TEXT "Destruct sequence pr"
+        .TEXT "imed!", $FF
+formationAnnihilationBonus
+        .BYTE $0A,$05
+        .TEXT "Formation annihilati"
+        .TEXT "on bonus:", $FF
+shipDestructBonus
+        .BYTE $10,$0A
+        .TEXT "Ship destruct bonus:"
+        .TEXT "", $FF
+
+a3870 = *+$08
+a3871 = *+$09
+a3875 = *+$0D
+a3876 = *+$0E
+scoreBonus
+        .BYTE $0D,$0D
+        .TEXT "100 X 00 = 0000", $FF
+youveAmassedAHighScore
+        .BYTE $0D,$04
+        .TEXT "You have amassed a great score!", $FF
+pleaseEnterYourInitials
         .BYTE $10,$06
-        .BYTE $49,$15,$0E,$0A,$1C,$0E,$30,$0E
-        .BYTE $17,$1D,$0E,$1B,$30,$22,$18,$1E
-        .BYTE $1B,$30,$12,$17,$12,$1D,$12,$0A
-        .BYTE $15,$1C,$28,$FF
-f38BA
+        .TEXT "Please enter your initials.", $FF
+
+initialOne = *+$02
+initial2 = *+$03
+initial3 = *+$04
+initialsInputField
         .BYTE $13,$11
-f38BC   .BYTE $3A
-a38BD   .BYTE $28
-a38BE   .BYTE $28,$30,$30,$30,$FF
+        .TEXT "A..   ", $FF
 f38C3   .BYTE $3A,$3B,$3C,$3D,$3E,$3F,$40,$41
         .BYTE $16,$43,$44,$45,$46,$47,$48,$49
         .BYTE $4A,$4B,$4C,$4D,$4E,$4F,$50,$51
@@ -6340,7 +6454,7 @@ IRQInterrupt2
         PHA 
         TYA 
         PHA 
-        JSR s0E23
+        JSR PlayTitleTune
         PLA 
         TAY 
         PLA 
@@ -6431,7 +6545,7 @@ a3FB0   =*+$01
         PHA 
         TYA 
         PHA 
-        JSR s0E23
+        JSR PlayTitleTune
         PLA 
         TAY 
         PLA 
@@ -6448,14 +6562,15 @@ p3FD6   RTI
 
 .include "explosion_sprites.asm"
 .include "ship_sprites.asm"
-
-
 .include "enemy_sprites.asm"
 .include "charset.asm"
 
-
 *=$A900
-fA900   STA a38BE
+;--------------------------------------------------------------------
+; fA900   
+;--------------------------------------------------------------------
+fA900   
+        STA initial3
 aA904   =*+$01
         LDA #$01
         STA aC90A
@@ -6466,18 +6581,18 @@ aA904   =*+$01
         JMP jC9B1
 
 bA910   LDX #$00
-bA912   LDA f35F0,X
+bA912   LDA firstInHallofFame,X
         STA fCA00,X
         INX 
         CPX #$AC
         BNE bA912
         LDX #$13
-bA91F   LDA f3526,X
+bA91F   LDA inGameBanner,X
         STA fCAAC,X
         DEX 
         BPL bA91F
         LDX #$0D
-bA92A   LDA f34C2,X
+bA92A   LDA hiScoreForScrollingBanner,X
         STA fCAC0,X
         DEX 
         BPL bA92A
@@ -6613,18 +6728,18 @@ joystick1HiPtr   =*+$02
 joystick2LoPtr   =*+$01
 joystick2HiPtr   =*+$02
         AND $DC01    ;CIA1: Data Port Register B
-        BIT aB057
+        BIT msbForSpriteArray + $02
         BEQ bB037
-        BIT aB058
+        BIT msbForSpriteArray + $03
         BEQ bB03B
         JMP jB03D
 
 bB037   DEC a17
         BNE jB03D
 bB03B   INC a17
-jB03D   BIT aB055
+jB03D   BIT msbForSpriteArray
         BEQ bB04A
-        BIT aB056
+        BIT msbForSpriteArray + $01
         BEQ bB04E
         JMP jB050
 
@@ -6635,158 +6750,155 @@ jB050   AND #$10
         STA firePressed
         RTS 
 
-aB055   .BYTE $01
-aB056   .BYTE $02
-aB057   .BYTE $04
-aB058   .BYTE $08,$10,$20
-        .BYTE $40,$80
+msbForSpriteArray   .BYTE $01,$02,$04,$08,$10,$20,$40,$80
 ;-------------------------------------------------------------------
-; sB05D
+; StoreSpriteContentColorAndPosition
 ;-------------------------------------------------------------------
-sB05D   
-        LDY a04
-        LDA aB055,Y
-        STA a02
+StoreSpriteContentColorAndPosition   
+        LDY spriteIndex
+        LDA msbForSpriteArray,Y
+        STA currentSpriteMSB
         EOR #$FF
         STA a03
         LDA $D027,Y  ;Sprite 0 Color
-        STA a0D
-        LDA SCREEN_RAM_HIBANK + $03F8,Y
-        STA a0E
+        STA currentSpriteColor
+        LDA sprite0Ptr,Y
+        STA currentSpriteValue
         TYA 
         ASL 
         TAY 
         LDA $D000,Y  ;Sprite 0 X Pos
-        STA a05
+        STA currentSpriteXPos
         LDA $D001,Y  ;Sprite 0 Y Pos
-        STA a07
+        STA currentSpriteYPos
         LDA $D010    ;Sprites 0-7 MSB of X coordinate
-        AND a02
+        AND currentSpriteMSB
         BEQ bB088
         LDA #$FF
 bB088   STA a06
         LDA $D015    ;Sprite display Enable
-        AND a02
-        STA a08
+        AND currentSpriteMSB
+        STA currentSpriteDisplayEnable
         RTS 
 
 ;-------------------------------------------------------------------
-; sB092
+; StoreShipSpriteState
 ;-------------------------------------------------------------------
-sB092   
-        LDY a04
-        LDA aB055,Y
-        STA a02
+StoreShipSpriteState   
+        LDY spriteIndex
+        LDA msbForSpriteArray,Y
+        STA currentSpriteMSB
         EOR #$FF
         STA a03
         LDA $D027,Y  ;Sprite 0 Color
-        STA a0D
-        LDA SCREEN_RAM_HIBANK + $03F8,Y
-        STA a0E
+        STA currentSpriteColor
+        LDA sprite0Ptr,Y
+        STA currentSpriteValue
         TYA 
         ASL 
         TAY 
         LDA $D000,Y  ;Sprite 0 X Pos
-        STA a05
+        STA currentSpriteXPos
         LDA $D001,Y  ;Sprite 0 Y Pos
-        STA a07
+        STA currentSpriteYPos
         LDA $D010    ;Sprites 0-7 MSB of X coordinate
-        AND a02
+        AND currentSpriteMSB
         BEQ bB0BD
         LDA #$FF
 bB0BD   STA a06
         LDA $D015    ;Sprite display Enable
-        AND a02
-        STA a08
+        AND currentSpriteMSB
+        STA currentSpriteDisplayEnable
         LDA $D017    ;Sprites Expand 2x Vertical (Y)
-        AND a02
-        STA a09
+        AND currentSpriteMSB
+        STA currentSpriteExpandVertical
         LDA $D01B    ;Sprite to Background Display Priority
-        AND a02
-        STA a0A
+        AND currentSpriteMSB
+        STA currentSpriteBackgroundDisplayPriority
         LDA $D01C    ;Sprites Multi-Color Mode Select
-        AND a02
-        STA a0B
+        AND currentSpriteMSB
+        STA currentSpriteMultiColorMode
         LDA $D01D    ;Sprites Expand 2x Horizontal (X)
-        AND a02
-        STA a0C
+        AND currentSpriteMSB
+        STA currentSpriteExpandHorizontal
         RTS 
 
 ;-------------------------------------------------------------------
-; sB0E3
+; UpdateSpriteSizeColorAndPriority
 ;-------------------------------------------------------------------
-sB0E3   
-        LDY a04
-        LDA aB055,Y
-        STA a02
+UpdateSpriteSizeColorAndPriority   
+        LDY spriteIndex
+        LDA msbForSpriteArray,Y
+        STA currentSpriteMSB
         EOR #$FF
         STA a03
-        LDA a0D
+        LDA currentSpriteColor
         STA $D027,Y  ;Sprite 0 Color
-        LDA a0B
+        LDA currentSpriteMultiColorMode
         BEQ bB0FE
-        LDA a02
+        LDA currentSpriteMSB
         ORA $D01C    ;Sprites Multi-Color Mode Select
         BNE bB103
 bB0FE   LDA $D01C    ;Sprites Multi-Color Mode Select
         AND a03
 bB103   STA $D01C    ;Sprites Multi-Color Mode Select
-        LDA a09
+        LDA currentSpriteExpandVertical
         BEQ bB111
-        LDA a02
+        LDA currentSpriteMSB
         ORA $D017    ;Sprites Expand 2x Vertical (Y)
         BNE bB116
 bB111   LDA $D017    ;Sprites Expand 2x Vertical (Y)
         AND a03
 bB116   STA $D017    ;Sprites Expand 2x Vertical (Y)
-        LDA a0C
+        LDA currentSpriteExpandHorizontal
         BEQ bB124
-        LDA a02
+        LDA currentSpriteMSB
         ORA $D01D    ;Sprites Expand 2x Horizontal (X)
         BNE bB129
 bB124   LDA $D01D    ;Sprites Expand 2x Horizontal (X)
         AND a03
 bB129   STA $D01D    ;Sprites Expand 2x Horizontal (X)
-        LDA a0A
+        LDA currentSpriteBackgroundDisplayPriority
         BEQ bB137
-        LDA a02
+        LDA currentSpriteMSB
         ORA $D01B    ;Sprite to Background Display Priority
         BNE bB13C
 bB137   LDA $D01B    ;Sprite to Background Display Priority
         AND a03
 bB13C   STA $D01B    ;Sprite to Background Display Priority
+
 ;-------------------------------------------------------------------
-; sB13F
+; UpdateSpriteContentAndPosition
 ;-------------------------------------------------------------------
-sB13F   
-        LDY a04
-        LDA aB055,Y
-        STA a02
+UpdateSpriteContentAndPosition   
+        LDY spriteIndex
+        LDA msbForSpriteArray,Y
+        STA currentSpriteMSB
         EOR #$FF
         STA a03
-        LDA a0E
-        STA SCREEN_RAM_HIBANK + $03F8,Y
+        LDA currentSpriteValue
+        STA sprite0Ptr,Y
         TYA 
         ASL 
         TAY 
-        LDA a05
+        LDA currentSpriteXPos
         STA $D000,Y  ;Sprite 0 X Pos
-        LDA a07
+        LDA currentSpriteYPos
         STA $D001,Y  ;Sprite 0 Y Pos
         LDA a06
         AND #$01
         STA a06
         LDA a06
         BEQ bB16D
-        LDA a02
+        LDA currentSpriteMSB
         ORA $D010    ;Sprites 0-7 MSB of X coordinate
         BNE bB172
 bB16D   LDA $D010    ;Sprites 0-7 MSB of X coordinate
         AND a03
 bB172   STA $D010    ;Sprites 0-7 MSB of X coordinate
-        LDA a08
+        LDA currentSpriteDisplayEnable
         BEQ bB180
-        LDA a02
+        LDA currentSpriteMSB
         ORA $D015    ;Sprite display Enable
         BNE bB185
 bB180   LDA $D015    ;Sprite display Enable
@@ -6798,7 +6910,7 @@ bB185   STA $D015    ;Sprite display Enable
 ; WriteToRam
 ;-------------------------------------------------------------------
 WriteToRam   
-        STA a0D
+        STA currentSpriteColor
 jB18B   LDY #$00
 bB18D   STA (ramLoPtr),Y
         INY 
@@ -6812,7 +6924,7 @@ bB18D   STA (ramLoPtr),Y
         STA ramLoPtr
         BCC bB1A2
         INC ramHiPtr
-bB1A2   LDA a0D
+bB1A2   LDA currentSpriteColor
         JMP jB18B
 
 bB1A7   CLC 
@@ -6935,22 +7047,21 @@ bB25A   LDA a94
         STA a01
         RTS 
 
-        .BYTE $00,$0F,$30,$30,$49,$0A,$1E,$1C
-        .BYTE $0E,$30,$30
-fB265
-        .BYTE $30,$FF
+pauseText
+        .BYTE $00,$0F
+        .TEXT "  Pause   ", $FF
 ;-------------------------------------------------------------------
 ; SpinWaitingForJoystickInput
 ;-------------------------------------------------------------------
 SpinWaitingForJoystickInput   
         LDA #$08
-        STA a8F
+        STA initialValueOfY
 bB276   JSR GetJoystickInput
         LDY #$08
         JSR WasteCyclesUsingXAndY
         LDA firePressed
         BEQ SpinWaitingForJoystickInput
-        DEC a8F
+        DEC initialValueOfY
         BNE bB276
         RTS 
 
@@ -6963,7 +7074,7 @@ bB289   LDA (srcLoPtr),Y
         STA @wf0004,Y
         DEY 
         BPL bB289
-        JSR sB0E3
+        JSR UpdateSpriteSizeColorAndPriority
         RTS 
 
 ;-------------------------------------------------------------------
@@ -7131,10 +7242,13 @@ bB35F   RTS
 
 
 *=$C1B8
+
+dreadnoughtLoPtr = spriteIndex
+dreadnoughtHiPtr = currentSpriteXPos
 ;-------------------------------------------------------------------
-; jC1B8   
+; DreadnoughDestructionSequence   
 ;-------------------------------------------------------------------
-jC1B8   
+DreadnoughDestructionSequence   
         JSR $E544
         LDA #$16
         STA $D018    ;VIC Memory Control Register
@@ -7142,10 +7256,12 @@ jC1B8
         STA $D020    ;Border Color
         STA $D021    ;Background Color 0
         STA $0291
+
 jC1CB   LDA #>pC800
-        STA a05
+        STA dreadnoughtHiPtr
         LDX #<pC800
-        STX a04
+        STX dreadnoughtLoPtr
+
         TXA 
 bC1D4   STA COLOR_RAM + $0000,X
         STA COLOR_RAM + $0100,X
@@ -7153,33 +7269,39 @@ bC1D4   STA COLOR_RAM + $0000,X
         STA COLOR_RAM + $0300,X
         INX 
         BNE bC1D4
+
 bC1E3   LDA #$0B
         STA $D011    ;VIC Control Register 1
 bC1E8   LDA $D011    ;VIC Control Register 1
         BPL bC1E8
+
         SEI 
         LDA #$34
         STA a01
+
         LDY #$00
-bC1F4   LDA (p04),Y
+bC1F4   LDA (dreadnoughtLoPtr),Y
         EOR #$80
         STA SCREEN_RAM + $0000,Y
         INY 
         BNE bC1F4
-        INC a05
-bC200   LDA (p04),Y
+
+        INC dreadnoughtHiPtr
+bC200   LDA (dreadnoughtLoPtr),Y
         EOR #$80
         STA SCREEN_RAM + $0100,Y
         INY 
         BNE bC200
-        INC a05
-bC20C   LDA (p04),Y
+
+        INC dreadnoughtHiPtr
+bC20C   LDA (dreadnoughtLoPtr),Y
         EOR #$80
         STA SCREEN_RAM + $0200,Y
         INY 
         BNE bC20C
-        INC a05
-bC218   LDA (p04),Y
+
+        INC dreadnoughtHiPtr
+bC218   LDA (dreadnoughtLoPtr),Y
         EOR #$80
         STA SCREEN_RAM + $0300,Y
         INY 
@@ -7188,40 +7310,40 @@ bC218   LDA (p04),Y
         LDA #$37
         STA a01
         CLI 
-        LDA a04
+        LDA dreadnoughtLoPtr
         CLC 
         ADC #$E8
-        STA a04
-        LDA a05
+        STA dreadnoughtLoPtr
+        LDA dreadnoughtHiPtr
         ADC #$00
-        STA a05
+        STA dreadnoughtHiPtr
 bC236   LDA $D011    ;VIC Control Register 1
         BPL bC236
         LDA #$1B
         STA $D011    ;VIC Control Register 1
         LDX #$00
-        JSR sC264
+        JSR FlashBackgroundDuringDreadnoughtDestruction
 bC245   LDA $DC01    ;CIA1: Data Port Register B
         CMP #$7F
         BEQ bC2A2
         CMP #$EF
         BNE bC245
         LDX #$0C
-        JSR sC264
-        LDA a05
+        JSR FlashBackgroundDuringDreadnoughtDestruction
+        LDA dreadnoughtHiPtr
         CMP #$DF
         BNE bC1E3
-        LDA a04
+        LDA dreadnoughtLoPtr
         CMP #$70
         BNE bC1E3
         JMP jC1CB
 
 ;-------------------------------------------------------------------
-; sC264
+; FlashBackgroundDuringDreadnoughtDestruction
 ;-------------------------------------------------------------------
-sC264   
+FlashBackgroundDuringDreadnoughtDestruction   
         LDY #$00
-bC266   STY a02
+bC266   STY currentSpriteMSB
         STX a03
         LDX #$10
         LDY #$00
@@ -7230,10 +7352,10 @@ bC26E   DEY
         DEX 
         BNE bC26E
         LDX a03
-        LDY a02
+        LDY currentSpriteMSB
 bC278   LDA $D011    ;VIC Control Register 1
         BPL bC278
-        LDA fC28A,X
+        LDA backgroundColors,X
         STA $D021    ;Background Color 0
         INX 
         INY 
@@ -7241,13 +7363,19 @@ bC278   LDA $D011    ;VIC Control Register 1
         BNE bC266
         RTS 
 
-fC28A   .BYTE $09,$09,$02,$02,$08,$08,$0A,$0A
-        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
-        .BYTE $0C,$0C,$08,$08,$0B,$0B,$09,$09
-bC2A2   LDX #$0C
-        JSR sC264
+backgroundColors
+        .BYTE BROWN,BROWN,RED,RED,ORANGE,ORANGE,LTRED,LTRED
+        .BYTE GRAY3,GRAY3,GRAY3,GRAY3,GRAY3,GRAY3,GRAY3,GRAY3
+        .BYTE GRAY2,GRAY2,ORANGE,ORANGE,GRAY1,GRAY1,BROWN,BROWN
+
+;--------------------------------------------------------------------
+; bC2A2   
+;--------------------------------------------------------------------
+bC2A2   
+        LDX #$0C
+        JSR FlashBackgroundDuringDreadnoughtDestruction
         LDA #$00
-        STA a02
+        STA currentSpriteMSB
         STA $D021    ;Background Color 0
         JSR $E544
         SEI 
@@ -7467,28 +7595,28 @@ bC464   JSR $FFE4 ;- get a byte from channel
         JSR $FFD5; - load after call SETLFS,SETNAM    
         LDX #$00
 bC490   LDA fCA00,X
-        STA f35F0,X
+        STA firstInHallofFame,X
         INX 
         CPX #$AC
         BNE bC490
         LDX #$13
 bC49D   LDA fCAAC,X
-        STA f3526,X
+        STA inGameBanner,X
         DEX 
         BPL bC49D
         LDX #$0D
 bC4A8   LDA fCAC0,X
-        STA f34C2,X
+        STA hiScoreForScrollingBanner,X
         DEX 
         BPL bC4A8
-        JMP LaunchGame
+        JMP LaunchUridium
 
 bC4B4   JSR $E544
         JSR sC4C5
         LDA #$60
         STA aC982
         JSR sC962
-        JMP LaunchGame
+        JMP LaunchUridium
 
 ;-------------------------------------------------------------------
 ; sC4C5
@@ -7513,29 +7641,38 @@ pC4DA   RTI
 ; sC900
 ;-------------------------------------------------------------------
 sC900   
-        STA a38BE
+        STA initial3
         LDA #$00
         STA aC90A
         RTS 
 
+;--------------------------------------------------------------------
+; jC909   
+;--------------------------------------------------------------------
+jC909   
+
 aC90A   =*+$01
-jC909   LDA #$01
+        LDA #$01
         BEQ jC910
         JMP jC9B1
 
-jC910   LDX #$00
-bC912   LDA f35F0,X
+;--------------------------------------------------------------------
+; jC910   
+;--------------------------------------------------------------------
+jC910   
+        LDX #$00
+bC912   LDA firstInHallofFame,X
         STA fCA00,X
         INX 
         CPX #$AC
         BNE bC912
         LDX #$13
-bC91F   LDA f3526,X
+bC91F   LDA inGameBanner,X
         STA fCAAC,X
         DEX 
         BPL bC91F
         LDX #$0D
-bC92A   LDA f34C2,X
+bC92A   LDA hiScoreForScrollingBanner,X
         STA fCAC0,X
         DEX 
         BPL bC92A
@@ -7613,15 +7750,13 @@ jC9B1   LDA #$01
 
         RTI 
 
-        .BYTE $53,$3A,$55,$52,$49,$44,$49,$55
-        .BYTE $4D,$20,$48,$49,$47,$48
-        .BYTE $2F,$52,$45 ;RLA s4552
-        .BYTE $4D
+.enc "none"
+        .TEXT "S:URIDIUM HIGH/REM"
 ;-------------------------------------------------------------------
 ; sC9D2
 ;-------------------------------------------------------------------
 sC9D2   
-        JSR s166D
+        JSR MaybeDisplayLandNowWarning
         LDA $DC00    ;CIA1: Data Port Register A
         STA aC9EC
         LDA #$7F
