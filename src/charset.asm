@@ -1,5 +1,5 @@
 
-p7000
+mainCharacterSet
         .BYTE $00,$3C,$66,$66,$66,$3C,$00,$00   ;.BYTE $00,$3C,$66,$66,$66,$3C,$00,$00
                                                 ; CHARACTER $00
                                                 ; 00000000           
@@ -2570,7 +2570,7 @@ f77E8
                                                 ; 00000000           
                                                 ; 00000000           
                                                 ; 00000000           
-f7800
+surfaceTextureCharacterSet
         .BYTE $00,$00,$FC,$FE,$0E,$06,$06,$06   ;.BYTE $00,$00,$FC,$FE,$0E,$06,$06,$06
                                                 ; CHARACTER $00
                                                 ; 00000000           
