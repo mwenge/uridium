@@ -71,7 +71,7 @@ a22 = $22
 a23 = $23
 a24 = $24
 a25 = $25
-a26 = $26
+indexToCurrentLevelTextureData = $26
 a27 = $27
 a28 = $28
 a29 = $29
@@ -682,7 +682,7 @@ TitleScreenLoop
 ;--------------------------------------------------------------------
 PrepareLargeScrollingCreditAndHiScore   
         LDA #$00
-        STA a26
+        STA indexToCurrentLevelTextureData
         LDA #$0F
         STA a8D
         JSR SetUpScreenForScrolling
@@ -1001,14 +1001,14 @@ b0D41   LDA a32
 ;--------------------------------------------------------------------
 j0D45   
         LDA a27
-        CMP a26
+        CMP indexToCurrentLevelTextureData
         BEQ b0D69
-        STA a26
+        STA indexToCurrentLevelTextureData
         CMP #$10
         BCC b0D62
         LDA #$01
         STA a27
-        STA a26
+        STA indexToCurrentLevelTextureData
         LDA a28
         CLC 
         ADC #$10
@@ -1637,7 +1637,7 @@ b11A4   LDA shouldWaitUntilReady
         LDY #$00
         JSR WasteCyclesUsingXAndY
         JSR WasteCyclesUsingXAndY
-        LDA a26
+        LDA indexToCurrentLevelTextureData
         STA aAD
         LDA #>SCREEN_RAM + $0209
         STA aA9
@@ -1648,7 +1648,7 @@ b11A4   LDA shouldWaitUntilReady
         LSR 
         LSR 
         LSR 
-        ADC a26
+        ADC indexToCurrentLevelTextureData
         TAY 
         LDA f310A,Y
         STA aAE
@@ -2828,7 +2828,7 @@ b1A36   CLD
 ; UpdatePointersAndFetchSurfaceData
 ;-------------------------------------------------------------------
 UpdatePointersAndFetchSurfaceData   
-        LDY a26
+        LDY indexToCurrentLevelTextureData
         LDA fC100,Y
         STA a6D
         LDA fC110,Y
@@ -2850,7 +2850,7 @@ FetchCurrentSurfaceData
         SEI 
         LDA #$24
         STA a01
-        LDY a26
+        LDY indexToCurrentLevelTextureData
         LDA fE040,Y
         STA tempHiPtrCopyFrom
         LDA #$00
@@ -2952,7 +2952,7 @@ j1ABF   ASL
         LDA a25
         LSR 
         CLC 
-        ADC a26
+        ADC indexToCurrentLevelTextureData
         ADC a28
         ADC f3713,X
         STA a69
@@ -3591,7 +3591,7 @@ b1FA6   STY spriteIndex
         STA a92
         LDA #$08
         STA indexToFunctionPtrArray,Y
-        LDA a26
+        LDA indexToCurrentLevelTextureData
         ASL 
         ASL 
         ADC a28
@@ -3657,9 +3657,9 @@ b201F   CLC
         RTS 
 
 ;--------------------------------------------------------------------
-; s2021   
+; MaybeMineExplodes   
 ;--------------------------------------------------------------------
-s2021   
+MaybeMineExplodes   
         JSR IncrementSpriteXPos
         JSR CalculateSpriteXYPos
         JSR s205F
@@ -3770,7 +3770,7 @@ SetUpScreenForScrolling
         STA a4A
         LDA #$00
         STA a2A
-        JSR s2CB2
+        JSR UpdateTextureDataForCurrentShip
         JSR s2CA5
         JSR UpdateScreenColors
         JSR s2E17
@@ -3818,7 +3818,7 @@ TitleScreenWaitForFireToBePressed
         STA a62
 b2158   JSR GetJoystickInput
         JSR DoMoreWithJoystickInput
-        JSR sB31B
+        JSR UpdateVolumeSetting
         JSR MaybeChangeTitleDecal
         JSR UpdatePlayerAndJoystickDisplay
         JSR MaybeUpdateColorScheme
@@ -3848,7 +3848,7 @@ b2182   LDA shouldWaitUntilReady
         JSR GetJoystickInput
         JSR DoMoreWithJoystickInput
         JSR MaybeChangeTitleDecal
-        JSR sB31B
+        JSR UpdateVolumeSetting
         JSR MaybeUpdateColorScheme
         JSR UpdatePlayerAndJoystickDisplay
         INC a62
@@ -3883,7 +3883,7 @@ EnterDemoModeUntilDeadOrPlayerPressesFire
         AND #$07
         CLC 
         ADC #$01
-        STA a26
+        STA indexToCurrentLevelTextureData
         JSR SetUpScreenForScrolling
         JSR UpdatePointersAndFetchSurfaceData
         LDA #$08
@@ -3920,7 +3920,7 @@ b2216   LDA shouldWaitUntilReady
         JSR UpdateAndDisplaySomeSprites
         JSR GetJoystickInput
         JSR DoMoreWithJoystickInput
-        JSR sB31B
+        JSR UpdateVolumeSetting
         LDA firePressed
         BEQ b227B
         LDA #$00
@@ -4064,7 +4064,7 @@ b232D   LDX #<inGameBanner
         JSR WriteToScreen
         RTS 
 
-b2335   LDY a26
+b2335   LDY indexToCurrentLevelTextureData
         LDX $E050,Y
         LDA $E060,Y
         TAY 
@@ -5388,7 +5388,7 @@ ScrollShipSurface
 b2C1D   LDY #$26
 a2C20   =*+$01
 a2C21   =*+$02
-b2C1F   LDA f8200,Y
+b2C1F   LDA surfaceForCurrentLevel,Y
 a2C23   =*+$01
 a2C24   =*+$02
         STA SCREEN_RAM_HIBANK + $00F0,Y
@@ -5482,12 +5482,12 @@ b2CA8   STA someDataHiPtrArray,Y
         RTS 
 
 ;-------------------------------------------------------------------
-; s2CB2
+; UpdateTextureDataForCurrentShip
 ;-------------------------------------------------------------------
-s2CB2   
+UpdateTextureDataForCurrentShip   
         LDA #$FF
         STA a54
-        LDA a26
+        LDA indexToCurrentLevelTextureData
         AND #$0F
         TAY 
         LDA $E010,Y
@@ -5853,7 +5853,7 @@ UpdateScreenColors
         STA initialValueOfY
         LDA monochromEnabled
         BNE b2F5B
-        LDY a26
+        LDY indexToCurrentLevelTextureData
         LDA $E030,Y
         BEQ b2F5B
         STA initialValueOfY
@@ -6395,7 +6395,7 @@ f36E1   .BYTE $22,$1F,$23,$23
 functionPtrArray
         .BYTE <ReturnEarly,>ReturnEarly,<PerformDetailedUpdateForSprite,>PerformDetailedUpdateForSprite,<s1EC3,>s1EC3
         .BYTE <UpdateSpritePositionValueAndFunctionPtrIndex,>UpdateSpritePositionValueAndFunctionPtrIndex
-        .BYTE <s1F62,>s1F62,<s2021,>s2021,<ReturnEarly,>ReturnEarly
+        .BYTE <s1F62,>s1F62,<MaybeMineExplodes,>MaybeMineExplodes,<ReturnEarly,>ReturnEarly
 f36F3   .BYTE $A0,$80,$80,$60,$A0,$A0,$C0,$B0
         .BYTE $A0,$40,$70,$60,$80,$90,$70,$80
 f3703   .BYTE $61,$61,$81,$71,$81,$91,$81,$91
@@ -7320,9 +7320,9 @@ CopyDataUntilYIsZero
         RTS 
 
 ;-------------------------------------------------------------------
-; sB31B
+; UpdateVolumeSetting
 ;-------------------------------------------------------------------
-sB31B   
+UpdateVolumeSetting   
         LDA a62
         AND #$03
         BNE bB35F
@@ -7349,13 +7349,13 @@ bB33E   LDA a95
         JMP jB34D
 
 bB34B   LDY #$30
-jB34D   STY aB3C1
-        STA aB3C2
+jB34D   STY volumeTens
+        STA volumeOnes
         LDA a95
         STA aEF
         NOP 
-        LDX #<pB3B8
-        LDY #>pB3B8
+        LDX #<volumeText
+        LDY #>volumeText
         JSR WriteToScreen
 bB35F   RTS 
 
