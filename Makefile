@@ -10,9 +10,9 @@ original: clean d64_orig run_orig
 
 uridium.prg: src/uridium.asm src/data.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/ur.prg -L bin/list-co1.txt -l bin/labels.txt src/uridium.asm
+	echo "60b371c745ca8b998e79f10ceac6d295  bin/ur.prg" | md5sum -c
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/data.prg src/data.asm
-	md5sum bin/ur.prg bin/ur-bench.prg
-	md5sum bin/data.prg bin/data-bench.prg
+	echo "181da4625337449ff8153324ff77b940  bin/data.prg" | md5sum -c
 	exomizer sfx 0x0900 bin/ur.prg bin/data.prg,0xe000 -n -o bin/uridium.prg
 
 d64: uridium.prg
