@@ -198,8 +198,8 @@ aA7 = $A7
 aA8 = $A8
 aA9 = $A9
 aAA = $AA
-aAB = $AB
-aAC = $AC
+anotherRandomNumberBetween0and1 = $AB
+randomNumberBetween0and1 = $AC
 aAD = $AD
 aAE = $AE
 tempLoPtrCopyTo = $B0
@@ -293,7 +293,7 @@ M_LTGREEN                                 = $FD
 M_LTBLUE                                  = $FE
 M_GRAY3                                   = $FF
 
-p0800 = $0800
+randomDataStorage = $0800
 
 * = $0900
 ;-------------------------------------------------------------------
@@ -372,13 +372,13 @@ b091C   LDX #<p8000
         LDX #$04
         JSR CopyDataUntilXIsZero
 
-        ; Copy code from p1000 to UpdateSoundPtr to p0800 to LaunchUridium.
+        ; Copy code from p1000 to UpdateSoundPtr to randomDataStorage to LaunchUridium.
         LDX #<p1000
         LDY #>p1000
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
-        LDX #<p0800
-        LDY #>p0800
+        LDX #<randomDataStorage
+        LDY #>randomDataStorage
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
         LDY #$00
@@ -386,6 +386,7 @@ b091C   LDX #<p8000
 
         JSR CopyDataFrommainCharacterSetTop7400
         JSR CopyDataWithin71007800
+
 ;-------------------------------------------------------------------
 ; DrawTitleScreen
 ;-------------------------------------------------------------------
@@ -451,7 +452,12 @@ DrawTitleScreen
         LDA #$01
         STA a5C
         CLI 
-j0A20   LDX #$FF
+
+;--------------------------------------------------------------------
+; PrepareTitleScreen   
+;--------------------------------------------------------------------
+PrepareTitleScreen   
+        LDX #$FF
         TXS 
         LDA #$F0
         STA a4A
@@ -655,6 +661,7 @@ b0B67   LDA f3496,X
         LDA #$01
         STA aB1B9
         JSR UpdatePlayerScore
+
 ;--------------------------------------------------------------------
 ; RestartLevel   
 ;--------------------------------------------------------------------
@@ -785,7 +792,7 @@ b0C71   STX tensLivesLeftDisplayed
         STY srcHiPtr
         JSR UpdateSpriteIndicesAndThenRedrawSprites
         JSR SpinWaitingForJoystickInput
-        JSR s3086
+        JSR GenerateRandomDataFromRNG
 
         LDA #<SCREEN_RAM + $0003
         STA a91
@@ -864,7 +871,7 @@ a0D27   =*+$02
         JSR s2635
         JSR s268C
         JSR s2713
-        JSR sC9D2
+        JSR CheckLandNowWarning
         LDA a85
         BPL b0D41
         JMP StartLandingSequence
@@ -1010,7 +1017,7 @@ PlayTitleTune
         BEQ b0E67
         CMP #$02
         BNE b0E2E
-        JMP j0F5C
+        JMP PlaySomeOfTheTitleTune
 
 b0E2E   CMP #$01
         BNE b0E35
@@ -1018,7 +1025,7 @@ b0E2E   CMP #$01
 
 b0E35   CMP #$03
         BNE b0E3C
-        JMP j0F5C
+        JMP PlaySomeOfTheTitleTune
 
 b0E3C   CMP #$11
         BEQ b0E49
@@ -1049,7 +1056,7 @@ b0E6A   RTS
 
 j0E6B   DEC aF2
         BEQ b0E72
-        JMP j0F5C
+        JMP PlaySomeOfTheTitleTune
 
 b0E72   LDA #$05
         STA aF2
@@ -1175,14 +1182,14 @@ b0F22   LSR
 j0F51   INC a9F
         LDA a9F
         CMP #$03
-        BEQ j0F5C
+        BEQ PlaySomeOfTheTitleTune
         JMP j0EB7
 
 ;--------------------------------------------------------------------
-; j0F5C   
+; PlaySomeOfTheTitleTune   
 ;--------------------------------------------------------------------
-j0F5C   
-	LDA aEF
+PlaySomeOfTheTitleTune   
+        LDA aEF
 a0F5F   =*+$01
         ORA #$80
         STA $D418    ;Select Filter Mode and Volume
@@ -1545,18 +1552,18 @@ b11A4   LDA shouldWaitUntilReady
 ; DestructSequenceMiniGameLoop   
 ;--------------------------------------------------------------------
 DestructSequenceMiniGameLoop   
-	JSR SpinWaitingForJoystickInput
-        LDA $D41B    ;Oscillator 3 Output
+        JSR SpinWaitingForJoystickInput
+        LDA $D41B    ; Random Number Generator
         AND #$01
-        STA aAC
+        STA randomNumberBetween0and1
         LDA aA8
         CLC 
         ADC aAD
         STA aAA
         JSR UpdateSomeDataForMiniGame
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         AND #$01
-        STA aAB
+        STA anotherRandomNumberBetween0and1
         LDA #$01
         STA aA7
 b1205   LDA shouldWaitUntilReady
@@ -1567,22 +1574,22 @@ b1209   LDA shouldWaitUntilReady
         JSR UpdateMiniGameDisplay
         DEC aA7
         BNE b1237
-        LDA aAB
+        LDA anotherRandomNumberBetween0and1
         EOR #$01
-        STA aAB
+        STA anotherRandomNumberBetween0and1
         LDY aA9
         LDA f3921,Y
         STA aA7
         LDY aA9
         LDA f3C95,Y
-        LDX aAB
-        CPX aAC
+        LDX anotherRandomNumberBetween0and1
+        CPX randomNumberBetween0and1
         BNE b1230
         LSR 
 b1230   STA a3AFD
         LDA #$16
         STA a92
-b1237   LDA aAB
+b1237   LDA anotherRandomNumberBetween0and1
         BEQ b1284
         LDY aA9
         LDX f3913,Y
@@ -1613,7 +1620,7 @@ b125B   JSR s1313
         BCC b127E
         INC someDataHiPtr
         INC ramHiPtr
-b127E   JSR s1339
+b127E   JSR ClearLoPtrs
         JMP j12CA
 
 b1284   LDY aA9
@@ -1645,15 +1652,15 @@ b12A4   JSR s1313
         BCC b12C7
         INC someDataHiPtr
         INC ramHiPtr
-b12C7   JSR s1339
+b12C7   JSR ClearLoPtrs
 j12CA   LDA aA8
         BEQ b12E6
         LDA firePressed
         BEQ b12D5
         JMP b1205
 
-b12D5   LDA aAB
-        CMP aAC
+b12D5   LDA anotherRandomNumberBetween0and1
+        CMP randomNumberBetween0and1
         BEQ b12E6
         LDA aAA
         STA aAD
@@ -1694,8 +1701,8 @@ b1312   RTS
 s1313   
         LDY #$03
         LDX aA9
-        LDA aAB
-        CMP aAC
+        LDA anotherRandomNumberBetween0and1
+        CMP randomNumberBetween0and1
         BEQ b132B
 b131D   LDA a3928,Y
         STA (someDataLoPtr),Y
@@ -1714,9 +1721,9 @@ b132B   LDA f392C,Y
         RTS 
 
 ;-------------------------------------------------------------------
-; s1339
+; ClearLoPtrs
 ;-------------------------------------------------------------------
-s1339   
+ClearLoPtrs   
         LDY #$03
 b133B   LDA #$20
         STA (someDataLoPtr),Y
@@ -2014,7 +2021,7 @@ ShipDestructSequence
         CMP #$0E
         BCS b1582
         JSR s16D2
-b1582   LDA $D41B    ;Oscillator 3 Output
+b1582   LDA $D41B    ; Random Number Generator
         AND #$3F
         BNE b1593
         LDA a45
@@ -2030,7 +2037,7 @@ b1593   LDA a2E
         LDA #<SCREEN_RAM + $0300
         STA a2D
         STA a5F
-b15A3   LDA $D41B    ;Oscillator 3 Output
+b15A3   LDA $D41B    ; Random Number Generator
         CMP #$F0
         BCC b15B2
         AND #$01
@@ -2043,9 +2050,9 @@ b15B2   LDA a2A
         ; Falls through
 
 ;-------------------------------------------------------------------
-; s15B8
+; IncrementTwoValues
 ;-------------------------------------------------------------------
-s15B8   
+IncrementTwoValues   
         INC a27
         INC a32
         RTS 
@@ -2236,7 +2243,7 @@ b16E6   LDY fA4D0,X
         LDA (p12),Y
         CMP #$20
         BEQ b16F9
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         AND #$01
         CLC 
         ADC #$F9
@@ -2245,7 +2252,7 @@ b16F9   INY
         LDA (p12),Y
         CMP #$20
         BEQ b170A
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         AND #$01
         CLC 
         ADC #$FB
@@ -2254,7 +2261,7 @@ b170A   INY
         LDA (p12),Y
         CMP #$20
         BEQ b171B
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         AND #$01
         CLC 
         ADC #$FD
@@ -2290,7 +2297,7 @@ s173B
         LDX #$11
         LDA #$08
         STA a0F
-b1749   LDA $D41B    ;Oscillator 3 Output
+b1749   LDA $D41B    ; Random Number Generator
         CMP #$55
         BCC b1765
         CMP #$AA
@@ -2786,7 +2793,7 @@ b1A98   LDA #$00
         LDA (p6D),Y
         CMP #$FF
         BNE b1AB9
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         AND #$03
         CLC 
         ADC #$12
@@ -2855,7 +2862,7 @@ j1ABF   ASL
         BEQ b1B45
         CMP #$FF
         BEQ b1B36
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         BPL b1B45
 b1B36   LDA a2E
         EOR #$FF
@@ -3193,7 +3200,7 @@ j1DB0   LDA a62
         BNE j1DCB
         LDA a69
         BEQ j1DCB
-        CMP $D41B    ;Oscillator 3 Output
+        CMP $D41B    ; Random Number Generator
         BCC j1DCB
         JSR MaybeFireEnemyShipBullet
 j1DCB   LDA a06
@@ -3461,7 +3468,7 @@ MaybeLaunchMine
         BEQ b1F9A
         LSR 
         LSR 
-        CMP $D41B    ;Oscillator 3 Output
+        CMP $D41B    ; Random Number Generator
         BCC b1F9A
         LDX a54
         BMI b1F9A
@@ -3780,7 +3787,7 @@ EnterDemoModeUntilDeadOrPlayerPressesFire
         STA indexToTextureSegment
         LDA #$10
         STA a8E
-        LDA p0800
+        LDA randomDataStorage
         AND #$07
         CLC 
         ADC #$01
@@ -3851,13 +3858,13 @@ a2255   =*+$02
         BNE b2216
         LDA #$10
         STA firePressed
-        JSR s3086
+        JSR GenerateRandomDataFromRNG
 b227B   RTS 
 
 b227C   LDA #$10
         STA firePressed
         JSR ShipHasBeenHit
-        JSR s3086
+        JSR GenerateRandomDataFromRNG
         RTS 
 
 ;-------------------------------------------------------------------
@@ -3866,7 +3873,7 @@ b227C   LDA #$10
 RandomlyManipulateJoystick   
         LDA a8E
         STA firePressed
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         CMP #$BE
         BCC b229A
         LDA firePressed
@@ -3875,7 +3882,7 @@ RandomlyManipulateJoystick
         STA a8E
 b229A   LDA a5E
         STA a16
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         CMP #$B4
         BCC b22B6
         LDY #$00
@@ -3890,7 +3897,7 @@ b22B2   STY a16
         STY a5E
 b22B6   LDA a5F
         STA a17
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         CMP #$B4
         BCC b22D2
         LDY #$00
@@ -4178,7 +4185,7 @@ b2490   LDA a59
         JSR StoreShipSpriteState
         LDA a59
         STA spriteIndex
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         AND #$0F
         SEC 
         SBC #$08
@@ -4187,7 +4194,7 @@ b2490   LDA a59
         STA currentSpriteXPos
         LDA #$30
         STA currentSpriteValue
-        LDA $D41B    ;Oscillator 3 Output
+        LDA $D41B    ; Random Number Generator
         AND #$0F
         SBC #$08
         CLC 
@@ -5411,9 +5418,11 @@ UpdateTextureDataForCurrentShip
         STA a12
         LDA $E020,Y
         STA a13
-        LDA #>pA200
+        
+        ; Clear down the surface data first.
+        LDA #>endofsurfaceDataForCurrentLevel
         STA someDataHiPtr
-        LDA #<pA200
+        LDA #<endofsurfaceDataForCurrentLevel
         STA someDataLoPtr
 b2CCD   LDY #$3F
         LDA #$20
@@ -5425,6 +5434,7 @@ b2CD1   STA (someDataLoPtr),Y
         LDA someDataHiPtr
         CMP #>surfaceForCurrentLevel
         BCS b2CCD
+
         LDX #<pA240
         LDY #>pA240
         STX someDataLoPtr
@@ -5464,6 +5474,8 @@ b2D17   LDA (srcLoPtr),Y
         DEC ramHiPtr
         DEX 
         BNE b2D17
+
+        ; Clear more data down again with $20.
 j2D29   LDA ramHiPtr
         CMP #>surfaceForCurrentLevel
         BCC b2D40
@@ -5537,6 +5549,8 @@ b2DA6   LDA someDataLoPtr
         INY 
         AND #$1F
         TAX 
+
+        ; Main loop for populating the surface data.
 b2DB4   LDA (srcLoPtr),Y
         INY 
         STY a11
@@ -5551,6 +5565,7 @@ b2DC1   JSR s2DE4
         BPL b2DE3
         DEX 
         BNE b2DB4
+
         CLC 
         LDA someDataLoPtr
         ADC #$01
@@ -5609,7 +5624,7 @@ b2E1B   STA fA518,Y
         LDA #$00
         STA a10
 b2E29   LDX a10
-        LDA p0800,X
+        LDA randomDataStorage,X
         INC a10
         AND #$0F
         CLC 
@@ -5626,7 +5641,7 @@ b2E3E   LDA screenLineHiPtrArray,X
         STA fA480,Y
         INC anotherDataHiPtrArray,X
         LDX a10
-        LDA p0800,X
+        LDA randomDataStorage,X
         INC a10
         AND #$1F
         CMP #$14
@@ -5650,7 +5665,7 @@ b2E6B   INC fA518,X
         ADC #$00
         STA fA480,Y
         LDX a10
-        LDA p0800,X
+        LDA randomDataStorage,X
         INC a10
         AND #$01
         CLC 
@@ -5744,7 +5759,7 @@ b2F0B   LDA fA480,X
 WriteStuffToScreen   
         LDY #$26
 b2F17   LDX a10
-        LDA p0800,X
+        LDA randomDataStorage,X
         INC a10
         TAX 
         LDA #$20
@@ -5937,15 +5952,15 @@ b3062   LDA #$F1
         RTS 
 
 ;-------------------------------------------------------------------
-; s3086
+; GenerateRandomDataFromRNG
 ;-------------------------------------------------------------------
-s3086   
+GenerateRandomDataFromRNG   
         LDX #$00
         STX a10
-b308A   LDA $D41B    ;Oscillator 3 Output
+b308A   LDA $D41B    ; Random Number Generator
         LDX a10
-        EOR p0800,X
-        STA p0800,X
+        EOR randomDataStorage,X
+        STA randomDataStorage,X
         ROL a800F
         ROR a800F
         INC a10
@@ -6461,9 +6476,9 @@ IRQInterrupt2
         LDA #$F0
         STA $D021    ;Background Color 0
         INC shouldWaitUntilReady
-        LDA #<p3F38
+        LDA #<IRQInterrupt3
         STA $FFFE    ;IRQ
-        LDA #>p3F38
+        LDA #>IRQInterrupt3
         STA $FFFF    ;IRQ
         TXA 
         PHA 
@@ -6478,9 +6493,9 @@ IRQInterrupt2
         RTI 
 
 ;--------------------------------------------------------------------
-; p3F38   
+; IRQInterrupt3   
 ;--------------------------------------------------------------------
-p3F38   
+IRQInterrupt3   
         PHA 
         SEC 
         LDA #$06
@@ -6507,18 +6522,18 @@ a3F4A   =*+$01
         LDA #$1B
         STA $D011    ;VIC Control Register 1
         INC shouldWaitUntilReady
-        LDA #<p3F73
+        LDA #<IRQInterrupt4
         STA $FFFE    ;IRQ
-        LDA #>p3F73
+        LDA #>IRQInterrupt4
         STA $FFFF    ;IRQ
         JSR sB24B
         PLA 
         RTI 
 
 ;--------------------------------------------------------------------
-; p3F73   
+; IRQInterrupt4   
 ;--------------------------------------------------------------------
-p3F73   
+IRQInterrupt4   
         PHA 
         LDA #$01
         STA $D019    ;VIC Interrupt Request Register (IRR)
@@ -6596,22 +6611,27 @@ p3FD6   RTI
 .include "charset.asm"
 
 *=$A900
-;--------------------------------------------------------------------
-; fA900   
-;--------------------------------------------------------------------
 fA900   
+;--------------------------------------------------------------------
+; sA900   
+;--------------------------------------------------------------------
+sA900
         STA initial3
 aA904   =*+$01
         LDA #$01
         STA aC90A
         RTS 
 
+;--------------------------------------------------------------------
+; jA909   jC909
+;--------------------------------------------------------------------
+jA909
         LDA #$01
         BEQ bA910
         JMP jC9B1
 
 ;--------------------------------------------------------------------
-; jC910   
+; bA910   
 ;--------------------------------------------------------------------
 bA910   LDX #$00
 bA912   LDA firstInHallofFame,X
@@ -6629,8 +6649,14 @@ bA92A   LDA hiScoreForScrollingBanner,X
         STA fCAC0,X
         DEX 
         BPL bA92A
+
         LDX #$6F
-bA935   LDA f90,X
+
+;--------------------------------------------------------------------
+; bA935   
+;--------------------------------------------------------------------
+bA935   
+        LDA f90,X
         STA SCREEN_RAM + $0000,X
         DEX 
         BPL bA935
@@ -6652,8 +6678,9 @@ bA95B   STA f90,X
         INX 
         CPX #$70
         BNE bA95B
+
 ;-------------------------------------------------------------------
-; sC962
+; sC962 sA962
 ;-------------------------------------------------------------------
         LDA #$01
         TAY 
@@ -6698,7 +6725,7 @@ bA989   LDA SCREEN_RAM + $0000,X
         STA aC90A
         STA a349C
         STA a349D
-        JMP j0A20
+        JMP PrepareTitleScreen
 
         RTI 
 
@@ -6711,7 +6738,7 @@ fA9C0
 ; sA9D2   
 ;--------------------------------------------------------------------
 sA9D2   
-	JSR MaybeDisplayLandNowWarning
+        JSR MaybeDisplayLandNowWarning
         LDA $DC00    ;CIA1: Data Port Register A
         STA aC9EC
         LDA #$7F
@@ -6725,7 +6752,7 @@ aA9E7   LDA #$BF
         STA $DC00    ;CIA1: Data Port Register A
         RTS 
 
-bA9F1   JSR s15B8
+bA9F1   JSR IncrementTwoValues
         JMP jC9EB
 
 bA9F7   LDA #$01
@@ -7671,7 +7698,11 @@ sC4C5
         STA aC933
         JMP jC910
 
-jC4CD   LDA #<pC4DA
+;--------------------------------------------------------------------
+; jC4CD   
+;--------------------------------------------------------------------
+jC4CD   
+        LDA #<pC4DA
         STA $FFFA    ;NMI
         LDA #>pC4DA
         STA $FFFB    ;NMI
@@ -7724,7 +7755,12 @@ bC92A   LDA hiScoreForScrollingBanner,X
 aC933   RTS 
 
         .BYTE $6F
-bC935   LDA f90,X
+
+;--------------------------------------------------------------------
+; bC935   
+;--------------------------------------------------------------------
+bC935   
+        LDA f90,X
         STA SCREEN_RAM + $0000,X
         DEX 
         BPL bC935
@@ -7794,16 +7830,16 @@ jC9B1   LDA #$01
         STA aC90A
         STA a349C
         STA a349D
-        JMP j0A20
+        JMP PrepareTitleScreen
 
         RTI 
 
 .enc "none"
         .TEXT "S:URIDIUM HIGH/REM"
 ;-------------------------------------------------------------------
-; sC9D2
+; CheckLandNowWarning
 ;-------------------------------------------------------------------
-sC9D2   
+CheckLandNowWarning   
         JSR MaybeDisplayLandNowWarning
         LDA $DC00    ;CIA1: Data Port Register A
         STA aC9EC
@@ -7819,7 +7855,7 @@ jC9EB   LDA #$FF
         STA $DC00    ;CIA1: Data Port Register A
         RTS 
 
-bC9F1   JSR s15B8
+bC9F1   JSR IncrementTwoValues
         JMP jC9EB
 
 bC9F7   LDA #$01
