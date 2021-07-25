@@ -6049,7 +6049,6 @@ b3105   DEC initialValueOfY
         .cdef "--", $2E  ;characters
         .cdef "==", $2F  ;characters
         .cdef "AH", $3A
-        .cdef "FF", $3F
         .cdef "II", $16
         .cdef "LZ", $45
         .cdef "mm", $42
