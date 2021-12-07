@@ -1040,9 +1040,9 @@ b0E49   JSR PlaySound
         STA aEF
         LDA #$01
         STA aF2
-        LDA #<$FFBA
+        LDA #$00
         STA a3E99
-        LDA #>$FFBA
+        LDA #$FE
         STA a3E9A
         RTS 
 
