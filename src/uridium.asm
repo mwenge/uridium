@@ -18,39 +18,32 @@
 ; **** ZP FIELDS **** 
 ;
 playerScore = $20
-f52 = $52
-f70 = $70
-f71 = $71
-f90 = $90
-f91 = $91
-f96 = $96
-f99 = $99
-f9C = $9C
-fA4 = $A4
-fAD = $AD
-fC0 = $C0
-fC1 = $C1
-fC2 = $C2
-fC3 = $C3
-fC4 = $C4
-fC5 = $C5
-fC6 = $C6
-fC7 = $C7
-fC8 = $C8
-fC9 = $C9
-fCA = $CA
-fCB = $CB
-fCC = $CC
-fCD = $CD
-fCE = $CE
-fF3 = $F3
-fF6 = $F6
-fF9 = $F9
-fFC = $FC
+a70 = $70
+a71 = $71
+a9C = $9C
+aA4 = $A4
+aC0 = $C0
+aC1 = $C1
+aC2 = $C2
+aC3 = $C3
+aC4 = $C4
+aC5 = $C5
+aC6 = $C6
+aC7 = $C7
+aC8 = $C8
+aC9 = $C9
+aCA = $CA
+aCB = $CB
+aCC = $CC
+aCD = $CD
+aCE = $CE
+aF3 = $F3
+aF6 = $F6
+aF9 = $F9
 ;
 ; **** ZP ABSOLUTE ADRESSES **** 
 ;
-a01 = $01
+RAM_ACCESS_MODE = $01
 currentSpriteMSB = $02
 a03 = $03
 spriteIndex = $04
@@ -157,7 +150,7 @@ a68 = $68
 a69 = $69
 a6A = $6A
 a6B = $6B
-a6C = $6C
+usedToCheckIfWeShouldLaunchMine = $6C
 a6D = $6D
 a6E = $6E
 a6F = $6F
@@ -188,6 +181,7 @@ a95 = $95
 a96 = $96
 a97 = $97
 a98 = $98
+a99 = $99
 a9D = $9D
 a9F = $9F
 aA0 = $A0
@@ -215,19 +209,15 @@ aBA = $BA
 aBB = $BB
 aBC = $BC
 dataHiPtr = $BF
-aE8 = $E8
 aEF = $EF
 aF0 = $F0
 aF1 = $F1
 aF2 = $F2
 aFB = $FB
 aFC = $FC
-aFE = $FE
-aFF = $FF
 ;
 ; **** ZP POINTERS **** 
 ;
-p04 = $04
 p12 = $12
 p1E = $1E
 p52 = $52
@@ -238,13 +228,8 @@ dataLoPtr = $BE
 ;
 ; **** FIELDS **** 
 ;
-f0001 = $0001
 f000E = $000E
 f0035 = $0035
-f004B = $004B
-f0091 = $0091
-f0096 = $0096
-f00FC = $00FC
 ;
 ; **** POINTERS **** 
 ;
@@ -253,7 +238,6 @@ p30 = $0030
 ;
 ; **** EXTERNAL JUMPS **** 
 ;
-e00FD = $00FD
 COLOR_RAM = $D800
 SCREEN_RAM = $0400
 SCREEN_RAM_HIBANK = $4800
@@ -296,6 +280,7 @@ M_GRAY3                                   = $FF
 randomDataStorage = $0800
 
 * = $0900
+pE000 = $E000
 ;-------------------------------------------------------------------
 ; LaunchUridium
 ;-------------------------------------------------------------------
@@ -310,11 +295,11 @@ LaunchUridium
         STA $D020    ;Border Color
 
         LDA #$24
-        STA a01
+        STA RAM_ACCESS_MODE
 
         LDY #$FE
         LDA #$00
-b0916   STA @wf0001,Y
+b0916   STA RAM_ACCESS_MODE,Y
         DEY 
         BNE b0916
 
@@ -322,8 +307,8 @@ b091C   LDX #<p8000
         LDY #>p8000
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
-        LDX #<$E000
-        LDY #>$E000
+        LDX #<pE000
+        LDY #>pE000
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
         LDX #$20
@@ -394,7 +379,7 @@ DrawTitleScreen
         SEI 
 
         LDA #$25
-        STA a01
+        STA RAM_ACCESS_MODE
 
         ; Switch bank to Bank 1 ($4000)
         LDA $DD02    ;CIA2: Data Direction Register A
@@ -1081,11 +1066,11 @@ b0E97   LDA f3D2C,Y
         STY aA0
         TAY 
         LDA f3D71,Y
-        STA fF3,X
+        STA aF3,X
         LDA f3D90,Y
-        STA fFC,X
+        STA aFC,X
         LDA #$01
-        STA fF6,X
+        STA aF6,X
         LDY aA0
         INY 
         INX 
@@ -1094,13 +1079,13 @@ b0E97   LDA f3D2C,Y
 b0EB3   LDA #$00
         STA a9F
 j0EB7   TAX 
-        DEC fF6,X
+        DEC aF6,X
         BEQ b0EBF
         JMP j0F51
 
-b0EBF   LDA fFC,X
+b0EBF   LDA aFC,X
         STA aA3
-        LDA fF3,X
+        LDA aF3,X
         STA aA2
         LDY #$00
         LDA (pA2),Y
@@ -1111,7 +1096,7 @@ b0EBF   LDA fFC,X
         EOR #$FF
         SEC 
         ADC #$07
-        STA fF9,X
+        STA aF9,X
         LDA (pA2),Y
         INY 
         AND #$F0
@@ -1119,7 +1104,7 @@ b0EBF   LDA fFC,X
         LSR 
         LSR 
         LSR 
-        STA fA4,X
+        STA aA4,X
 b0EE4   LDA (pA2),Y
         CMP #$FF
         BNE b0EF5
@@ -1130,11 +1115,11 @@ b0EE4   LDA (pA2),Y
 
 b0EF5   TYA 
         SEC 
-        ADC fF3,X
-        STA fF3,X
+        ADC aF3,X
+        STA aF3,X
         LDA #$00
-        ADC fFC,X
-        STA fFC,X
+        ADC aFC,X
+        STA aFC,X
         LDA (pA2),Y
         AND #$F0
         BNE b0F0C
@@ -1145,8 +1130,8 @@ b0F0C   LSR
         LSR 
         LSR 
         LSR 
-j0F10   STA fF6,X
-        LDA fF9,X
+j0F10   STA aF6,X
+        LDA aF9,X
         TAX 
         LDA (pA2),Y
         AND #$0F
@@ -1160,11 +1145,11 @@ b0F22   LSR
         BNE b0F22
         STA aF1
         LDX a9F
-        LDA fA4,X
+        LDA aA4,X
         TAY 
         CLC 
         ADC #$27
-        STA f91,X
+        STA a91,X
         LDA f3D1E,Y
         STA aA3
         LDA f3D25,Y
@@ -1195,16 +1180,16 @@ a0F5F   =*+$01
         STA $D418    ;Select Filter Mode and Volume
         LDY #$00
         STY a9F
-b0F67   LDA @wf0091,Y
+b0F67   LDA a91,Y
         BEQ b0F78
         BMI b0F72
-        LDX f96,Y
+        LDX a96,Y
         BMI b0F78
-b0F72   STA @wf0096,Y
+b0F72   STA a96,Y
         JSR s105D
 b0F78   LDY a9F
         LDA #$00
-        STA @wf0091,Y
+        STA a91,Y
         INY 
         STY a9F
         CPY #$03
@@ -1214,60 +1199,60 @@ b0F78   LDY a9F
         STX a9F
 j0F8C   JSR UpdateSoundPtr
         LDX aA0
-        LDA fC6,X
+        LDA aC6,X
         BNE b0F98
         JMP j103F
 
-b0F98   LDA fC0,X
+b0F98   LDA aC0,X
         CLC 
-        ADC fC2,X
-        STA fC0,X
+        ADC aC2,X
+        STA aC0,X
         LDY soundPtr
         STA $D400,Y  ;Voice 1: Frequency Control - Low-Byte
-        LDA fC1,X
-        ADC fC3,X
-        STA fC1,X
+        LDA aC1,X
+        ADC aC3,X
+        STA aC1,X
         STA $D401,Y  ;Voice 1: Frequency Control - High-Byte
-        LDA fC7,X
+        LDA aC7,X
         CLC 
-        ADC fC9,X
-        STA fC7,X
+        ADC aC9,X
+        STA aC7,X
         STA $D402,Y  ;Voice 1: Pulse Waveform Width - Low-Byte
-        LDA fC8,X
-        ADC fCA,X
-        STA fC8,X
+        LDA aC8,X
+        ADC aCA,X
+        STA aC8,X
         STA $D403,Y  ;Voice 1: Pulse Waveform Width - High-Nybble
         BEQ b0FC6
         CMP #$0F
         BCC b0FD7
-b0FC6   LDA fC9,X
+b0FC6   LDA aC9,X
         EOR #$FF
         CLC 
         ADC #$01
-        STA fC9,X
-        LDA fCA,X
+        STA aC9,X
+        LDA aCA,X
         EOR #$FF
         ADC #$00
-        STA fCA,X
+        STA aCA,X
 b0FD7   LDX a9F
-        LDY f99,X
+        LDY a99,X
         BEQ b0FED
         DEY 
-        STY f99,X
+        STY a99,X
         BNE b0FED
         LDX a9F
-        LDA f9C,X
+        LDA a9C,X
         AND #$FE
         LDY soundPtr
         STA $D404,Y  ;Voice 1: Control Register
 b0FED   LDX aA0
-        LDY fC4,X
+        LDY aC4,X
         DEY 
-        STY fC4,X
+        STY aC4,X
         BNE b104C
-        LDA fC5,X
-        STA fC4,X
-        LDA fCB,X
+        LDA aC5,X
+        STA aC4,X
+        LDA aCB,X
         CMP #$01
         BEQ b1025
 
@@ -1275,42 +1260,42 @@ b0FED   LDX aA0
 ; p1000   
 ;--------------------------------------------------------------------
 p1000   
-        LDA fC2,X
+        LDA aC2,X
         EOR #$FF
         CLC 
         ADC #$01
-p1007   STA fC2,X
-        LDA fC3,X
+p1007   STA aC2,X
+        LDA aC3,X
         EOR #$FF
         ADC #$00
-        STA fC3,X
-        LDA fC9,X
+        STA aC3,X
+        LDA aC9,X
         EOR #$FF
         CLC 
         ADC #$01
-        STA fC9,X
-        LDA fCA,X
+        STA aC9,X
+        LDA aCA,X
         EOR #$FF
         ADC #$00
-        STA fCA,X
+        STA aCA,X
         JMP j102D
 
-b1025   LDA fCC,X
-        STA fC0,X
-        LDA fCD,X
-        STA fC1,X
-j102D   LDY fC6,X
+b1025   LDA aCC,X
+        STA aC0,X
+        LDA aCD,X
+        STA aC1,X
+j102D   LDY aC6,X
         DEY 
-        STY fC6,X
+        STY aC6,X
         BNE b104C
         JSR UpdateSoundSettings
-        LDA fCE,X
+        LDA aCE,X
         BEQ j103F
         LDX a9F
-        STA f91,X
+        STA a91,X
 j103F   LDX a9F
         LDA #$00
-        STA f96,X
+        STA a96,X
         CPX #$02
         BNE b104C
         JSR PlayNote
@@ -1331,7 +1316,7 @@ s105D
         JSR UpdateSoundPtr
         LDA #$00
         STA aA3
-        LDA @wf0096,Y
+        LDA a96,Y
         SEC 
         SBC #$01
         AND #$7F
@@ -1356,7 +1341,7 @@ s105D
         LDX f1147,Y
         LDY #$0F
 b1091   LDA (pA2),Y
-        STA fC0,X
+        STA aC0,X
         DEX 
         DEY 
         BNE b1091
@@ -1409,12 +1394,12 @@ b10D3   LDY aA0
         LDY aA0
         LDA f3947,Y
         LDX a9F
-        STA f99,X
+        STA a99,X
         DEY 
         DEY 
         DEY 
         LDA f3947,Y
-        STA f9C,X
+        STA a9C,X
         ORA #$01
         LDY soundPtr
         DEY 
@@ -1481,18 +1466,20 @@ DestructSequenceMiniGame
         STA $D021    ;Background Color 0
         STA $D022    ;Background Color 1, Multi-Color Register 0
         STA $D023    ;Background Color 2, Multi-Color Register 1
-        LDX #<pA6A0
-        LDY #>pA6A0
+        LDX #<miniGameScreenData
+        LDY #>miniGameScreenData
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
         LDX #<SCREEN_RAM_HIBANK + $00A0
         LDY #>SCREEN_RAM_HIBANK + $00A0
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
+
 b116B   LDA shouldWaitUntilReady
         BNE b116B
 b116F   LDA shouldWaitUntilReady
         BEQ b116F
+
         LDX #$03
         JSR CopyDataUntilXIsZero
         LDY #$50
@@ -1507,11 +1494,11 @@ b116F   LDA shouldWaitUntilReady
         STY tempHiPtrCopyTo
         SEI 
         LDA #$24
-        STA a01
+        STA RAM_ACCESS_MODE
         LDX #$02
         JSR CopyDataUntilXIsZero
         LDA #$25
-        STA a01
+        STA RAM_ACCESS_MODE
         CLI 
         LDA #$04
         STA initialValueOfY
@@ -1599,13 +1586,13 @@ b1237   LDA anotherRandomNumberBetween0and1
         STA ramHiPtr
         LDA screenLineLoPtrArray,X
         CLC 
-        ADC f391A,Y
+        ADC miniGameScreenDataPtrArray,Y
         STA someDataLoPtr
         STA ramLoPtr
         BCC b125B
         INC someDataHiPtr
         INC ramHiPtr
-b125B   JSR s1313
+b125B   JSR UpdateSomeMoreDataForMiniGame
         LDY aA9
         LDX f3905,Y
         LDA screenLineHiPtrArray,X
@@ -1637,7 +1624,7 @@ b1284   LDY aA9
         BCC b12A4
         INC someDataHiPtr
         INC ramHiPtr
-b12A4   JSR s1313
+b12A4   JSR UpdateSomeMoreDataForMiniGame
         LDY aA9
         LDX f3913,Y
         LDA screenLineHiPtrArray,X
@@ -1646,7 +1633,7 @@ b12A4   JSR s1313
         STA ramHiPtr
         LDA screenLineLoPtrArray,X
         CLC 
-        ADC f391A,Y
+        ADC miniGameScreenDataPtrArray,Y
         STA someDataLoPtr
         STA ramLoPtr
         BCC b12C7
@@ -1696,9 +1683,9 @@ b1309   SBC #$01
 b1312   RTS 
 
 ;-------------------------------------------------------------------
-; s1313
+; UpdateSomeMoreDataForMiniGame
 ;-------------------------------------------------------------------
-s1313   
+UpdateSomeMoreDataForMiniGame   
         LDY #$03
         LDX aA9
         LDA anotherRandomNumberBetween0and1
@@ -2043,7 +2030,7 @@ b15A3   LDA $D41B    ; Random Number Generator
         AND #$01
         TAY 
         LDA #$1A
-        STA @wf0091,Y
+        STA a91,Y
 b15B2   LDA a2A
         CMP #$02
         BCS ShipDestructSequence
@@ -2195,6 +2182,7 @@ b1683   LDA a86
         STA a85
         LDA a2936
         STA a49
+
         LDY #$05
 b169A   LDA indexToFunctionPtrArray,Y
         BEQ b16A9
@@ -2204,6 +2192,7 @@ b169A   LDA indexToFunctionPtrArray,Y
         STA sprite0Ptr,Y
 b16A9   DEY 
         BPL b169A
+
 b16AC   LDX #<spaces
         LDY #>spaces
         JSR WriteToScreen
@@ -2732,21 +2721,21 @@ UpdatePointersAndFetchSurfaceData
         STA a87
         STA a85
         LDA #$80
-        STA a6C
+        STA usedToCheckIfWeShouldLaunchMine
         STA a68
         JSR FetchCurrentSurfaceData
         RTS 
 
-fE040 = $E040
+levelSurfaceDataHiPtrArray = $E040
 ;-------------------------------------------------------------------
 ; FetchCurrentSurfaceData
 ;-------------------------------------------------------------------
 FetchCurrentSurfaceData   
         SEI 
         LDA #$24
-        STA a01
+        STA RAM_ACCESS_MODE
         LDY indexToCurrentLevelTextureData
-        LDA fE040,Y
+        LDA levelSurfaceDataHiPtrArray,Y
         STA tempHiPtrCopyFrom
         LDA #$00
         STA tempLoPtrCopyFrom
@@ -2756,7 +2745,7 @@ FetchCurrentSurfaceData
         LDX #$04
         JSR CopyDataUntilXIsZero
         LDA #$25
-        STA a01
+        STA RAM_ACCESS_MODE
         CLI 
         RTS 
 
@@ -2768,12 +2757,12 @@ UpdateAndDisplaySomeSprites
         AND #$3F
         CMP #$21
         BNE b1A97
-        LDA a6C
+        LDA usedToCheckIfWeShouldLaunchMine
         BEQ b1A98
         CMP #$80
         BNE b1A97
         LDA #$00
-        STA a6C
+        STA usedToCheckIfWeShouldLaunchMine
         LDA a88
         BNE b1A93
         LDA a68
@@ -2786,7 +2775,7 @@ b1A97   RTS
 b1A98   LDA #$00
         STA srcHiPtr
         LDA #$80
-        STA a6C
+        STA usedToCheckIfWeShouldLaunchMine
         LDA #$AE
         STA a92
         LDY a24
@@ -2921,14 +2910,14 @@ b1B95   LDY a11
         LDX a10
         TAY 
         LDA fC120,Y
-        STA f70,X
+        STA a70,X
         INX 
         LDA fC190,Y
-        STA f70,X
+        STA a70,X
         LDY a11
         LDA #$02
         STA indexToFunctionPtrArray,Y
-        INC a6C
+        INC usedToCheckIfWeShouldLaunchMine
         INC a88
         LDA a7D
         STA fA4B0,Y
@@ -2977,6 +2966,7 @@ UpdateSpriteAndRunFunctionPerSprite
         STA currentSpriteDisplayEnable
         LDA #$00
         STA currentSpriteBackgroundDisplayPriority
+
 b1C0E   LDY a11
         STY spriteIndex
         LDA indexToFunctionPtrArray,Y
@@ -3017,7 +3007,7 @@ UpdateSpritePositionValueAndFunctionPtrIndex
         STA currentSpriteDisplayEnable
         LDY a11
         STA indexToFunctionPtrArray,Y
-        DEC a6C
+        DEC usedToCheckIfWeShouldLaunchMine
         JSR UpdateSpriteContentAndPosition
         RTS 
 
@@ -3055,9 +3045,9 @@ PerformDetailedUpdateForSprite
         LDA (p70,X)
         CMP #$FF
         BEQ b1CA7
-        INC f70,X
+        INC a70,X
         BNE b1C8C
-        INC f71,X
+        INC a71,X
 b1C8C   PHA 
         AND #$7F
         STA fA4B8,Y
@@ -3068,9 +3058,9 @@ b1C8C   PHA
         BNE b1CA7
 b1C9C   LDA (p70,X)
         STA fA4B0,Y
-        INC f70,X
+        INC a70,X
         BNE b1CA7
-        INC f71,X
+        INC a71,X
 b1CA7   LDA fA4B0,Y
         SEC 
         SBC #$01
@@ -3316,7 +3306,7 @@ b1E93   LDA currentSpriteXPos
 b1E99   LDA #$00
         STA currentSpriteDisplayEnable
         STA indexToFunctionPtrArray,Y
-        DEC a6C
+        DEC usedToCheckIfWeShouldLaunchMine
 j1EA2   JSR UpdateSpriteContentAndPosition
         RTS 
 
@@ -3335,7 +3325,7 @@ DetectSpriteLeavingScreen
         LDA #$00
         STA currentSpriteDisplayEnable
         STA indexToFunctionPtrArray,Y
-        DEC a6C
+        DEC usedToCheckIfWeShouldLaunchMine
 b1EBF   JSR UpdateSpriteContentAndPosition
         RTS 
 
@@ -3433,7 +3423,7 @@ FireBulletFromEnemyShip
         STA fA4B0,Y
         PLA 
         STA currentSpriteValue
-        INC a6C
+        INC usedToCheckIfWeShouldLaunchMine
         LDY a11
         STY spriteIndex
         LDA #$0B
@@ -3462,7 +3452,7 @@ b1F7C   JMP DetectSpriteLeavingScreen
 ; MaybeLaunchMine   
 ;--------------------------------------------------------------------
 MaybeLaunchMine   
-        LDA a6C
+        LDA usedToCheckIfWeShouldLaunchMine
         BPL b1F9A
         LDA a69
         BEQ b1F9A
@@ -3526,7 +3516,7 @@ b1FA6   STY spriteIndex
         ROL 
         STA a06
         JSR UpdateSpriteContentAndPosition
-        INC a6C
+        INC usedToCheckIfWeShouldLaunchMine
         RTS 
 
 ;-------------------------------------------------------------------
@@ -3679,7 +3669,7 @@ SetUpScreenForScrolling
         LDA #$00
         STA a2A
         JSR UpdateTextureDataForCurrentShip
-        JSR ClearAnotherDataPtrArray
+        JSR ClearTextureDataPtrArray
         JSR UpdateScreenColors
         JSR s2E17
         JSR ScrollShipSurface
@@ -3972,9 +3962,11 @@ b232D   LDX #<inGameBanner
         JSR WriteToScreen
         RTS 
 
+levelNameLoPtrArray = $E050
+levelNameHiPtrArray = $E060
 b2335   LDY indexToCurrentLevelTextureData
-        LDX $E050,Y
-        LDA $E060,Y
+        LDX levelNameLoPtrArray,Y
+        LDA levelNameHiPtrArray,Y
         TAY 
         JSR WriteToScreen
         RTS 
@@ -5349,8 +5341,8 @@ b2C42   LDA a31
         STA a51
         RTS 
 
-pE100 = $E100
-anotherDataLoPtrArray = someDataHiPtrArray
+someKindOfTextureData = $E100
+textureDataLoPtrArray = someDataHiPtrArray ; $A400
 newValueofSrcLoPtr = $11
 ;-------------------------------------------------------------------
 ; UpdatePositionOfPointersToTextureData
@@ -5358,8 +5350,8 @@ newValueofSrcLoPtr = $11
 ; for the scrolling surface.
 ;-------------------------------------------------------------------
 UpdatePositionOfPointersToTextureData   
-        LDX #<pE100
-        LDY #>pE100
+        LDX #<someKindOfTextureData
+        LDY #>someKindOfTextureData
         STX srcLoPtr
         STY srcHiPtr
 
@@ -5367,9 +5359,9 @@ UpdatePositionOfPointersToTextureData
 b2C70   LDY #$00
         STY newValueofSrcLoPtr
         LDA srcLoPtr
-        STA anotherDataLoPtrArray,X
+        STA textureDataLoPtrArray,X
         LDA srcHiPtr
-        STA anotherDataHiPtrArray,X
+        STA textureDataHiPtrArray,X
         INX 
         BEQ b2CA4
         LDA (srcLoPtr),Y
@@ -5394,17 +5386,22 @@ b2C89   LDY newValueofSrcLoPtr
 b2CA4   RTS 
 
 ;-------------------------------------------------------------------
-; ClearAnotherDataPtrArray
+; ClearTextureDataPtrArray
 ;-------------------------------------------------------------------
-ClearAnotherDataPtrArray   
+ClearTextureDataPtrArray   
         LDA #$00
         TAY 
-b2CA8   STA anotherDataLoPtrArray,Y
-        STA anotherDataHiPtrArray,Y
+b2CA8   STA textureDataLoPtrArray,Y
+        STA textureDataHiPtrArray,Y
         INY 
         BNE b2CA8
         RTS 
 
+fE010 = $E010
+fE020 = $E020
+
+textureIndexLoPtrMaybe = $12
+textureIndexHiPtrMaybe = $13
 ;-------------------------------------------------------------------
 ; UpdateTextureDataForCurrentShip
 ;-------------------------------------------------------------------
@@ -5414,10 +5411,10 @@ UpdateTextureDataForCurrentShip
         LDA indexToCurrentLevelTextureData
         AND #$0F
         TAY 
-        LDA $E010,Y
-        STA a12
-        LDA $E020,Y
-        STA a13
+        LDA fE010,Y
+        STA textureIndexLoPtrMaybe
+        LDA fE020,Y
+        STA textureIndexHiPtrMaybe
         
         ; Clear down the surface data first.
         LDA #>endofsurfaceDataForCurrentLevel
@@ -5440,19 +5437,19 @@ b2CD1   STA (someDataLoPtr),Y
         STX someDataLoPtr
         STY someDataHiPtr
 b2CE8   LDY #$00
-        LDA (p12),Y
+        LDA (textureIndexLoPtrMaybe),Y
         BEQ b2D57
         TAX 
-        LDA anotherDataHiPtrArray,X
+        LDA textureDataHiPtrArray,X
         STA srcHiPtr
-        LDA anotherDataLoPtrArray,X
+        LDA textureDataLoPtrArray,X
         STA srcLoPtr
         CLC 
-        LDA a12
+        LDA textureIndexLoPtrMaybe
         ADC #$01
-        STA a12
+        STA textureIndexLoPtrMaybe
         BCC b2D04
-        INC a13
+        INC textureIndexHiPtrMaybe
 b2D04   LDA (srcLoPtr),Y
         INY 
         STA initialValueOfY
@@ -5509,34 +5506,34 @@ b2D57   LDA aA401
 
 b2D66   LDY #$00
         CLC 
-        LDA a12
+        LDA textureIndexLoPtrMaybe
         ADC #$01
-        STA a12
+        STA textureIndexLoPtrMaybe
         BCC b2D73
-        INC a13
-b2D73   LDA (p12),Y
+        INC textureIndexHiPtrMaybe
+b2D73   LDA (textureIndexLoPtrMaybe),Y
         ORA #$80
         AND #$BF
         STA someDataHiPtr
         CMP #$A4
         BCS b2DE3
         INY 
-        LDA (p12),Y
+        LDA (textureIndexLoPtrMaybe),Y
         STA someDataLoPtr
         INY 
-        LDA (p12),Y
+        LDA (textureIndexLoPtrMaybe),Y
         BEQ b2DE3
         TAX 
-        LDA anotherDataHiPtrArray,X
+        LDA textureDataHiPtrArray,X
         STA srcHiPtr
-        LDA anotherDataLoPtrArray,X
+        LDA textureDataLoPtrArray,X
         STA srcLoPtr
         CLC 
-        LDA a12
+        LDA textureIndexLoPtrMaybe
         ADC #$03
-        STA a12
+        STA textureIndexLoPtrMaybe
         BCC b2D9F
-        INC a13
+        INC textureIndexHiPtrMaybe
 b2D9F   LDY #$00
         LDA (srcLoPtr),Y
         INY 
@@ -5630,7 +5627,7 @@ b2E29   LDX a10
         CLC 
         ADC #$07
         TAX 
-        LDA anotherDataHiPtrArray,X
+        LDA textureDataHiPtrArray,X
         BEQ b2E3E
         JSR s2EA5
 b2E3E   LDA screenLineHiPtrArray,X
@@ -5639,7 +5636,7 @@ b2E3E   LDA screenLineHiPtrArray,X
         STA someDataLoPtrArray,Y
         LDA colorLineHiPtrArray,X
         STA fA480,Y
-        INC anotherDataHiPtrArray,X
+        INC textureDataHiPtrArray,X
         LDX a10
         LDA randomDataStorage,X
         INC a10
@@ -5675,7 +5672,7 @@ b2E6B   INC fA518,X
         BPL b2E29
         LDA #$00
         LDY #$40
-b2E9E   STA anotherDataHiPtrArray,Y
+b2E9E   STA textureDataHiPtrArray,Y
         DEY 
         BPL b2E9E
         RTS 
@@ -5696,7 +5693,7 @@ b2EA9   TXA
 b2EB3   TAX 
         DEC initialValueOfindexToTextureSegment
         BEQ b2EBD
-        LDA anotherDataHiPtrArray,X
+        LDA textureDataHiPtrArray,X
         BNE b2EA9
 b2EBD   RTS 
 
@@ -5774,21 +5771,25 @@ b2F2D   STA (ramLoPtr),Y
         BPL b2F17
         RTS 
 
+indexIntoLevelColorScheme = $E030
 ;-------------------------------------------------------------------
 ; UpdateScreenColors
 ;-------------------------------------------------------------------
 UpdateScreenColors   
-        LDX #<p3372
-        LDY #>p3372
+        LDX #<levelColorScheme
+        LDY #>levelColorScheme
         STX ramLoPtr
         STY ramHiPtr
         LDA #$00
         STA initialValueOfY
         LDA monochromEnabled
         BNE b2F5B
+
         LDY indexToCurrentLevelTextureData
-        LDA $E030,Y
+        LDA indexIntoLevelColorScheme,Y
         BEQ b2F5B
+
+        ; THere's a color scheme for this level.
         STA initialValueOfY
 b2F4C   CLC 
         LDA ramLoPtr
@@ -5798,12 +5799,14 @@ b2F4C   CLC
         INC ramHiPtr
 b2F57   DEC initialValueOfY
         BNE b2F4C
+
 b2F5B   LDY #$04
 b2F5D
         LDA (ramLoPtr),Y
-        STA @wf004B,Y
+        STA a4b,Y
         DEY 
         BPL b2F5D
+
         LDA a4B
         STA $D023    ;Background Color 2, Multi-Color Register 1
         LDA a4C
@@ -5815,6 +5818,8 @@ b2F5D
         LDA a4D
         AND #$F7
         STA a58
+
+        ; Write the color scheme to the screen.
         LDX #<COLOR_RAM + $00A0
         LDY #>COLOR_RAM + $00A0
         STX ramLoPtr
@@ -6164,15 +6169,17 @@ a3319   .BYTE $32,$00,$82,$00,$8D,$FF,$00,$00
         .BYTE $FF,$00,$00,$00,$FB,$07,$07,$82
         .BYTE $00,$8E,$FF,$FF,$00,$FF,$00,$FE
         .BYTE $06
-p3372   .BYTE $FB
-f3373   .BYTE $FF,$F8,$FC,$FB,$F0,$FB,$FE,$FA
-        .BYTE $F2,$F0,$FC,$FA,$FE,$F6,$F5,$FD
-        .BYTE $F8,$FE,$F6,$F2,$FA,$F8,$F7,$F8
-        .BYTE $FB,$FC,$FC,$FA,$F2,$F6,$FE,$F8
-        .BYTE $FD,$F5,$F8,$F7,$F8,$FC,$F0,$FB
-        .BYTE $F3,$FD,$FA,$F2,$F9,$F8
-f33A1   .BYTE $F8,$FD,$F5,$FB,$FF,$F8,$F7,$F8
-        .BYTE $F6,$F3,$F8,$FC,$FB,$FB,$FF,$F8
+levelColorScheme
+        .BYTE M_GRAY1
+f3373   .BYTE M_GRAY3,M_ORANGE,M_GRAY2,M_GRAY1,M_BLACK,M_GRAY1,M_LTBLUE,M_LTRED
+        .BYTE M_RED,M_BLACK,M_GRAY2,M_LTRED,M_LTBLUE,M_BLUE,M_GREEN,M_LTGREEN
+        .BYTE M_ORANGE,M_LTBLUE,M_BLUE,M_RED,M_LTRED,M_ORANGE,M_YELLOW,M_ORANGE
+        .BYTE M_GRAY1,M_GRAY2,M_GRAY2,M_LTRED,M_RED,M_BLUE,M_LTBLUE,M_ORANGE
+        .BYTE M_LTGREEN,M_GREEN,M_ORANGE,M_YELLOW,M_ORANGE,M_GRAY2,M_BLACK,M_GRAY1
+        .BYTE M_CYAN,M_LTGREEN,M_LTRED,M_RED,M_BROWN,M_ORANGE
+f33A1   .BYTE M_ORANGE,M_LTGREEN,M_GREEN,M_GRAY1,M_GRAY3,M_ORANGE,M_YELLOW,M_ORANGE
+        .BYTE M_BLUE,M_CYAN,M_ORANGE,M_GRAY2,M_GRAY1,M_GRAY1,M_GRAY3,M_ORANGE
+
         .BYTE $FE,$F6,$04,$02,$03,$06,$07,$08
         .BYTE $08,$06,$05,$02,$03,$06,$08,$0B
         .BYTE $07,$06,$05,$02,$03
@@ -6440,7 +6447,7 @@ f38F9   .BYTE $00,$10,$25,$50,$00,$50,$50,$00
 f3905   .BYTE $04,$06,$09,$0C,$0F,$12,$15
 f390C   .BYTE $04,$0D,$0B,$09,$07,$05,$03
 f3913   .BYTE $04,$06,$09,$0C,$0F,$12,$15
-f391A   .BYTE $04,$17,$19,$1B,$1D,$1F,$21
+miniGameScreenDataPtrArray   .BYTE $04,$17,$19,$1B,$1D,$1F,$21
 f3921   .BYTE $03
 a3922   .BYTE $05
 a3923   .BYTE $07
@@ -6655,7 +6662,7 @@ bA92A   LDA hiScoreForScrollingBanner,X
 ; bA935   
 ;--------------------------------------------------------------------
 bA935   
-        LDA f90,X
+        LDA a90,X
         STA SCREEN_RAM + $0000,X
         DEX 
         BPL bA935
@@ -6667,13 +6674,13 @@ bA935
         LDA #$0B
         STA $D011    ;VIC Control Register 1
         LDA #$37
-        STA a01
+        STA RAM_ACCESS_MODE
         JSR $FDA3 ;(jmp) - initialize CIA & IRQ             
         CLI 
         LDX #$00
         STX $02A1
         TXA 
-bA95B   STA f90,X
+bA95B   STA a90,X
         INX 
         CPX #$70
         BNE bA95B
@@ -6698,10 +6705,10 @@ bA95B   STA f90,X
         JSR $FFD8 ;- save after call SETLFS,SETNAM    
         SEI 
         LDA #$35
-        STA a01
+        STA RAM_ACCESS_MODE
         LDX #$6F
 bA989   LDA SCREEN_RAM + $0000,X
-        STA f90,X
+        STA a90,X
         DEX 
         BPL bA989
 
@@ -7096,20 +7103,20 @@ WasteCyclesUsingXAndY
 ; sB24B
 ;-------------------------------------------------------------------
 sB24B   
-        LDA a01
+        LDA RAM_ACCESS_MODE
         AND #$10
         BEQ bB25A
-        LDA a01
+        LDA RAM_ACCESS_MODE
         ORA #$20
-        STA a01
+        STA RAM_ACCESS_MODE
         STA a94
 bB259   RTS 
 
 bB25A   LDA a94
         BEQ bB259
-        LDA a01
+        LDA RAM_ACCESS_MODE
         AND #$DF
-        STA a01
+        STA RAM_ACCESS_MODE
         RTS 
 
 pauseText
@@ -7343,7 +7350,7 @@ bC1E8   LDA $D011    ;VIC Control Register 1
 
         SEI 
         LDA #$34
-        STA a01
+        STA RAM_ACCESS_MODE
 
         LDY #$00
 bC1F4   LDA (dreadnoughtLoPtr),Y
@@ -7374,7 +7381,7 @@ bC218   LDA (dreadnoughtLoPtr),Y
         CPY #$E8
         BNE bC218
         LDA #$37
-        STA a01
+        STA RAM_ACCESS_MODE
         CLI 
         LDA dreadnoughtLoPtr
         CLC 
@@ -7446,7 +7453,7 @@ bC2A2
         JSR $E544
         SEI 
         LDA #$35
-        STA a01
+        STA RAM_ACCESS_MODE
         JMP jC4CD
 
 ;-------------------------------------------------------------------
@@ -7479,7 +7486,7 @@ bC2DA   LDA fA900,X
         INX 
         BNE bC2DA
         LDA #$37
-        STA a01
+        STA RAM_ACCESS_MODE
         CLI 
         LDX #$1F
 bC2EF   LDA $FD30,X
@@ -7759,7 +7766,7 @@ aC933   RTS
 ; bC935   
 ;--------------------------------------------------------------------
 bC935   
-        LDA f90,X
+        LDA a90,X
         STA SCREEN_RAM + $0000,X
         DEX 
         BPL bC935
@@ -7771,13 +7778,13 @@ bC935
         LDA #$0B
         STA $D011    ;VIC Control Register 1
         LDA #$37
-        STA a01
+        STA RAM_ACCESS_MODE
         JSR $FDA3 ;(jmp) - initialize CIA & IRQ             
         CLI 
         LDX #$00
         STX $02A1
         TXA 
-bC95B   STA f90,X
+bC95B   STA a90,X
         INX 
         CPX #$70
         BNE bC95B
@@ -7803,10 +7810,10 @@ sC962
 aC982   RTS 
 
         LDA #$35
-        STA a01
+        STA RAM_ACCESS_MODE
         LDX #$6F
 bC989   LDA SCREEN_RAM + $0000,X
-        STA f90,X
+        STA a90,X
         DEX 
         BPL bC989
 

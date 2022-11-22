@@ -1,36 +1,68 @@
+.enc "petscii"  ;define an ascii->petscii encoding
+        .cdef "  ", $30  ;characters
+        .cdef "..", $28  ;characters
+        .cdef ",,", $29  ;characters
+        .cdef "::", $2A  ;characters
+        .cdef "!!", $25  ;characters
+        .cdef "??", $24  ;characters
+        .cdef "--", $2E  ;characters
+        .cdef "==", $2F  ;characters
+        .cdef "AH", $3A
+        .cdef "II", $16
+        .cdef "KZ", $44
+        .cdef "mm", $42
+        .cdef "al", $0A
+        .cdef "nv", $17
+        .cdef "ww", $54
+        .cdef "xz", $21
+        .cdef "09", $00
+
 pE000   .BYTE $00,$09,$00,$09,$C3,$C2,$CD,$38
         .BYTE $30,$00,$00,$00,$00,$00,$00,$00
-fE010   .BYTE $10,$18,$E8,$00,$D0,$10,$28,$00
+fE010
+        .BYTE $10,$18,$E8,$00,$D0,$10,$28,$00
         .BYTE $D8,$20,$D0,$30,$00,$B0,$D0,$00
-fE020   .BYTE $80,$F4,$F1,$F0,$F8,$FB,$FD,$AA
+fE020
+        .BYTE $80,$F4,$F1,$F0,$F8,$FB,$FD,$AA
         .BYTE $AB,$F6,$BA,$B8,$B6,$BC,$B3,$CE
-fE030   .BYTE $00,$0A,$01,$09,$0C,$03,$07,$08
+indexIntoLevelColorScheme
+        .BYTE $00,$0A,$01,$09,$0C,$03,$07,$08
         .BYTE $02,$06,$05,$09,$0B,$01,$06,$04
-fE040   .BYTE $D8,$DC,$D4,$DC,$D4,$D8,$DC,$D8
+levelSurfaceDataHiPtrArray
+        .BYTE $D8,$DC,$D4,$DC,$D4,$D8,$DC,$D8
         .BYTE $D4,$D8,$DC,$D4,$DC,$D8,$D4,$DC
-fE050   .BYTE $DF,$70,$84,$98,$AC,$C0,$D5,$E9
+levelNameLoPtrArray
+        .BYTE $DF,$70,$84,$98,$AC,$C0,$D5,$E9
         .BYTE $55,$69,$7E,$92,$A6,$B8,$CC,$DF
-fE060   .BYTE $EF,$E0,$E0,$E0,$E0,$E0,$E0,$E0
+levelNameHiPtrArray
+        .BYTE $EF,$E0,$E0,$E0,$E0,$E0,$E0,$E0
         .BYTE $EF,$EF,$EF,$EF,$EF,$EF,$EF,$EF
-        .BYTE $02,$0C,$30,$30,$30,$30,$00,$01
-        .BYTE $28,$30,$53,$12,$17,$0C,$28,$30
-        .BYTE $30,$30,$30,$FF,$02,$0C,$30,$30
-        .BYTE $30,$30,$00,$02,$28,$30,$45,$0E
-        .BYTE $0A,$0D,$28,$30,$30,$30,$30,$FF
-        .BYTE $02,$0C,$30,$30,$30,$00,$03,$28
-        .BYTE $30,$3C,$18,$19,$19,$0E,$1B,$28
-        .BYTE $30,$30,$30,$FF,$02,$0C,$30,$30
-        .BYTE $30,$00,$04,$28,$30,$4C,$12,$15
-        .BYTE $1F,$0E,$1B,$28,$30,$30,$30,$FF
-        .BYTE $02,$0C,$30,$30,$30,$30,$00,$05
-        .BYTE $28,$30,$16,$1B,$18,$17,$28,$30
-        .BYTE $30,$30,$30,$30,$FF,$02,$0C,$30
-        .BYTE $30,$30,$30,$00,$06,$28,$30,$40
-        .BYTE $18,$15,$0D,$28,$30,$30,$30,$30
-        .BYTE $FF,$02,$0C,$30,$30,$00,$07,$28
-        .BYTE $30,$49,$15,$0A,$1D,$12,$17,$1E
-        .BYTE $42,$28,$30,$FF,$00,$FF,$00,$FF
-pE100   .BYTE $01,$01,$20,$01,$11,$21,$22,$22
+fE070
+        .BYTE $02,$0C
+        .TEXT "    01. Zinc.    ", $FF, ""
+fE084
+        .BYTE $02,$0C
+        .TEXT "    02. Lead.    ", $FF, ""
+fE098
+        .BYTE $02,$0C
+        .TEXT "   03. Copper.   ", $FF, ""
+fE0AC
+        .BYTE $02,$0C
+        .TEXT "   04. Silver.   ", $FF, ""
+fE0C0
+        .BYTE $02,$0C
+        .TEXT "    05. Iron.     ", $FF, ""
+fE0D5
+        .BYTE $02,$0C
+        .TEXT "    06. Gold.    ", $FF, ""
+fE0E9
+        .BYTE $02,$0C
+        .TEXT "  07. Platinum. ", $FF, ""
+
+        .BYTE $00,$FF,$00,$FF
+
+someKindOfTextureData
+        .BYTE $01,$01,$20,$01,$11,$21,$22,$22
         .BYTE $22,$22,$22,$22,$22,$22,$22,$22
         .BYTE $22,$22,$22,$22,$22,$23,$01,$11
         .BYTE $24,$25,$25,$25,$25,$25,$25,$25
@@ -488,27 +520,33 @@ pE100   .BYTE $01,$01,$20,$01,$11,$21,$22,$22
         .BYTE $5C,$AE,$28,$28,$29,$20,$20,$AE
         .BYTE $09,$20,$20,$20,$20,$53,$52,$52
         .BYTE $52,$51,$09,$20,$20,$20,$20,$27
-        .BYTE $28,$28,$28,$29,$00,$02,$0C,$30
-        .BYTE $30,$00,$08,$28,$30,$4D,$1E,$17
-        .BYTE $10,$1C,$1D,$0E,$17,$28,$30,$30
-        .BYTE $FF,$02,$0C,$30,$30,$30,$00,$09
-        .BYTE $28,$30,$16,$1B,$12,$0D,$18,$17
-        .BYTE $28,$30,$30,$30,$30,$FF,$02,$0C
-        .BYTE $30,$30,$01,$00,$28,$30,$44,$0A
-        .BYTE $15,$15,$12,$1C,$1D,$18,$28,$30
-        .BYTE $30,$FF,$02,$0C,$30,$01,$01,$28
-        .BYTE $30,$4D,$1B,$12,$2E,$0A,$15,$15
-        .BYTE $18,$22,$28,$30,$30,$FF,$02,$0C
-        .BYTE $30,$01,$02,$28,$30,$4A,$1E,$0A
-        .BYTE $0D,$42,$12,$1E,$42,$28,$30,$FF
-        .BYTE $02,$0C,$30,$30,$01,$03,$28,$30
-        .BYTE $3E,$1B,$10,$18,$17,$12,$1D,$0E
-        .BYTE $28,$30,$30,$FF,$02,$0C,$30,$01
-        .BYTE $04,$28,$30,$40,$0A,$15,$0A,$0C
-        .BYTE $1D,$12,$1E,$42,$28,$30,$FF,$02
-        .BYTE $0C,$30,$30,$01,$05,$28,$30,$4E
-        .BYTE $1B,$12,$0D,$12,$1E,$42,$28,$30
-        .BYTE $30,$FF,$00,$00,$00,$00,$00,$00
+        .BYTE $28,$28,$28,$29,$00
+fEF55
+        .BYTE $02,$0C
+        .TEXT "  08. Tungsten.  ", $FF, ""
+fEF69
+        .BYTE $02,$0C
+        .TEXT "   09. Iridon.    ", $FF, ""
+fEF7E
+        .BYTE $02,$0C
+        .TEXT "  10. Kallisto.  ", $FF, ""
+fEF92
+        .BYTE $02,$0C
+        .TEXT " 11. Tri-alloy.  ", $FF, ""
+fEFA6
+        .BYTE $02,$0C
+        .TEXT " 12. Quadmium. ", $FF, ""
+fEFB8
+        .BYTE $02,$0C
+        .TEXT "  13. Ergonite.  ", $FF, ""
+fEFCC
+        .BYTE $02,$0C
+        .TEXT " 14. Galactium. ", $FF, ""
+fEFDF
+        .BYTE $02,$0C
+        .TEXT "  15. Uridium.  ", $FF, ""
+
+        .BYTE $00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $05,$5C,$5C,$04,$02,$5C,$06,$5C
         .BYTE $5C,$5C,$06,$5C,$07,$0C,$08,$08
