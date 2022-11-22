@@ -60,7 +60,6 @@ currentSpriteValue = $0E
 a0F = $0F
 a10 = $10
 a11 = $11
-a12 = $12
 a13 = $13
 someDataLoPtr = $14
 someDataHiPtr = $15
@@ -72,7 +71,6 @@ srcLoPtr = $1A
 srcHiPtr = $1B
 ramLoPtr = $1C
 ramHiPtr = $1D
-a1E = $1E
 a1F = $1F
 a20 = $20
 a21 = $21
@@ -124,7 +122,6 @@ a4E = $4E
 a4F = $4F
 a50 = $50
 a51 = $51
-a52 = $52
 a53 = $53
 a54 = $54
 currentColorValue = $55
@@ -151,7 +148,6 @@ a69 = $69
 a6A = $6A
 a6B = $6B
 usedToCheckIfWeShouldLaunchMine = $6C
-a6D = $6D
 a6E = $6E
 a6F = $6F
 a7C = $7C
@@ -218,12 +214,10 @@ aFC = $FC
 ;
 ; **** ZP POINTERS **** 
 ;
-p12 = $12
-p1E = $1E
-p52 = $52
-p6D = $6D
-p70 = $70
-pA2 = $A2
+a12 = $12
+a1E = $1E
+a52 = $52
+a6D = $6D
 dataLoPtr = $BE
 ;
 ; **** FIELDS **** 
@@ -233,8 +227,6 @@ f0035 = $0035
 ;
 ; **** POINTERS **** 
 ;
-p10 = $0010
-p30 = $0030
 ;
 ; **** EXTERNAL JUMPS **** 
 ;
@@ -1088,16 +1080,16 @@ b0EBF   LDA aFC,X
         LDA aF3,X
         STA aA2
         LDY #$00
-        LDA (pA2),Y
+        LDA (aA2),Y
         BNE b0EE4
         INY 
-        LDA (pA2),Y
+        LDA (aA2),Y
         AND #$07
         EOR #$FF
         SEC 
         ADC #$07
         STA aF9,X
-        LDA (pA2),Y
+        LDA (aA2),Y
         INY 
         AND #$F0
         LSR 
@@ -1105,7 +1097,7 @@ b0EBF   LDA aFC,X
         LSR 
         LSR 
         STA aA4,X
-b0EE4   LDA (pA2),Y
+b0EE4   LDA (aA2),Y
         CMP #$FF
         BNE b0EF5
         LDY #$FE
@@ -1120,7 +1112,7 @@ b0EF5   TYA
         LDA #$00
         ADC aFC,X
         STA aFC,X
-        LDA (pA2),Y
+        LDA (aA2),Y
         AND #$F0
         BNE b0F0C
         LDA #$10
@@ -1133,7 +1125,7 @@ b0F0C   LSR
 j0F10   STA aF6,X
         LDA aF9,X
         TAX 
-        LDA (pA2),Y
+        LDA (aA2),Y
         AND #$0F
         TAY 
         LDA f3D10,Y
@@ -1156,14 +1148,14 @@ b0F22   LSR
         STA aA2
         LDA aF0
         LDY #$01
-        STA (pA2),Y
+        STA (aA2),Y
         LDY #$0D
-        STA (pA2),Y
+        STA (aA2),Y
         LDA aF1
         INY 
-        STA (pA2),Y
+        STA (aA2),Y
         LDY #$02
-        STA (pA2),Y
+        STA (aA2),Y
 j0F51   INC a9F
         LDA a9F
         CMP #$03
@@ -1335,12 +1327,12 @@ s105D
         ADC aA3
         STA aA3
         LDY #$00
-        LDA (pA2),Y
+        LDA (aA2),Y
         JSR PlaySomeSound
         LDY a9F
         LDX f1147,Y
         LDY #$0F
-b1091   LDA (pA2),Y
+b1091   LDA (aA2),Y
         STA aC0,X
         DEX 
         DEY 
@@ -2080,9 +2072,9 @@ b15EE   LDA (srcLoPtr),Y
         DEY 
         STA (srcLoPtr),Y
         INY 
-        LDA (p12),Y
+        LDA (a12),Y
         DEY 
-        STA (p12),Y
+        STA (a12),Y
         INY 
         INY 
         CPY initialValueOfY
@@ -2091,7 +2083,7 @@ b15EE   LDA (srcLoPtr),Y
         LDA #$20
         STA (srcLoPtr),Y
         LDA #$F8
-        STA (p12),Y
+        STA (a12),Y
         CLC 
         LDA srcLoPtr
         ADC #$28
@@ -2129,9 +2121,9 @@ b163D   LDA (srcLoPtr),Y
         INY 
         STA (srcLoPtr),Y
         DEY 
-        LDA (p12),Y
+        LDA (a12),Y
         INY 
-        STA (p12),Y
+        STA (a12),Y
         DEY 
         DEY 
         CPY initialValueOfY
@@ -2165,7 +2157,7 @@ MaybeDisplayLandNowWarning
 b1675   RTS 
 
 b1676   LDY a24
-        LDA (p6D),Y
+        LDA (a6D),Y
         CMP #$FF
         BNE b1675
         LDA #$01
@@ -2229,39 +2221,39 @@ s16D2
         BCC b173A
 b16E4   LDX #$11
 b16E6   LDY fA4D0,X
-        LDA (p12),Y
+        LDA (a12),Y
         CMP #$20
         BEQ b16F9
         LDA $D41B    ; Random Number Generator
         AND #$01
         CLC 
         ADC #$F9
-        STA (p12),Y
+        STA (a12),Y
 b16F9   INY 
-        LDA (p12),Y
+        LDA (a12),Y
         CMP #$20
         BEQ b170A
         LDA $D41B    ; Random Number Generator
         AND #$01
         CLC 
         ADC #$FB
-        STA (p12),Y
+        STA (a12),Y
 b170A   INY 
-        LDA (p12),Y
+        LDA (a12),Y
         CMP #$20
         BEQ b171B
         LDA $D41B    ; Random Number Generator
         AND #$01
         CLC 
         ADC #$FD
-        STA (p12),Y
+        STA (a12),Y
 b171B   INY 
         LDA #$20
-        STA (p12),Y
+        STA (a12),Y
         INY 
-        STA (p12),Y
+        STA (a12),Y
         INY 
-        STA (p12),Y
+        STA (a12),Y
         INC a13
         INC a13
         DEX 
@@ -2480,9 +2472,9 @@ b18A0   LDA playerScore,X
         DEX 
         BPL b18A0
         LDY #$05
-        LDA #<p30
+        LDA #<a30
         STA a0F
-        LDX #>p30
+        LDX #>a30
         STX a10
 b18B2   LDX a10
         LDA playerScore,X
@@ -2779,7 +2771,7 @@ b1A98   LDA #$00
         LDA #$AE
         STA a92
         LDY a24
-        LDA (p6D),Y
+        LDA (a6D),Y
         CMP #$FF
         BNE b1AB9
         LDA $D41B    ; Random Number Generator
@@ -3042,7 +3034,7 @@ PerformDetailedUpdateForSprite
         LDA fA4B0,Y
         BNE b1CA7
         LDX a10
-        LDA (p70,X)
+        LDA (a70,X)
         CMP #$FF
         BEQ b1CA7
         INC a70,X
@@ -3056,7 +3048,7 @@ b1C8C   PHA
         LDA #$01
         STA fA4B0,Y
         BNE b1CA7
-b1C9C   LDA (p70,X)
+b1C9C   LDA (a70,X)
         STA fA4B0,Y
         INC a70,X
         BNE b1CA7
@@ -4679,7 +4671,7 @@ s27D5
         STA a57
         TAY 
         BNE b27FD
-        LDA (p52),Y
+        LDA (a52),Y
         BPL b27EF
         CMP #$90
         BCS b27EF
@@ -4687,7 +4679,7 @@ a27EC   =*+$01
         LDA #$80
         STA a32
 b27EF   LDY #$02
-        LDA (p52),Y
+        LDA (a52),Y
         BPL b27FD
         CMP #$90
         BCS b27FD
@@ -4695,7 +4687,7 @@ a27FA   =*+$01
         LDA #$80
         STA a32
 b27FD   LDY #$01
-        LDA (p52),Y
+        LDA (a52),Y
         STA a86
         BPL b280D
         CMP #$90
@@ -4707,7 +4699,7 @@ b280D   LDA a56
         BPL b2838
         DEC a53
         DEC a53
-        LDA (p52),Y
+        LDA (a52),Y
         BPL b2821
         CMP #$90
         BCS b2821
@@ -4718,7 +4710,7 @@ b2821   LDA a53
         CLC 
         ADC #$04
         STA a53
-        LDA (p52),Y
+        LDA (a52),Y
         BPL b2834
         CMP #$90
         BCS b2834
@@ -4990,7 +4982,7 @@ b29F5   STA fA470,X
         STA fA440,X
         STA a13
 j2A0F   LDY #$00
-        LDA (p12),Y
+        LDA (a12),Y
         STA fA450,X
         RTS 
 
@@ -5873,7 +5865,7 @@ b2FCC   LDY $0220,X
         LDY $0240,X
         BMI b2FE2
         LDA a4D
-        STA (p1E),Y
+        STA (a1E),Y
 b2FE2   LDA $0200,X
         CMP a50
         BCC b3001
@@ -5886,7 +5878,7 @@ b2FE2   LDA $0200,X
         BMI b3001
         TAY 
         LDA currentColorValue
-        STA (p1E),Y
+        STA (a1E),Y
 b2FFD   DEX 
         BPL b2FCC
 b3000   RTS 
@@ -5996,7 +5988,7 @@ b30BA   LDA #$00
         DEY 
         STY a11
         LDY a10
-        LDA (p12),Y
+        LDA (a12),Y
         DEY 
         STY a10
         LDY a11
@@ -6015,7 +6007,7 @@ b30D8   LDA #$00
         DEY 
         STY a11
         LDY a10
-        LDA (p12),Y
+        LDA (a12),Y
         DEY 
         STY a10
         LDY a11
@@ -6775,8 +6767,8 @@ InitializeSomePointers
         STA aBC
         LDA #<$0180
         STA aBB
-        LDX #<p10
-        LDY #>p10
+        LDX #<a10
+        LDY #>a10
         STX aB7
         STY aB8
         LDA #<SCREEN_RAM + $0100
