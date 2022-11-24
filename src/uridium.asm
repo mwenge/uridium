@@ -2475,7 +2475,7 @@ b1851   LDX #$00
         STX a10
         LDA #$28
         STA initial2
-        JSR sC900
+        JSR ResetSomeValues
         LDX #<spaces
         LDY #>spaces
         JSR WriteToScreen
@@ -7551,7 +7551,7 @@ bC2BF   LDA $D011    ;VIC Control Register 1
 
         LDX #$00
 bC2DA   LDA fA900,X
-        STA sC900,X
+        STA ResetSomeValues,X
         LDA #$00
         STA fCA00,X
         INX 
@@ -7773,7 +7773,7 @@ bC4B4   JSR $E544
 sC4C5   
         LDA #$60
         STA aC933
-        JMP jC910
+        JMP SetUpHiScoreForScrollingBanner
 
 ;--------------------------------------------------------------------
 ; jC4CD   
@@ -7791,9 +7791,9 @@ pC4DA   RTI
 
 *=$C900
 ;-------------------------------------------------------------------
-; sC900
+; ResetSomeValues
 ;-------------------------------------------------------------------
-sC900   
+ResetSomeValues   
         STA initial3
         LDA #$00
         STA aC90A
@@ -7806,13 +7806,13 @@ GameOverCheckHiScore
 
 aC90A   =*+$01
         LDA #$01
-        BEQ jC910
+        BEQ SetUpHiScoreForScrollingBanner
         JMP jC9B1
 
 ;--------------------------------------------------------------------
-; jC910   
+; SetUpHiScoreForScrollingBanner   
 ;--------------------------------------------------------------------
-jC910   
+SetUpHiScoreForScrollingBanner   
         LDX #$00
 bC912   LDA firstInHallofFame,X
         STA fCA00,X
