@@ -186,7 +186,7 @@ aAA = $AA
 anotherRandomNumberBetween0and1 = $AB
 randomNumberBetween0and1 = $AC
 shipDestructBonus = $AD
-aAE = $AE
+miniGameUpdateRate = $AE
 tempLoPtrCopyTo = $B0
 tempHiPtrCopyTo = $B1
 tempLoPtrCopyFrom = $B2
@@ -264,9 +264,9 @@ M_LTBLUE                                  = $FE
 M_GRAY3                                   = $FF
 
 randomDataStorage = $0800
+pE000 = $E000
 
 * = $0900
-pE000 = $E000
 ;-------------------------------------------------------------------
 ; LaunchUridium
 ;-------------------------------------------------------------------
@@ -307,17 +307,18 @@ b091C   LDX #<p8000
         LDX #$10
         JSR CopyDataUntilXIsZero
 
-        LDX #<p7C00
-        LDY #>p7C00
+        LDX #<initialPositionOfMiniGameScreenData
+        LDY #>initialPositionOfMiniGameScreenData
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
-        LDX #<$D200
-        LDY #>$D200
+        LDX #<storageForMiniGameData
+        LDY #>storageForMiniGameData
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
         LDX #$02
         JSR CopyDataUntilXIsZero
 
+        ; Copying to $D400
         LDX #<p5C00
         LDY #>p5C00
         STX tempLoPtrCopyFrom
@@ -859,7 +860,7 @@ mainGameLoopHiPtr   =*+$02
         JSR MaybeFireBullets
         JSR MaybeMoveLeft
         JSR MaybeMoveRight
-        JSR s268C
+        JSR UpdateABunchOfGameVariables
         JSR SomeKindOfSpriteAnimation
         JSR CheckLandNowWarning
         LDA landNowActivated
@@ -1410,7 +1411,7 @@ b10C5   LDA f114A,X
         STY soundPtr
         LDX #$03
 b10D3   LDY aA0
-        LDA f3947,Y
+        LDA titleTuneData,Y
         INC aA0
         LDY soundPtr
         STA $D400,Y  ;Voice 1: Frequency Control - Low-Byte
@@ -1418,13 +1419,13 @@ b10D3   LDY aA0
         DEX 
         BNE b10D3
         LDY aA0
-        LDA f3947,Y
+        LDA titleTuneData,Y
         LDX a9F
         STA a99,X
         DEY 
         DEY 
         DEY 
-        LDA f3947,Y
+        LDA titleTuneData,Y
         STA a9C,X
         ORA #$01
         LDY soundPtr
@@ -1483,6 +1484,8 @@ f1141   .BYTE $00,$07,$0E
 f1144   .BYTE $00,$0F,$1E
 f1147   .BYTE $0E,$1D,$2C
 f114A   .BYTE $08,$00,$00,$00
+
+storageForMiniGameData = $D200
 ;-------------------------------------------------------------------
 ; DestructSequenceMiniGame
 ;-------------------------------------------------------------------
@@ -1510,12 +1513,12 @@ b116F   LDA shouldWaitUntilReady
         JSR CopyDataUntilXIsZero
         LDY #$50
         JSR CopyDataUntilYIsZero
-        LDX #<$D200
-        LDY #>$D200
+        LDX #<storageForMiniGameData
+        LDY #>storageForMiniGameData
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
-        LDX #<p7C00
-        LDY #>p7C00
+        LDX #<initialPositionOfMiniGameScreenData
+        LDY #>initialPositionOfMiniGameScreenData
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
         SEI 
@@ -1534,11 +1537,11 @@ b11A4   LDA shouldWaitUntilReady
         BNE b11A4
         JSR MaybeShowPauseScreen
         LDY initialValueOfY
-        LDA f38DE,Y
+        LDA miniGameColorSequence3,Y
         STA a4A
-        LDA f38E3,Y
+        LDA miniGameColorSequence1,Y
         STA $D022    ;Background Color 1, Multi-Color Register 0
-        LDA f38E8,Y
+        LDA miniGameColorSequence2,Y
         STA $D023    ;Background Color 2, Multi-Color Register 1
         DEC initialValueOfY
         BPL b11A0
@@ -1558,8 +1561,8 @@ b11A4   LDA shouldWaitUntilReady
         LSR 
         ADC indexToCurrentLevelTextureData
         TAY 
-        LDA f310A,Y
-        STA aAE
+        LDA miniGameUpdateRateForLevel,Y
+        STA miniGameUpdateRate
         STA someKindOfFrameRate
 ;--------------------------------------------------------------------
 ; DestructSequenceMiniGameLoop   
@@ -1719,7 +1722,7 @@ UpdateSomeMoreDataForMiniGame
         BEQ b132B
 b131D   LDA a3928,Y
         STA (someDataLoPtr),Y
-        LDA f3930,X
+        LDA someMiniGameColors,X
         STA (ramLoPtr),Y
         DEY 
         BPL b131D
@@ -1727,7 +1730,7 @@ b131D   LDA a3928,Y
 
 b132B   LDA f392C,Y
         STA (someDataLoPtr),Y
-        LDA f3930,X
+        LDA someMiniGameColors,X
         STA (ramLoPtr),Y
         DEY 
         BPL b132B
@@ -1758,7 +1761,7 @@ a134B   DEC aA8
         STA a3AED
         LDA #$15
         STA a91
-        LDA aAE
+        LDA miniGameUpdateRate
         STA someKindOfFrameRate
         LDA SCREEN_RAM_HIBANK + $011C
         SEC 
@@ -1855,7 +1858,7 @@ ProcessGameFrameWithoutCheckingPause
         INC someKindOfFrameRate
         JSR MaybeMoveLeft
         JSR MaybeMoveRight
-        JSR s27D5
+        JSR DoSomethingWithSprites
         RTS 
 
 ;-------------------------------------------------------------------
@@ -2017,7 +2020,7 @@ b153E   JSR ProcessGameFrame
 
         ; Start ship destruct sequence
 b155A   JSR ProcessGameFrame
-        JSR s268C
+        JSR UpdateABunchOfGameVariables
         JSR SomeKindOfSpriteAnimation
         LDA a45
         AND #$04
@@ -2031,7 +2034,7 @@ b155A   JSR ProcessGameFrame
 ;--------------------------------------------------------------------
 ShipDestructSequence   
         JSR ProcessGameFrame
-        JSR s268C
+        JSR UpdateABunchOfGameVariables
         JSR SomeKindOfSpriteAnimation
         JSR UpdatePlayerScore
         LDA a2A
@@ -2775,7 +2778,7 @@ FetchCurrentSurfaceData
         LDA #$00
         STA tempLoPtrCopyFrom
         STA tempLoPtrCopyTo
-        LDA #>p7C00
+        LDA #>initialPositionOfMiniGameScreenData
         STA tempHiPtrCopyTo
         LDX #$04
         JSR CopyDataUntilXIsZero
@@ -3709,7 +3712,7 @@ SetUpScreenForScrolling
         JSR UpdateTextureDataForCurrentShip
         JSR ClearTextureDataPtrArray
         JSR UpdateScreenColors
-        JSR s2E17
+        JSR DoStuffWithTextureData
         JSR ScrollShipSurface
         JSR GetSomeTexureData
         JSR GenerateStarfield
@@ -3876,7 +3879,7 @@ demoModeFuncHiPtr   =*+$02
         JSR MaybeFireBullets
         JSR MaybeMoveLeft
         JSR MaybeMoveRight
-        JSR s268C
+        JSR UpdateABunchOfGameVariables
         JSR SomeKindOfSpriteAnimation
         LDA a32
         BNE b227C
@@ -4523,9 +4526,9 @@ b267E   LDA a2D
         JMP j2679
 
 ;-------------------------------------------------------------------
-; s268C
+; UpdateABunchOfGameVariables
 ;-------------------------------------------------------------------
-s268C   
+UpdateABunchOfGameVariables   
         LDA a34
         CLC 
         ADC a33
@@ -4707,9 +4710,9 @@ j27A3   LDA #$06
         JSR UpdateSpriteContentAndPosition
         ; Falls through
 ;-------------------------------------------------------------------
-; s27D5
+; DoSomethingWithSprites
 ;-------------------------------------------------------------------
-s27D5   
+DoSomethingWithSprites   
         LDY newSpriteValue
         LDA f33E8,Y
         STA a56
@@ -4929,7 +4932,7 @@ FireBullets
         ORA #$80
         STA a48
         LDX newSpriteValue
-        LDA f3373,X
+        LDA levelColorScheme + $01,X
         BEQ b2993
         CLC 
         ADC a33
@@ -4942,7 +4945,7 @@ FireBullets
         STX a10
         JSR UpdateBulletArrays
         LDX newSpriteValue
-        LDA f33A1,X
+        LDA bulletColorScheme,X
         BEQ b2993
         CLC 
         ADC a33
@@ -5054,7 +5057,7 @@ b2A2F   DEX
         INX 
 b2A33   LDA fA460,X
         BEQ b2AA3
-        JSR s2AC9
+        JSR UpdateRamLoPtr
         STA fA440,X
         STA ramHiPtr
         ROR 
@@ -5130,9 +5133,9 @@ b2ABD   LDA fA460,X
         ; Falls through
 
 ;-------------------------------------------------------------------
-; s2AC9
+; UpdateRamLoPtr
 ;-------------------------------------------------------------------
-s2AC9   
+UpdateRamLoPtr   
         BMI b2ADA
         CLC 
         ADC fA430,X
@@ -5604,7 +5607,7 @@ b2DB4   LDA (srcLoPtr),Y
         CMP #$20
         BEQ b2DC1
         STA (ramLoPtr),Y
-b2DC1   JSR s2DE4
+b2DC1   JSR UpdateSomeStorageForTextureData
         LDY a11
         DEC ramHiPtr
         DEC ramHiPtr
@@ -5626,9 +5629,9 @@ b2DDA   DEC initialValueOfY
 b2DE3   RTS 
 
 ;-------------------------------------------------------------------
-; s2DE4
+; UpdateSomeStorageForTextureData
 ;-------------------------------------------------------------------
-s2DE4   
+UpdateSomeStorageForTextureData   
         CMP #$59
         BCC b2E16
         CMP #$5C
@@ -5657,9 +5660,9 @@ s2DE4
 b2E16   RTS 
 
 ;-------------------------------------------------------------------
-; s2E17
+; DoStuffWithTextureData
 ;-------------------------------------------------------------------
-s2E17   
+DoStuffWithTextureData   
         LDY #$18
         LDA #$01
 b2E1B   STA fA518,Y
@@ -5678,13 +5681,13 @@ b2E29   LDX a10
         TAX 
         LDA textureDataHiPtrArray,X
         BEQ b2E3E
-        JSR s2EA5
+        JSR UpdateInitialValueIndexToTextureSegment
 b2E3E   LDA screenLineHiPtrArray,X
         STA someDataHiPtrArray,Y
         LDA screenLineLoPtrArray,X
         STA someDataLoPtrArray,Y
         LDA colorLineHiPtrArray,X
-        STA fA480,Y
+        STA hiPtrArrayForTextureDataMaybe,Y
         INC textureDataHiPtrArray,X
         LDX a10
         LDA randomDataStorage,X
@@ -5696,7 +5699,7 @@ b2E3E   LDA screenLineHiPtrArray,X
 b2E62   TAX 
         LDA fA518,X
         BEQ b2E6B
-        JSR s2EBE
+        JSR UpdateInitialValueOfIndexToTextureSegment2
 b2E6B   INC fA518,X
         TXA 
         CLC 
@@ -5707,9 +5710,9 @@ b2E6B   INC fA518,X
         ADC #$00
         STA someDataHiPtrArray,Y
         PLP 
-        LDA fA480,Y
+        LDA hiPtrArrayForTextureDataMaybe,Y
         ADC #$00
-        STA fA480,Y
+        STA hiPtrArrayForTextureDataMaybe,Y
         LDX a10
         LDA randomDataStorage,X
         INC a10
@@ -5728,9 +5731,9 @@ b2E9E   STA textureDataHiPtrArray,Y
 
 initialValueOfindexToTextureSegment = initialValueOfY
 ;-------------------------------------------------------------------
-; s2EA5
+; UpdateInitialValueIndexToTextureSegment
 ;-------------------------------------------------------------------
-s2EA5   
+UpdateInitialValueIndexToTextureSegment   
         LDA indexToTextureSegment
         STA initialValueOfindexToTextureSegment
 b2EA9   TXA 
@@ -5747,9 +5750,9 @@ b2EB3   TAX
 b2EBD   RTS 
 
 ;-------------------------------------------------------------------
-; s2EBE
+; UpdateInitialValueOfIndexToTextureSegment2
 ;-------------------------------------------------------------------
-s2EBE   
+UpdateInitialValueOfIndexToTextureSegment2   
         LDA indexToTextureSegment
         STA initialValueOfindexToTextureSegment
 b2EC2   TXA 
@@ -5780,7 +5783,7 @@ b2ED9   LDA someDataHiPtrArray,X
         BNE b2F0B
         LDA fA420,X
         STA (someDataLoPtr),Y
-        LDA fA480,X
+        LDA hiPtrArrayForTextureDataMaybe,X
         STA someDataHiPtr
         LDA a58
 j2EF7   STA (someDataLoPtr),Y
@@ -5788,13 +5791,13 @@ j2EF7   STA (someDataLoPtr),Y
         BPL b2ED9
 
         LDX multiColorModeEnabled
-        LDA f311E,X
+        LDA someArrayForTextureData,X
         STA a7A15
         STA a7A1A
         STA a7A1B
         RTS 
 
-b2F0B   LDA fA480,X
+b2F0B   LDA hiPtrArrayForTextureDataMaybe,X
         STA someDataHiPtr
         LDA a4D
         JMP j2EF7
@@ -6117,10 +6120,12 @@ b3105   DEC initialValueOfY
         .cdef "xz", $21
         .cdef "09", $00
 
-f310A   .BYTE $00,$90,$98,$A0,$A8,$B0,$B8,$C0
+miniGameUpdateRateForLevel
+        .BYTE $00,$90,$98,$A0,$A8,$B0,$B8,$C0
         .BYTE $C4,$C8,$CC,$D0,$D4,$D8,$DC,$E0
         .BYTE $E4,$E8,$EC,$F0
-f311E   .BYTE $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
+someArrayForTextureData
+        .BYTE $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
 
 player1Text
         .BYTE $00,$01
@@ -6181,16 +6186,20 @@ playerLinesColorScheme3
         .BYTE $D8,$10,$59,$58,$57,$56,$55,$54
         .BYTE $53,$52,$51,$50,$5F,$5E,$5D,$5C
         .BYTE $5B,$5A,$00,$01
-spriteValueOffsetLoPtrArray   .BYTE $00,$00,$00,$00,$00,$32,$00,$00
+spriteValueOffsetLoPtrArray
+        .BYTE $00,$00,$00,$00,$00,$32,$00,$00
         .BYTE $00,$40,$00,$00,$24,$53,$2B,$00
         .BYTE $00,$00,$00,$00,$00,$39
-spriteValueOffsetHiPtrArray   .BYTE $00,$00,$00,$00,$00,$32,$00,$00
+spriteValueOffsetHiPtrArray
+        .BYTE $00,$00,$00,$00,$00,$32,$00,$00
         .BYTE $00,$32,$00,$00,$32,$32,$32,$00
         .BYTE $00,$00,$00,$00,$00,$32
-spriteValueLoPtrArray   .BYTE $00,$F0,$00,$00,$00,$00,$00,$00
+spriteValueLoPtrArray
+        .BYTE $00,$F0,$00,$00,$00,$00,$00,$00
         .BYTE $E2,$11,$E9,$00,$00,$FE,$00,$00
         .BYTE $00,$F7
-spriteValueHiPtrArray   .BYTE $00,$31,$00,$00,$00,$00,$00,$00
+spriteValueHiPtrArray
+        .BYTE $00,$31,$00,$00,$00,$00,$00,$00
         .BYTE $31,$32,$31,$00,$00,$31,$00,$00
         .BYTE $00,$31,$06,$70,$00,$98,$FF,$00
         .BYTE $00,$FF,$00,$F0,$59
@@ -6225,13 +6234,14 @@ a3319   .BYTE $32,$00,$82,$00,$8D,$FF,$00,$00
         .BYTE $06
 levelColorScheme
         .BYTE M_GRAY1
-f3373   .BYTE M_GRAY3,M_ORANGE,M_GRAY2,M_GRAY1,M_BLACK,M_GRAY1,M_LTBLUE,M_LTRED
+        .BYTE M_GRAY3,M_ORANGE,M_GRAY2,M_GRAY1,M_BLACK,M_GRAY1,M_LTBLUE,M_LTRED
         .BYTE M_RED,M_BLACK,M_GRAY2,M_LTRED,M_LTBLUE,M_BLUE,M_GREEN,M_LTGREEN
         .BYTE M_ORANGE,M_LTBLUE,M_BLUE,M_RED,M_LTRED,M_ORANGE,M_YELLOW,M_ORANGE
         .BYTE M_GRAY1,M_GRAY2,M_GRAY2,M_LTRED,M_RED,M_BLUE,M_LTBLUE,M_ORANGE
         .BYTE M_LTGREEN,M_GREEN,M_ORANGE,M_YELLOW,M_ORANGE,M_GRAY2,M_BLACK,M_GRAY1
         .BYTE M_CYAN,M_LTGREEN,M_LTRED,M_RED,M_BROWN,M_ORANGE
-f33A1   .BYTE M_ORANGE,M_LTGREEN,M_GREEN,M_GRAY1,M_GRAY3,M_ORANGE,M_YELLOW,M_ORANGE
+bulletColorScheme
+        .BYTE M_ORANGE,M_LTGREEN,M_GREEN,M_GRAY1,M_GRAY3,M_ORANGE,M_YELLOW,M_ORANGE
         .BYTE M_BLUE,M_CYAN,M_ORANGE,M_GRAY2,M_GRAY1,M_GRAY1,M_GRAY3,M_ORANGE
 
         .BYTE $FE,$F6,$04,$02,$03,$06,$07,$08
@@ -6494,9 +6504,9 @@ initialsInputField
         .TEXT "A..   ", $FF
 alphabetText
         .TEXT "ABCDEFGHIJKLMNOPQRSTUVWXYZ "
-f38DE   .BYTE M_WHITE,M_GRAY3,M_GRAY2,M_GRAY1,M_BLACK
-f38E3   .BYTE M_GRAY3,M_GRAY2,M_GRAY1,M_BLACK,M_BLACK
-f38E8   .BYTE M_GRAY1,M_GRAY1,M_BLACK,M_BLACK,M_BLACK
+miniGameColorSequence3   .BYTE M_WHITE,M_GRAY3,M_GRAY2,M_GRAY1,M_BLACK
+miniGameColorSequence1   .BYTE M_GRAY3,M_GRAY2,M_GRAY1,M_BLACK,M_BLACK
+miniGameColorSequence2   .BYTE M_GRAY1,M_GRAY1,M_BLACK,M_BLACK,M_BLACK
 
 ; The score are decimal so: 10,24,50,100 etc.
 scoresToAddArray2
@@ -6524,9 +6534,12 @@ a3926   .BYTE $10,$16
 a3928   .BYTE $80
 a3929   .BYTE $80,$80,$80
 f392C   .BYTE $A0,$A1,$A2,$A3
-f3930   .BYTE $F2,$F2,$F7,$F6,$F4,$F3,$F5
+someMiniGameColors
+        .BYTE M_RED,M_RED,M_YELLOW,M_BLUE,M_PURPLE,M_CYAN,M_GREEN
+
 
 .include "game_data.asm"
+.include "surface_charset.asm"
 
 *=$3F00
 ;---------------------------------------------------------------------------------
