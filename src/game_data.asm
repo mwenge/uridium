@@ -176,8 +176,8 @@ f3D90   .BYTE $3D,$3D,$3D,$3D,$3D,$3D,$3D,$3E
         .BYTE $03,$6D,$2D,$4D,$4D,$FF,$00,$03
         .BYTE $69,$29,$49,$49,$FF,$00,$03,$06
         .BYTE $FF
-a3E99   .BYTE $00
-a3E9A   .BYTE $FE,$00,$FF,$00,$FF,$00,$FF,$00
+themeTuneLoPtr   .BYTE $00
+themeTuneHiPtr   .BYTE $FE,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00

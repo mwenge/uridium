@@ -1,5 +1,5 @@
 *=$5C00
-p5C00
+surfaceCharset
         .BYTE $00,$00,$2E,$3B,$2E,$3B,$2E,$3B   ;.BYTE $00,$00,$2E,$3B,$2E,$3B,$2E,$3B
                                                 ; CHARACTER $00
                                                 ; 00000000           

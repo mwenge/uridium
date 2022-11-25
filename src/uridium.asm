@@ -319,8 +319,8 @@ b091C   LDX #<p8000
         JSR CopyDataUntilXIsZero
 
         ; Copying to $D400
-        LDX #<p5C00
-        LDY #>p5C00
+        LDX #<surfaceCharset
+        LDY #>surfaceCharset
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
         LDX #$0C
@@ -403,7 +403,7 @@ DrawTitleScreen
         STA $DD0D    ;CIA2: CIA Interrupt Control Register
         LDA $DC0D    ;CIA1: CIA Interrupt Control Register
         LDA $DD0D    ;CIA2: CIA Interrupt Control Register
-        JSR CopyShipSpritesTop5C00
+        JSR CopyShipSpritesTosurfaceCharset
 
         ; Write 4 zeroes to the top left?
         LDX #<SCREEN_RAM_HIBANK
@@ -1047,15 +1047,16 @@ b0E3C   CMP #$11
         BEQ b0E49
         RTS 
 
+themeTuneData = $FE00
 b0E49   JSR PlaySound
         LDA a95
         STA aEF
         LDA #$01
         STA aF2
-        LDA #$00
-        STA a3E99
-        LDA #$FE
-        STA a3E9A
+        LDA #<themeTuneData
+        STA themeTuneLoPtr
+        LDA #>themeTuneData
+        STA themeTuneHiPtr
         RTS 
 
 b0E5F   JSR PlaySound
@@ -1072,18 +1073,18 @@ j0E6B   DEC aF2
 
 b0E72   LDA #$05
         STA aF2
-        LDA a3E9A
+        LDA themeTuneHiPtr
         CMP #$FF
         BEQ b0E6A
         CMP #$FE
         BNE b0EB3
-j0E81   LDA a3E99
+j0E81   LDA themeTuneLoPtr
         ASL 
         CLC 
-        ADC a3E99
+        ADC themeTuneLoPtr
         TAY 
         LDA f3D2C,Y
-        STA a3E9A
+        STA themeTuneHiPtr
         LDX #$00
         CMP #$FF
         BNE b0E97
@@ -1136,8 +1137,8 @@ b0EE4   LDA (aA2),Y
         CMP #$FF
         BNE b0EF5
         LDY #$FE
-        STY a3E9A
-        INC a3E99
+        STY themeTuneHiPtr
+        INC themeTuneLoPtr
         JMP j0E81
 
 b0EF5   TYA 
@@ -4414,15 +4415,15 @@ b25DF   LDA #$81
         ; Never Falls through
 
 ;-------------------------------------------------------------------
-; CopyShipSpritesTop5C00
+; CopyShipSpritesTosurfaceCharset
 ;-------------------------------------------------------------------
-CopyShipSpritesTop5C00   
+CopyShipSpritesTosurfaceCharset   
         LDX #<mantaShipSprites
         LDY #>mantaShipSprites
         STX srcLoPtr
         STY srcHiPtr
-        LDX #<p5C00
-        LDY #>p5C00
+        LDX #<surfaceCharset
+        LDY #>surfaceCharset
         STX ramLoPtr
         STY ramHiPtr
         LDY #$00
