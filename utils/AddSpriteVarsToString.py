@@ -2,17 +2,14 @@ import sys
 import os
 import re
 
-o = open("../src/sprites.asm", 'r')
+o = open("../src/explosion_sprites.asm", 'r')
 charmap = {l[17:20].strip().upper():l[22:].strip() 
              for l in o.readlines() 
              if "SPRITE" in l and l[22:].strip() != ""}
 
 s = """
-gilbySprites .BYTE $C1,$C2,$C3,$C4,$C5,$C6,$C7,$C6
-             .BYTE $C5,$C4,$C3,$C2,$C1,$C8,$C9,$CA
-             .BYTE $CB,$CB,$CC,$CD,$CE,$CF,$CE,$CD
-             .BYTE $CC,$CB,$D3,$D2,$CF,$D0,$D1,$D1
-             .BYTE $D0,$CF,$D2,$D3
+        .BYTE $0D,$12,$0D,$0C,$12,$0D,$0E,$0D
+        .BYTE $10,$0F,$0C,$0C,$0E,$0D,$0D,$0C
 """
 ls = re.split("([, \n])", s)
 

@@ -135,7 +135,7 @@ monochromEnabled = $61
 someKindOfFrameRate = $62
 a63 = $63
 a64 = $64
-a65 = $65
+enemyBulletXPosAnimationRate = $65
 a66 = $66
 a67 = $67
 a68 = $68
@@ -335,6 +335,46 @@ MEANIE_1C   = $1C
 MEANIE_1D   = $1D
 MEANIE_1E   = $1E
 MEANIE_1F   = $1F
+DROPSHIP_1              = $00
+DROPSHIP_2              = $01
+DROPSHIP_3              = $02
+DROPSHIP_4              = $03
+DROPSHIP_5              = $04
+DROPSHIP_6              = $05
+DROPSHIP_7              = $06
+DROPSHIP_8              = $07
+DROPSHIP_9              = $08
+DROPSHIP_10             = $09
+DROPSHIP_11             = $0A
+DROPSHIP_12             = $0B
+BULLET_WIDE             = $0C
+BULLET_NARROW           = $0D
+BULLET_VERYNARROW       = $0E
+BULLET_SINGLE           = $0F
+EXPLOSION_1             = $10
+EXPLOSION_2             = $11
+BULLET_5                = $12
+EXPLOSION_BIG1          = $14
+EXPLOSION_BIG2          = $15
+EXPLOSION_BIG3          = $16
+EXPLOSION_BIG4          = $17
+EXPLOSION_BIG5          = $18
+EXPLOSION_MEDIUM1       = $19
+EXPLOSION_MEDIUM2       = $1A
+EXPLOSION_MEDIUM3       = $1B
+EXPLOSION_MEDIUM4       = $1C
+EXPLOSION_MEDIUM5       = $1D
+EXPLOSION_MAJOR1        = $30
+EXPLOSION_MAJOR2        = $31
+EXPLOSION_MAJOR3        = $32
+EXPLOSION_MAJOR4        = $33
+EXPLOSION_MAJOR5        = $34
+EXPLOSION_MAJOR6        = $35
+EXPLOSION_MAJOR7        = $36
+EXPLOSION_MAJOR8        = $37
+EXPLOSION_MAJOR9        = $38
+EXPLOSION_MAJOR10       = $39
+EXPLOSION_MAJOR11       = $3A
 
 * = $0900
 ;-------------------------------------------------------------------
@@ -846,11 +886,11 @@ b0C71   STX tensLivesLeftDisplayed
         STA $D026    ;Sprite Multi-Color Register 1
         LDA #$FE
         STA $D025    ;Sprite Multi-Color Register 0
-        LDX #<p32CC
-        LDY #>p32CC
-        STX srcLoPtr
-        STY srcHiPtr
-        JSR UpdateSpriteIndicesAndThenRedrawSprites
+        LDX #<spriteVariablesManta
+        LDY #>spriteVariablesManta
+        STX spriteVariablesLoPtr
+        STY spriteVariablesHiPtr
+        JSR UpdateSpriteVariablesAndThenRedrawSprites
         JSR SpinWaitingForJoystickInput
         JSR GenerateRandomDataFromRNG
 
@@ -2708,21 +2748,21 @@ UpdateColorsOfInitials
         AND #$0E
         LSR 
         TAX 
-        LDA f37B3,X
-        STA a37AC
-        LDA f37B4,X
-        STA a37AB
-        STA a37A9
-        LDA f37B5,X
-        STA a37A8
-        STA a37A6
-        LDA f37B6,X
-        STA a37A5
-        STA a37A3
-        LDA f37B7,X
-        STA a37A2
-        LDX #<a37A2
-        LDY #>a37A2
+        LDA colorsForHiScoreInitials + $11,X
+        STA colorsForHiScoreInitials + $0A
+        LDA colorsForHiScoreInitials + $12,X
+        STA colorsForHiScoreInitials + $09
+        STA colorsForHiScoreInitials + $07
+        LDA colorsForHiScoreInitials + $13,X
+        STA colorsForHiScoreInitials + $06
+        STA colorsForHiScoreInitials + $04
+        LDA colorsForHiScoreInitials + $14,X
+        STA colorsForHiScoreInitials + $03
+        STA colorsForHiScoreInitials + $01
+        LDA colorsForHiScoreInitials + $15,X
+        STA colorsForHiScoreInitials
+        LDX #<colorsForHiScoreInitials
+        LDY #>colorsForHiScoreInitials
         STX srcLoPtr
         STY srcHiPtr
         LDX #<COLOR_RAM + $00A0
@@ -2954,8 +2994,8 @@ j1ABF   ASL
         STA bulletSpriteCurrentLevel
         LDA indexToScoresToAddArray,X
         STA scoreToAddForHittingEnemy
-        LDA f3743,X
-        STA a65
+        LDA enemeyBulletSpeedForLevel,X
+        STA enemyBulletXPosAnimationRate
         DEY 
         LDA (srcLoPtr),Y
         BEQ b1B45
@@ -2997,11 +3037,11 @@ b1B5B   LDA #$A2
         LDX a67
         STX a64
         STA a67
-        LDA a65
+        LDA enemyBulletXPosAnimationRate
         EOR #$FF
         CLC 
         ADC #$01
-        STA a65
+        STA enemyBulletXPosAnimationRate
         LDA #$FF
         STA a6B
 j1B83   LDY #$0C
@@ -3531,7 +3571,7 @@ FireBulletFromEnemyShip
         LDX currentSpriteMSBXPosOffsetArray,Y
         LDY spriteIndex
         CLC 
-        ADC a65
+        ADC enemyBulletXPosAnimationRate
         STA currentSpriteXPosArray,Y
         TXA 
         ADC a6B
@@ -3647,32 +3687,36 @@ b1FA6   STY spriteIndex
 AnimateEnemyBullet   
         LDA currentSpriteMSBXPosOffset
         AND #$01
-        BNE b201F
+        BNE AnimateEnemyBulletClearCarry
         LDA currentSpriteXPos
         CMP #$A2
-        BCC b201F
+        BCC AnimateEnemyBulletClearCarry
         CMP #$B2
-        BCS b201F
+        BCS AnimateEnemyBulletClearCarry
         LDA currentSpriteYPos
         SEC 
         SBC a33
         STA a0F
         CLC 
+
+        ; Offsets are used to determine whether to set carry or not.
+        ; Not totally sure what that achieves.
         LDX currentSpriteValue
-        ADC f374F,X
+        ADC enemyBulletSpriteTransformOffset,X
         SEC 
         SBC #$05
-        BMI b201F
+        BMI AnimateEnemyBulletClearCarry
         LDA a0F
         CLC 
-        ADC f3747,X
+        ADC bulletAnimationArrayOfSomeSort,X
         SEC 
         SBC #$0F
-        BPL b201F
+        BPL AnimateEnemyBulletClearCarry
         SEC 
         RTS 
 
-b201F   CLC 
+AnimateEnemyBulletClearCarry
+        CLC 
         RTS 
 
 ;--------------------------------------------------------------------
@@ -3908,16 +3952,16 @@ EnterDemoModeUntilDeadOrPlayerPressesFire
         JSR UpdatePointersAndFetchSurfaceData
         LDA #$08
         STA loopCounter
-        LDX #<p32C1
-        LDY #>p32C1
-        STX srcLoPtr
-        STY srcHiPtr
-        JSR UpdateSpriteIndicesAndThenRedrawSprites
-        LDA a3319
-        STA srcHiPtr
-        LDA a330F
-        STA srcLoPtr
-        JSR UpdateSpriteIndicesAndThenRedrawSprites
+        LDX #<spriteVariablesDemo
+        LDY #>spriteVariablesDemo
+        STX spriteVariablesLoPtr
+        STY spriteVariablesHiPtr
+        JSR UpdateSpriteVariablesAndThenRedrawSprites
+        LDA hiPtrsToShipDeploymentSpriteVariables + $09
+        STA spriteVariablesHiPtr
+        LDA loPtrsToShipDeploymentSpriteVariables + $09
+        STA spriteVariablesLoPtr
+        JSR UpdateSpriteVariablesAndThenRedrawSprites
         LDA a4E
         STA $D025    ;Sprite Multi-Color Register 0
         LDA a4B
@@ -4280,11 +4324,11 @@ ShipHasBeenHit
         STA $D026    ;Sprite Multi-Color Register 1
         LDA #$F0
         STA $D025    ;Sprite Multi-Color Register 0
-        LDX #<p32E2
-        LDY #>p32E2
-        STX srcLoPtr
-        STY srcHiPtr
-        JSR UpdateSpriteIndicesAndThenRedrawSprites
+        LDX #<spriteVariablesExplosion
+        LDY #>spriteVariablesExplosion
+        STX spriteVariablesLoPtr
+        STY spriteVariablesHiPtr
+        JSR UpdateSpriteVariablesAndThenRedrawSprites
         LDA a33
         STA currentSpriteYPos
         JSR UpdateSpriteContentAndPosition
@@ -4857,12 +4901,12 @@ b2838   RTS
 PlayShipDeploymentSequence   
         JSR CheckInputDuringDeploymentSequence
         LDX #$07
-b283E   LDA f3306,X
-        STA srcLoPtr
-        LDA f3310,X
-        STA srcHiPtr
-        LDA f3306,X
-        JSR UpdateSpriteIndicesAndThenRedrawSprites
+b283E   LDA loPtrsToShipDeploymentSpriteVariables,X
+        STA spriteVariablesLoPtr
+        LDA hiPtrsToShipDeploymentSpriteVariables,X
+        STA spriteVariablesHiPtr
+        LDA loPtrsToShipDeploymentSpriteVariables,X ; Unnecessary, copypasta from above.
+        JSR UpdateSpriteVariablesAndThenRedrawSprites
         DEX 
         BPL b283E
 
@@ -4886,11 +4930,11 @@ b2860   LDA #$06
         CMP #$0B
         BCC b2860
         JSR CheckInputDuringDeploymentSequence
-        LDA a3318
-        STA srcHiPtr
-        LDA a330E
-        STA srcLoPtr
-        JSR UpdateSpriteIndicesAndThenRedrawSprites
+        LDA hiPtrsToShipDeploymentSpriteVariables + $08
+        STA spriteVariablesHiPtr
+        LDA loPtrsToShipDeploymentSpriteVariables + $08
+        STA spriteVariablesLoPtr
+        JSR UpdateSpriteVariablesAndThenRedrawSprites
         LDA #$07
         STA a92
 b288F   LDA #$06
@@ -4950,11 +4994,11 @@ b28E0   JSR StoreSpriteContentColorAndPosition
         BCC b28B8
         LDA #$40
         STA $D015    ;Sprite display Enable
-        LDA a3319
-        STA srcHiPtr
-        LDA a330F
-        STA srcLoPtr
-        JSR UpdateSpriteIndicesAndThenRedrawSprites
+        LDA hiPtrsToShipDeploymentSpriteVariables + $09
+        STA spriteVariablesHiPtr
+        LDA loPtrsToShipDeploymentSpriteVariables + $09
+        STA spriteVariablesLoPtr
+        JSR UpdateSpriteVariablesAndThenRedrawSprites
         LDA a4E
         STA $D025    ;Sprite Multi-Color Register 0
         RTS 
@@ -6249,70 +6293,115 @@ playerLinesColorScheme3
         .BYTE YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW
         .BYTE YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,GREEN,GREEN
         .BYTE GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN
-
-        .BYTE $04,$4D,$4E,$4F,$40,$00,$FF,$04
-        .BYTE $45,$44,$43,$42,$00,$FF,$04,$41
-        .BYTE $42,$43,$44,$00,$FF,$04,$41,$42
-        .BYTE $43,$44,$00,$FF,$10,$59,$58,$57
-        .BYTE $56,$55,$54,$53,$52,$51,$66,$65
-        .BYTE $64,$63,$62,$61,$60,$28,$28,$10
-        .BYTE $41,$40,$4F,$4E,$4D,$4C,$4B,$4A
-        .BYTE $49,$48,$47,$46,$45,$44,$43,$42
-        .BYTE $00,$FF,$04,$55,$56,$57,$58,$00
-        .BYTE $01,$04,$5D,$5C,$5B,$5A,$00,$01
-        .BYTE $04,$59,$58,$57,$56,$00,$01,$04
-        .BYTE $59,$5A,$5B,$5C,$00,$01,$10,$41
-        .BYTE $40,$4F,$4E,$4D,$4C,$4B,$4A,$49
-        .BYTE $67,$68,$69,$6A,$6B,$6C,$6D,$D8
-        .BYTE $D8,$10,$59,$58,$57,$56,$55,$54
-        .BYTE $53,$52,$51,$50,$5F,$5E,$5D,$5C
-        .BYTE $5B,$5A,$00,$01
+a0000 = $0000
+a31E2
+        .BYTE $04,$4D,$4E,$4F,$40,$00,$FF
+a31E9
+        .BYTE $04,$45,$44,$43,$42,$00,$FF
+a31F0
+        .BYTE $04,$41,$42,$43,$44,$00,$FF
+a31F7
+        .BYTE $04,$41,$42,$43,$44,$00,$FF
+a31FE
+        .BYTE $10,$59,$58,$57,$56,$55,$54
+        .BYTE $53,$52,$51,$66,$65,$64,$63
+        .BYTE $62,$61,$60,$28,$28
+a3211
+        .BYTE $10,$41,$40,$4F,$4E,$4D,$4C,$4B
+        .BYTE $4A,$49,$48,$47,$46,$45,$44,$43
+        .BYTE $42,$00,$FF
+a3224
+        .BYTE $04,$55,$56,$57,$58,$00,$01
+a322B
+        .BYTE $04,$5D,$5C,$5B,$5A,$00,$01
+a3232
+        .BYTE $04,$59,$58,$57,$56,$00,$01
+a3239
+        .BYTE $04,$59,$5A,$5B,$5C,$00,$01
+a3240
+        .BYTE $10,$41,$40,$4F,$4E,$4D,$4C,$4B
+        .BYTE $4A,$49,$67,$68,$69,$6A,$6B,$6C
+        .BYTE $6D,$D8,$D8
+a3253
+        .BYTE $10,$59,$58,$57,$56,$55,$54,$53
+        .BYTE $52,$51,$50,$5F,$5E,$5D,$5C,$5B
+        .BYTE $5A,$00,$01
 spriteValueOffsetLoPtrArray
-        .BYTE $00,$00,$00,$00,$00,$32,$00,$00
-        .BYTE $00,$40,$00,$00,$24,$53,$2B,$00
-        .BYTE $00,$00,$00,$00,$00,$39
+        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<a3232,<a0000,<a0000
+        .BYTE <a0000,<a3240,<a0000,<a0000,<a3224,<a3253,<a322B,<a0000
+        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<a3239
 spriteValueOffsetHiPtrArray
-        .BYTE $00,$00,$00,$00,$00,$32,$00,$00
-        .BYTE $00,$32,$00,$00,$32,$32,$32,$00
-        .BYTE $00,$00,$00,$00,$00,$32
+        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>a3232,>a0000,>a0000
+        .BYTE >a0000,>a3240,>a0000,>a0000,>a3224,>a3253,>a322B,>a0000
+        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>a3239
+
 spriteValueLoPtrArray
-        .BYTE $00,$F0,$00,$00,$00,$00,$00,$00
-        .BYTE $E2,$11,$E9,$00,$00,$FE,$00,$00
-        .BYTE $00,$F7
+        .BYTE <a0000,<a31F0,<a0000,<a0000,<a0000,<a0000,<a0000,<a0000
+        .BYTE <a31E2,<a3211,<a31E9,<a0000,<a0000,<a31FE,<a0000,<a0000
+        .BYTE <a0000,<a31F7
 spriteValueHiPtrArray
-        .BYTE $00,$31,$00,$00,$00,$00,$00,$00
-        .BYTE $31,$32,$31,$00,$00,$31,$00,$00
-        .BYTE $00,$31,$06,$70,$00,$98,$FF,$00
-        .BYTE $00,$FF,$00,$F0,$59
-p32C1   .BYTE $06,$AA,$00,$98,$FF,$00,$00,$FF
+        .BYTE >a0000,>a31F0,>a0000,>a0000,>a0000,>a0000,>a0000,>a0000
+        .BYTE >a31E2,>a3211,>a31E9,>a0000,>a0000,>a31FE,>a0000,>a0000
+        .BYTE >a0000,>a31F7
+spriteVariables9
+        .BYTE $06,$70,$00,$98,$FF,$00,$00,$FF
         .BYTE $00,$F0,$59
-p32CC   .BYTE $06,$A0,$00,$AE,$FF,$00,$00,$FF
-        .BYTE $00,$F0,$41,$07,$BA,$00,$A8,$FF
-        .BYTE $00,$FF,$00,$00,$FB,$89
-p32E2   .BYTE $07,$AA,$00,$00,$FF,$00,$00,$FF
+spriteVariablesDemo
+        .BYTE $06,$AA,$00,$98,$FF,$00,$00,$FF
+        .BYTE $00,$F0,$59
+spriteVariablesManta
+        .BYTE $06,$A0,$00,$AE,$FF,$00,$00,$FF
+        .BYTE $00,$F0,$41
+spriteVariables10
+        .BYTE $07,$BA,$00,$A8,$FF,$00,$FF,$00
+        .BYTE $00,$FB,$89
+spriteVariablesExplosion   
+        .BYTE $07,$AA,$00,$00,$FF,$00,$00,$FF
         .BYTE $00,$F7,$30
 someKindOfSettingArray
         .BYTE $FD,$03,$F8,$08,$B0,$40,$50,$C0
 f32F5   .BYTE $00,$00,$FF,$FE,$FD,$FD,$FE,$FE
         .BYTE $FF,$00,$01,$02,$03,$03,$02,$02
         .BYTE $01
-f3306   .BYTE $1A,$25,$30,$3B,$46,$51,$5C,$67
-a330E   .BYTE $B6
-a330F   .BYTE $D7
-f3310   .BYTE $33,$33,$33,$33,$33,$33,$33,$33
-a3318   .BYTE $32
-a3319   .BYTE $32,$00,$82,$00,$8D,$FF,$00,$00
-        .BYTE $FF,$00,$FC,$00,$01,$6A,$00,$8D
-        .BYTE $FF,$00,$00,$FF,$00,$FC,$01,$02
-        .BYTE $52,$00,$8D,$FF,$00,$00,$FF,$00
-        .BYTE $FC,$02,$03,$82,$00,$A2,$FF,$00
-        .BYTE $00,$FF,$00,$FC,$03,$04,$6A,$00
-        .BYTE $A2,$FF,$00,$00,$FF,$00,$FC,$04
+loPtrsToShipDeploymentSpriteVariables
+        .BYTE <spriteVariables1,<spriteVariables2,<spriteVariables3,<spriteVariables4
+        .BYTE <spriteVariables5,<spriteVariables6,<spriteVariables7,<spriteVariables8
+        .BYTE <spriteVariables9,<spriteVariables10
+hiPtrsToShipDeploymentSpriteVariables
+        .BYTE >spriteVariables1,>spriteVariables2,>spriteVariables3,>spriteVariables4
+        .BYTE >spriteVariables5,>spriteVariables6,>spriteVariables7,>spriteVariables8
+        .BYTE >spriteVariables9,>spriteVariables10
+
+; The values in these arrays get loaded by UpdateSpriteVariablesAndThenRedrawSprites to:
+; spriteIndex, currentSpriteXPos, currentSpriteMSBXPosOffset, currentSpriteYPos,
+; currentSpriteDisplayEnable, currentSpriteExpandVertical,
+; currentSpriteBackgroundDisplayPriority, currentSpriteMultiColorMode,
+; currentSpriteExpandHorizontal, currentSpriteColor, currentSpriteValue.
+spriteVariables1
+        .BYTE $00,$82,$00,$8D,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$00
+spriteVariables2
+        .BYTE $01,$6A,$00,$8D,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$01
+spriteVariables3
+        .BYTE $02,$52,$00,$8D,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$02
+spriteVariables4
+        .BYTE $03,$82,$00,$A2,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$03
+spriteVariables5
+        .BYTE $04,$6A,$00,$A2,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$04
+spriteVariables6
         .BYTE $05,$52,$00,$A2,$FF,$00,$00,$FF
-        .BYTE $00,$FC,$05,$06,$82,$00,$8E,$FF
-        .BYTE $FF,$00,$00,$00,$FB,$07,$07,$82
-        .BYTE $00,$8E,$FF,$FF,$00,$FF,$00,$FE
-        .BYTE $06
+        .BYTE $00,$FC,$05
+spriteVariables7
+        .BYTE $06,$82,$00,$8E,$FF,$FF,$00,$00
+        .BYTE $00,$FB,$07
+spriteVariables8
+        .BYTE $07,$82,$00,$8E,$FF,$FF,$00,$FF
+        .BYTE $00,$FE,$06
+
 levelColorScheme
         .BYTE M_GRAY1
         .BYTE M_GRAY3,M_ORANGE,M_GRAY2,M_GRAY1,M_BLACK,M_GRAY1,M_LTBLUE,M_LTRED
@@ -6466,17 +6555,22 @@ blckWhiteLabel
 demoLabel
         .BYTE $00,$0F
         .TEXT "  Demo   ", $FF
-currentColorValueArray   .BYTE M_LTBLUE,M_GRAY2,M_GRAY1,M_LTGREEN,M_GRAY3,M_LTGREEN,M_GRAY1,M_GRAY2
+currentColorValueArray   
+        .BYTE M_LTBLUE,M_GRAY2,M_GRAY1,M_LTGREEN,M_GRAY3,M_LTGREEN,M_GRAY1,M_GRAY2
 
 
-screenWriteJumpTableLoPtr   .BYTE <MaybeChangeTitleDecal,<UpdateAndDisplaySomeSprites,<UpdatePlayerScore,<MaybeShowPauseScreen
-                            .BYTE <ReturnEarly,<MaybeLaunchMine,<UpdateCurrentColorValue,<MaybeShowPauseScreen
-screenWriteJumpTableHiPtr   .BYTE >MaybeChangeTitleDecal,>UpdateAndDisplaySomeSprites,>UpdatePlayerScore,>MaybeShowPauseScreen
-                            .BYTE >ReturnEarly,>MaybeLaunchMine,>UpdateCurrentColorValue,>MaybeShowPauseScreen
+screenWriteJumpTableLoPtr   
+        .BYTE <MaybeChangeTitleDecal,<UpdateAndDisplaySomeSprites,<UpdatePlayerScore,<MaybeShowPauseScreen
+        .BYTE <ReturnEarly,<MaybeLaunchMine,<UpdateCurrentColorValue,<MaybeShowPauseScreen
+screenWriteJumpTableHiPtr   
+        .BYTE >MaybeChangeTitleDecal,>UpdateAndDisplaySomeSprites,>UpdatePlayerScore,>MaybeShowPauseScreen
+        .BYTE >ReturnEarly,>MaybeLaunchMine,>UpdateCurrentColorValue,>MaybeShowPauseScreen
 
 
-DemoModeLoPtrFuncArray   .BYTE <MaybeChangeTitleDecal,<MaybeLaunchMine,<MaybeUpdateColorScheme,<UpdatePlayerAndJoystickDisplay
-DemoModeHiPtrFuncArray   .BYTE >MaybeChangeTitleDecal,>MaybeLaunchMine,>MaybeUpdateColorScheme,>UpdatePlayerAndJoystickDisplay
+DemoModeLoPtrFuncArray   
+        .BYTE <MaybeChangeTitleDecal,<MaybeLaunchMine,<MaybeUpdateColorScheme,<UpdatePlayerAndJoystickDisplay
+DemoModeHiPtrFuncArray   
+        .BYTE >MaybeChangeTitleDecal,>MaybeLaunchMine,>MaybeUpdateColorScheme,>UpdatePlayerAndJoystickDisplay
 
 functionPtrArray
         .BYTE <ReturnEarly,>ReturnEarly,<PerformDetailedUpdateForSprite,>PerformDetailedUpdateForSprite
@@ -6491,14 +6585,18 @@ f3703   .BYTE $61,$61,$81,$71,$81,$91,$81,$91
 f3713   .BYTE $10,$10,$14,$18,$1C,$0C,$18,$1C
         .BYTE $0C,$0A,$18,$10,$0C,$14,$0E,$18
 bulletSpriteArray
-        .BYTE $0D,$12,$0D,$0C,$12,$0D,$0E,$0D
-        .BYTE $10,$0F,$0C,$0C,$0E,$0D,$0D,$0C
+        .BYTE BULLET_NARROW,BULLET_5,BULLET_NARROW,BULLET_WIDE,BULLET_5,BULLET_NARROW,BULLET_VERYNARROW,BULLET_NARROW
+        .BYTE EXPLOSION_1,BULLET_SINGLE,BULLET_WIDE,BULLET_WIDE,BULLET_VERYNARROW,BULLET_NARROW,BULLET_NARROW,BULLET_WIDE
+
 indexToScoresToAddArray
         .BYTE $06,$05,$06,$07,$07,$05,$09,$08
         .BYTE $04,$04,$08,$06,$04,$06,$05,$07
-f3743   .BYTE $05,$04,$06,$07
-f3747   .BYTE $06,$04,$06,$06,$04,$05,$06,$06
-f374F   .BYTE $05,$06,$06,$07,$00,$02,$05,$09
+enemeyBulletSpeedForLevel
+        .BYTE $05,$04,$06,$07
+bulletAnimationArrayOfSomeSort   
+        .BYTE $06,$04,$06,$06,$04,$05,$06,$06
+enemyBulletSpriteTransformOffset
+        .BYTE $05,$06,$06,$07,$00,$02,$05,$09
         .BYTE $09,$09,$02,$00,$14,$12,$0F,$0C
         .BYTE $0C,$0C,$12,$00
 colorsForSomething2
@@ -6513,19 +6611,13 @@ colorsForBonusSequence
         .BYTE M_LTBLUE,M_LTBLUE,M_LTBLUE,M_LTBLUE,M_YELLOW,M_GREEN,M_BLACK,M_GREEN
         .BYTE M_LTGREEN,M_BLACK,M_LTGREEN,M_CYAN,M_BLACK,M_CYAN,M_LTBLUE,M_BLACK
         .BYTE M_LTBLUE,M_BLUE,M_BLACK,M_BLACK,M_BLACK
-a37A2   .BYTE M_WHITE
-a37A3   .BYTE M_WHITE,M_BLACK
-a37A5   .BYTE M_WHITE
-a37A6   .BYTE M_WHITE,M_BLACK
-a37A8   .BYTE M_WHITE
-a37A9   .BYTE M_WHITE,M_BLACK
-a37AB   .BYTE M_WHITE
-a37AC   .BYTE M_WHITE,M_BLACK,M_BLACK,M_BLACK,M_BLACK,M_BLACK,M_BLACK
-f37B3   .BYTE M_YELLOW
-f37B4   .BYTE M_ORANGE
-f37B5   .BYTE M_RED
-f37B6   .BYTE M_PURPLE
-f37B7   .BYTE M_LTBLUE,M_CYAN,M_LTGREEN,M_GREEN,M_YELLOW,M_ORANGE,M_RED,M_PURPLE
+colorsForHiScoreInitials   
+        .BYTE M_WHITE, M_WHITE,M_BLACK, M_WHITE, M_WHITE
+        .BYTE M_BLACK, M_WHITE, M_WHITE,M_BLACK, M_WHITE
+        .BYTE M_WHITE,M_BLACK,M_BLACK,M_BLACK,M_BLACK
+        .BYTE M_BLACK,M_BLACK, M_YELLOW, M_ORANGE, M_RED
+        .BYTE M_PURPLE, M_LTBLUE,M_CYAN,M_LTGREEN,M_GREEN
+        .BYTE M_YELLOW,M_ORANGE,M_RED,M_PURPLE
 
 newLevelColors
         .BYTE M_GRAY3,M_WHITE,M_BLACK,M_WHITE,M_GRAY3,M_BLACK,M_GRAY3,M_GRAY2
@@ -7302,15 +7394,20 @@ bB276   JSR GetJoystickInput
         BNE bB276
         RTS 
 
+spriteVariablesLoPtr = srcLoPtr
+spriteVariablesHiPtr = srcHiPtr
 ;-------------------------------------------------------------------
-; UpdateSpriteIndicesAndThenRedrawSprites
+; UpdateSpriteVariablesAndThenRedrawSprites
 ;-------------------------------------------------------------------
-UpdateSpriteIndicesAndThenRedrawSprites   
+UpdateSpriteVariablesAndThenRedrawSprites   
+        ; Load the variables from spriteIndex to currentSpriteColor
+        ; with the values from spriteVariablesLoPtr
         LDY #$0A
-bB289   LDA (srcLoPtr),Y
-        STA @wspriteIndex,Y
+bB289   LDA (spriteVariablesLoPtr),Y
+        STA spriteIndex,Y
         DEY 
         BPL bB289
+
         JSR UpdateSpriteSizeColorAndPriority
         RTS 
 
@@ -8034,3 +8131,4 @@ bC9F7   LDA #$01
         JMP jC9EB
 
         .BYTE $00,$00
+; vim: tabstop=8 expandtab shiftwidth=8
