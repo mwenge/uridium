@@ -1509,13 +1509,13 @@ hiPtrArrayForTextureDataMaybe
         .BYTE $01,$22,$22,$23,$23,$00,$9C,$84
         .BYTE $B4,$6C,$CC,$00,$00,$80,$02,$00
 indexToFunctionPtrArray   .BYTE $01,$01,$01,$22,$23,$00,$84,$9C
-fA498   .BYTE $B4,$9C,$9C,$00,$00,$80,$00,$00
-fA4A0   .BYTE $01,$01,$22,$23,$23,$00,$84,$B4
-fA4A8   .BYTE $9C,$84,$B4,$00,$00,$80,$0C,$00
+currentSpriteXPosArray   .BYTE $B4,$9C,$9C,$00,$00,$80,$00,$00
+currentSpriteYPosArray   .BYTE $01,$01,$22,$23,$23,$00,$84,$B4
+currentSpriteMSBXPosOffsetArray   .BYTE $9C,$84,$B4,$00,$00,$80,$0C,$00
 fA4B0   .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84
 fA4B8   .BYTE $9C,$B4,$CC,$00,$05,$80,$06,$00
 fA4C0   .BYTE $02,$1C,$17,$02,$1C,$00,$6C,$B4
-fA4C8   .BYTE $9C,$84,$CC,$00,$07,$00,$06,$00
+apparentDuplicateOfCurrentSpriteYPosArray   .BYTE $9C,$84,$CC,$00,$07,$00,$06,$00
 fA4D0   .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
         .BYTE $9C,$9C,$9C,$00,$06,$80,$07,$00
         .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84

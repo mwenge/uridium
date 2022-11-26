@@ -214,16 +214,7 @@ a1E = $1E
 a52 = $52
 a6D = $6D
 dataLoPtr = $BE
-;
-; **** FIELDS **** 
-;
-a0E = $000E
-;
-; **** POINTERS **** 
-;
-;
-; **** EXTERNAL JUMPS **** 
-;
+
 COLOR_RAM = $D800
 SCREEN_RAM = $0400
 SCREEN_RAM_HIBANK = $4800
@@ -265,6 +256,85 @@ M_GRAY3                                   = $FF
 
 randomDataStorage = $0800
 pE000 = $E000
+
+MANTA            = $40
+MANTA1           = $41
+MANTA_2          = $42
+MANTA_RIGHT_3    = $43
+MANTA_RIGHT_4    = $44
+MANTA_RIGHT_5    = $45
+MANTA_RIGHT_6    = $46
+MANTA_RIGHT_7    = $47
+MANTA_RIGHT_8    = $48
+MANTA_RIGHT_9    = $49
+MANTA_RIGHT_10   = $4A
+MANTA_RIGHT_11   = $4B
+MANTA_RIGHT_12   = $4C
+MANTA_RIGHT_13   = $4D
+MANTA_RIGHT_14   = $4E
+MANTA_RIGHT_15   = $4F
+MANTA_LEFT_0     = $50
+MANTA_LEFT_1     = $51
+MANTA_LEFT_2     = $52
+MANTA_LEFT_3     = $53
+MANTA_LEFT_4     = $54
+MANTA_LEFT_5     = $55
+MANTA_LEFT_6     = $56
+MANTA_LEFT_7     = $57
+MANTA_LEFT_8     = $58
+MANTA_LEFT_9     = $59
+MANTA_LEFT_10    = $5A
+MANTA_LEFT_11    = $5B
+MANTA_LEFT_12    = $5C
+MANTA_LEFT_13    = $5D
+MANTA_LEFT_14    = $5E
+MANTA_LEFT_15    = $5F
+MANTA_FLIP_0     = $60
+MANTA_FLIP_1     = $61
+MANTA_FLIP_2     = $62
+MANTA_FLIP_3     = $63
+MANTA_FLIP_4     = $64
+MANTA_FLIP_5     = $65
+MANTA_FLIP_6     = $66
+MANTA_FLIP_7     = $67
+MANTA_FLIP_8     = $68
+MANTA_FLIP_9     = $69
+MANTA_FLIP_10    = $6A
+MANTA_FLIP_11    = $6B
+MANTA_FLIP_12    = $6C
+MANTA_FLIP_13    = $6D
+MEANIE_00   = $00 
+MEANIE_01   = $01
+MEANIE_02   = $02
+MEANIE_03   = $03
+MEANIE_04   = $04
+MEANIE_05   = $05
+MEANIE_06   = $06
+MEANIE_07   = $07
+MEANIE_08   = $08
+MEANIE_09   = $09
+MEANIE_0A   = $0A
+MEANIE_0B   = $0B
+MEANIE_0C   = $0C
+MEANIE_0D   = $0D
+MEANIE_0E   = $0E
+MEANIE_0F   = $0F
+MEANIE_10   = $10
+MEANIE_11   = $11
+MEANIE_12   = $12
+MEANIE_13   = $13
+MEANIE_14   = $14
+MEANIE_15   = $15
+MEANIE_16   = $16
+MEANIE_17   = $17
+MEANIE_18   = $18
+MEANIE_19   = $19
+MEANIE_1A   = $1A
+MEANIE_1B   = $1B
+MEANIE_1C   = $1C
+MEANIE_1D   = $1D
+MEANIE_1E   = $1E
+MEANIE_1F   = $1F
 
 * = $0900
 ;-------------------------------------------------------------------
@@ -796,23 +866,24 @@ b0C71   STX tensLivesLeftDisplayed
 SpinningShipAnimationLoop
         JSR CheckInputMaybeUpdateDecal
         LDA firePressed
-        BEQ b0CD7
+        BEQ SpinningShipAnimationOver
         LDA someKindOfFrameRate
-        BEQ b0CD7
+        BEQ SpinningShipAnimationOver
         JSR MaybeShowPauseScreen
         JSR StoreSpriteContentColorAndPosition
         INC currentSpriteValue
         LDA currentSpriteValue
-        CMP #$50
+        CMP #MANTA_LEFT_0
         BCC b0CD1
-        LDA #$40
+        LDA #MANTA
         STA currentSpriteValue
 b0CD1   JSR UpdateSpriteContentAndPosition
         JMP SpinningShipAnimationLoop
 
         ; The spinning ship sequence is over, or the user has pressed
         ; fire so start the ship deployment sequence.
-b0CD7   LDA #$12
+SpinningShipAnimationOver   
+        LDA #$12
         STA a90
         SEI 
         JSR PlayTitleTune
@@ -2439,7 +2510,7 @@ DisplayHiScoreInputScreen
         STY someDataHiPtr
 j180C   LDY #$12
 b180E   LDA (srcLoPtr),Y
-        CMP a0E,Y
+        CMP currentSpriteValue,Y
         BCC b181F
         BEQ b181A
         JMP j184A
@@ -2977,21 +3048,22 @@ b1BCB   STA currentSpriteYPos
         STA fA4E8,Y
         LDA #$00
         STA fA4B8,Y
-        STA fA4A8,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
         STA fA4C0,Y
-        STA fA4A0,Y
-        STA fA4C8,Y
+        STA currentSpriteYPosArray,Y
+        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
         LDA a84
-        STA fA498,Y
+        STA currentSpriteXPosArray,Y
         BPL b1BF4
         LDA #$FF
-        STA fA4A8,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
 b1BF4   DEC a10
         DEC a10
         DEC a11
         BPL b1B95
         RTS 
 
+numberOfSpritesToDo = a11
 ;-------------------------------------------------------------------
 ; UpdateSpriteAndRunFunctionPerSprite
 ;-------------------------------------------------------------------
@@ -2999,14 +3071,15 @@ UpdateSpriteAndRunFunctionPerSprite
         LDA #$0A
         STA a10
         LSR 
-        STA a11
+        ; Store $08 in numberOfSpritesToDo
+        STA numberOfSpritesToDo
         LDA #$FF
         STA currentSpriteMultiColorMode
         STA currentSpriteDisplayEnable
         LDA #$00
         STA currentSpriteBackgroundDisplayPriority
 
-b1C0E   LDY a11
+b1C0E   LDY numberOfSpritesToDo
         STY spriteIndex
         LDA indexToFunctionPtrArray,Y
         AND #$0E
@@ -3019,14 +3092,14 @@ b1C0E   LDY a11
         LDA functionPtrArray + $01,X
         STA functionLoPtr
         JSR StoreSpriteContentColorAndPosition
-        LDY a11
+        LDY numberOfSpritesToDo
 functionHiPtr   =*+$01
 functionLoPtr   =*+$02
         JSR PerformDetailedUpdateForSprite
 
 b1C2E   DEC a10
         DEC a10
-        DEC a11
+        DEC numberOfSpritesToDo
         BPL b1C0E
         RTS 
 
@@ -3040,7 +3113,7 @@ UpdateSpritePositionValueAndFunctionPtrIndex
         BNE b1C57
         INC currentSpriteValue
         LDA currentSpriteValue
-        CMP #$1E
+        CMP #MEANIE_1E
         BCC b1C57
         LDA #$00
         STA currentSpriteDisplayEnable
@@ -3117,12 +3190,12 @@ b1CBA   AND #$0F
         CLC 
         ADC a63
         STA fA4C0,Y
-        LDA fA498,Y
+        LDA currentSpriteXPosArray,Y
         ADC a64
-        STA fA498,Y
-        LDA fA4A8,Y
+        STA currentSpriteXPosArray,Y
+        LDA currentSpriteMSBXPosOffsetArray,Y
         ADC a64
-        STA fA4A8,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
         JMP j1CFD
 
 b1CDE   LDA a6F
@@ -3132,35 +3205,35 @@ b1CDE   LDA a6F
         CLC 
         ADC a66
         STA fA4C0,Y
-        LDA fA498,Y
+        LDA currentSpriteXPosArray,Y
         ADC a67
-        STA fA498,Y
-        LDA fA4A8,Y
+        STA currentSpriteXPosArray,Y
+        LDA currentSpriteMSBXPosOffsetArray,Y
         ADC a67
-        STA fA4A8,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
 j1CFD   LDA a6F
         AND #$04
         BEQ b1D17
-        LDA fA4C8,Y
+        LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
         CLC 
         ADC a82
-        STA fA4C8,Y
-        LDA fA4A0,Y
+        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
+        LDA currentSpriteYPosArray,Y
         ADC a83
-        STA fA4A0,Y
+        STA currentSpriteYPosArray,Y
         JMP j1DB0
 
 b1D17   LDA a6F
         AND #$08
 p1D1C   =*+$01
         BEQ b1D2E
-        LDA fA4C8,Y
+        LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
         CLC 
         ADC a80
-        STA fA4C8,Y
-        LDA fA4A0,Y
+        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
+        LDA currentSpriteYPosArray,Y
         ADC a81
-        STA fA4A0,Y
+        STA currentSpriteYPosArray,Y
 b1D2E   JMP j1DB0
 
 b1D31   LDA a6F
@@ -3177,10 +3250,10 @@ b1D44   LDA a6F
         BEQ b1D5E
         LDA #$00
         STA fA4C0,Y
-        STA fA498,Y
-        STA fA4A8,Y
-        STA fA4C8,Y
-        STA fA4A0,Y
+        STA currentSpriteXPosArray,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
+        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
+        STA currentSpriteYPosArray,Y
         JMP j1DCB
 
 b1D5E   LDA a6F
@@ -3190,36 +3263,36 @@ b1D5E   LDA a6F
         CMP a33
         BEQ b1DA8
         BCC b1D8B
-        LDA fA4A0,Y
+        LDA currentSpriteYPosArray,Y
         BEQ b1D77
         BPL b1DA8
         CMP #$FC
         BCC j1DB0
-b1D77   LDA fA4C8,Y
+b1D77   LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
         CLC 
         ADC a80
-        STA fA4C8,Y
-        LDA fA4A0,Y
+        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
+        LDA currentSpriteYPosArray,Y
         ADC a81
-        STA fA4A0,Y
+        STA currentSpriteYPosArray,Y
         JMP j1DB0
 
-b1D8B   LDA fA4A0,Y
+b1D8B   LDA currentSpriteYPosArray,Y
         BMI b1DA8
         CMP #$05
         BCS j1DB0
-        LDA fA4C8,Y
+        LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
         CLC 
         ADC a82
-        STA fA4C8,Y
-        LDA fA4A0,Y
+        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
+        LDA currentSpriteYPosArray,Y
         ADC a83
-        STA fA4A0,Y
+        STA currentSpriteYPosArray,Y
         JMP j1DB0
 
 b1DA8   LDA #$00
-        STA fA4C8,Y
-        STA fA4A0,Y
+        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
+        STA currentSpriteYPosArray,Y
 j1DB0   LDA someKindOfFrameRate
         AND #$07
         CMP spriteIndex
@@ -3408,24 +3481,31 @@ EnemyBulletIsOffScreen
 ; CalculateSpriteXYPos
 ;-------------------------------------------------------------------
 CalculateSpriteXYPos   
-        LDA fA498,Y
+        LDA currentSpriteXPosArray,Y
         CLC 
         ADC currentSpriteXPos
         STA currentSpriteXPos
-        LDA fA4A8,Y
+        LDA currentSpriteMSBXPosOffsetArray,Y
         ADC currentSpriteMSBXPosOffset
         STA currentSpriteMSBXPosOffset
-        LDA fA4C8,Y
+        LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
         ASL 
-        LDA fA4A0,Y
+        LDA currentSpriteYPosArray,Y
         ADC currentSpriteYPos
         STA currentSpriteYPos
         RTS 
 
 ;-------------------------------------------------------------------
 ; MaybeFireEnemyShipBullet
+; "The meanie fire decision routine included the dreadnaught number, and the
+; number of times the last dreadnaught had been reached. It hashes a number
+; together, then gets a random number and if that's bigger, and there's a sprite
+; available, the meanie will fire."
+; https://uridiumauthor.blogspot.com/2017/07/game-tuning.html
 ;-------------------------------------------------------------------
 MaybeFireEnemyShipBullet   
+        ; Check each of the five ships in the formation, if it should
+        ; fire a bullet.
         LDY #$05
 b1F11   LDA indexToFunctionPtrArray,Y
         BEQ FireBulletFromEnemyShip
@@ -3447,18 +3527,18 @@ FireBulletFromEnemyShip
         STA currentSpriteValue
         JSR UpdateSpriteContentAndPosition
         LDY a11
-        LDA fA498,Y
-        LDX fA4A8,Y
+        LDA currentSpriteXPosArray,Y
+        LDX currentSpriteMSBXPosOffsetArray,Y
         LDY spriteIndex
         CLC 
         ADC a65
-        STA fA498,Y
+        STA currentSpriteXPosArray,Y
         TXA 
         ADC a6B
-        STA fA4A8,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
         LDA #$00
-        STA fA4A0,Y
-        STA fA4C8,Y
+        STA currentSpriteYPosArray,Y
+        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
         LDA #$04 ; MaybeAnimateEnemyBullet
         STA indexToFunctionPtrArray,Y
         LDA #$A0
@@ -3537,9 +3617,9 @@ b1FA6   STY spriteIndex
         ORA #$80
         STA fA4B0,Y
         LDA #$00
-        STA fA498,Y
-        STA fA4A8,Y
-        STA fA4A0,Y
+        STA currentSpriteXPosArray,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
+        STA currentSpriteYPosArray,Y
         LDA $0220,X
         ASL 
         ASL 
@@ -3638,15 +3718,15 @@ AnimateMineMovememnt
         LDA currentSpriteYPos
         CMP a33
         BCC b2074
-        LDA fA4A0,Y
+        LDA currentSpriteYPosArray,Y
         SEC 
         SBC #$01
         JMP j207A
 
-b2074   LDA fA4A0,Y
+b2074   LDA currentSpriteYPosArray,Y
         CLC 
         ADC #$01
-j207A   STA fA4A0,Y
+j207A   STA currentSpriteYPosArray,Y
         LDA currentSpriteMSBXPosOffset
         AND #$01
         BNE b208B
@@ -3657,46 +3737,46 @@ j207A   STA fA4A0,Y
 b208B   LDA currentSpriteXPos
         CMP #$A0
         BCC b20A5
-b2091   LDA fA498,Y
+b2091   LDA currentSpriteXPosArray,Y
         CLC 
         ADC #$01
-        STA fA498,Y
-        LDA fA4A8,Y
+        STA currentSpriteXPosArray,Y
+        LDA currentSpriteMSBXPosOffsetArray,Y
         ADC #$00
-        STA fA4A8,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
         JMP j20B6
 
-b20A5   LDA fA498,Y
+b20A5   LDA currentSpriteXPosArray,Y
         CLC 
         ADC #$FF
-        STA fA498,Y
-        LDA fA4A8,Y
+        STA currentSpriteXPosArray,Y
+        LDA currentSpriteMSBXPosOffsetArray,Y
         ADC #$FF
-        STA fA4A8,Y
+        STA currentSpriteMSBXPosOffsetArray,Y
 j20B6   BPL b20DE
-        LDA fA498,Y
+        LDA currentSpriteXPosArray,Y
         CMP #$FA
         BCS b20C4
         LDA #$FA
-        STA fA498,Y
-b20C4   LDA fA4A0,Y
+        STA currentSpriteXPosArray,Y
+b20C4   LDA currentSpriteYPosArray,Y
         BPL b20D3
         CMP #$FC
         BCS b20D2
         LDA #$FC
-        STA fA4A0,Y
+        STA currentSpriteYPosArray,Y
 b20D2   RTS 
 
 b20D3   CMP #$04
         BCC b20D2
         LDA #$04
-        STA fA4A0,Y
+        STA currentSpriteYPosArray,Y
         BNE b20D2
-b20DE   LDA fA498,Y
+b20DE   LDA currentSpriteXPosArray,Y
         CMP #$06
         BCC b20C4
         LDA #$06
-        STA fA498,Y
+        STA currentSpriteXPosArray,Y
         BNE b20C4
 
 ;-------------------------------------------------------------------
