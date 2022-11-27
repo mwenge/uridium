@@ -19,12 +19,28 @@
 *=$E000
 pE000   .BYTE $00,$09,$00,$09,$C3,$C2,$CD,$38
         .BYTE $30,$00,$00,$00,$00,$00,$00,$00
-fE010
-        .BYTE $10,$18,$E8,$00,$D0,$10,$28,$00
-        .BYTE $D8,$20,$D0,$30,$00,$B0,$D0,$00
-fE020
-        .BYTE $80,$F4,$F1,$F0,$F8,$FB,$FD,$AA
-        .BYTE $AB,$F6,$BA,$B8,$B6,$BC,$B3,$CE
+
+notUsed = $8010 
+level7DreadnoughtData = $AA00 
+level8DreadnoughtData = $ABD8 
+level10DreadnoughtData = $BAD0 
+level11DreadnoughtData = $B830 
+level12DreadnoughtData = $B600 
+level13DreadnoughtData = $BCB0 
+level14DreadnoughtData = $B3D0 
+level15DreadnoughtData = $CE00 
+
+textureDataForLevelLoPtrArray
+        .BYTE <notUsed,<levelOneDreadnoughtData,<level2DreadnoughtData,<level3DreadnoughtData
+        .BYTE <level4DreadnoughtData,<level5DreadnoughtData,<level6DreadnoughtData,<level7DreadnoughtData
+        .BYTE <level8DreadnoughtData,<level9DreadnoughtData,<level10DreadnoughtData,<level11DreadnoughtData
+        .BYTE <level12DreadnoughtData,<level13DreadnoughtData,<level14DreadnoughtData,<level15DreadnoughtData
+textureDataForLevelHiPtrArray
+        .BYTE >notUsed,>levelOneDreadnoughtData,>level2DreadnoughtData,>level3DreadnoughtData
+        .BYTE >level4DreadnoughtData,>level5DreadnoughtData,>level6DreadnoughtData,>level7DreadnoughtData
+        .BYTE >level8DreadnoughtData,>level9DreadnoughtData,>level10DreadnoughtData,>level11DreadnoughtData
+        .BYTE >level12DreadnoughtData,>level13DreadnoughtData,>level14DreadnoughtData,>level15DreadnoughtData
+
 indexIntoLevelColorScheme
         .BYTE $00,$0A,$01,$09,$0C,$03,$07,$08
         .BYTE $02,$06,$05,$09,$0B,$01,$06,$04

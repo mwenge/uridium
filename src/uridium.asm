@@ -428,7 +428,9 @@ b091C   LDX #<p8000
         LDX #$02
         JSR CopyDataUntilXIsZero
 
-        ; Copying to $D400
+        ; Copying the surface charset data to $D400. At the start of each level
+        ; levelSurfaceDataHiPtrArray is used to write to pull the appropriate
+        ; charset data for the level from this to surfaceTextureCharacterSet($7800).
         LDX #<surfaceCharset
         LDY #>surfaceCharset
         STX tempLoPtrCopyFrom
@@ -447,8 +449,8 @@ b091C   LDX #<p8000
         LDX #$04
         JSR CopyDataUntilXIsZero
 
-        LDX #<p7400
-        LDY #>p7400
+        LDX #<secondHalfTextCharacterSet
+        LDY #>secondHalfTextCharacterSet
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
         LDX #$04
@@ -466,7 +468,7 @@ b091C   LDX #<p8000
         LDY #$00
         JSR CopyDataUntilYIsZero
 
-        JSR CopyDataFrommainCharacterSetTop7400
+        JSR CopyDataFrommainCharacterSetTosecondHalfTextCharacterSet
         JSR CopyDataWithin71007800
 
 ;-------------------------------------------------------------------
@@ -5212,14 +5214,15 @@ b2A5E   STA fA450,X
         ROL someSurfaceDataHiPtr
         STA someSurfaceDataLoPtr
         LDA someSurfaceDataHiPtr
-        ADC #$78
+        ADC #>surfaceTextureCharacterSet
         STA someSurfaceDataHiPtr
-        LDA f3937,X
+        LDA currentLevelSurfaceDataCharSetLoPtrArray,X
 someScrollOffset   =*+$01
         ORA #$80
         STA someDataLoPtr
-        LDA #$78
+        LDA #>surfaceTextureCharacterSet
         STA someDataHiPtr
+
         LDY #$07
 someSurfaceDataLoPtr   =*+$01
 someSurfaceDataHiPtr   =*+$02
@@ -5227,6 +5230,7 @@ b2A88   LDA surfaceTextureCharacterSet,Y
         STA (someDataLoPtr),Y
         DEY
         BPL b2A88
+
         LDY fA470,X
         LDA #$00
         STA (someDataLoPtr),Y
@@ -5575,8 +5579,8 @@ b2CA8   STA textureDataLoPtrArray,Y
         BNE b2CA8
         RTS
 
-fE010 = $E010
-fE020 = $E020
+textureDataForLevelLoPtrArray = $E010
+textureDataForLevelHiPtrArray = $E020
 
 textureIndexLoPtrMaybe = $12
 textureIndexHiPtrMaybe = $13
@@ -5589,9 +5593,9 @@ UpdateTextureDataForCurrentShip
         LDA indexToCurrentLevelTextureData
         AND #$0F
         TAY
-        LDA fE010,Y
+        LDA textureDataForLevelLoPtrArray,Y
         STA textureIndexLoPtrMaybe
-        LDA fE020,Y
+        LDA textureDataForLevelHiPtrArray,Y
         STA textureIndexHiPtrMaybe
 
         ; Clear down the surface data first.
@@ -6155,18 +6159,20 @@ b308A   LDA $D41B    ; Random Number Generator
         BNE b308A
         RTS
 
+secondHalfTextCharacterSetLoPtr = a12
+secondHalfTextCharacterSetHiPtr = a13
 ;-------------------------------------------------------------------
-; CopyDataFrommainCharacterSetTop7400
+; CopyDataFrommainCharacterSetTosecondHalfTextCharacterSet
 ;-------------------------------------------------------------------
-CopyDataFrommainCharacterSetTop7400
-        LDX #<p7400
-        LDY #>p7400
+CopyDataFrommainCharacterSetTosecondHalfTextCharacterSet
+        LDX #<secondHalfTextCharacterSet
+        LDY #>secondHalfTextCharacterSet
         STX someDataLoPtr
         STY someDataHiPtr
         LDX #<mainCharacterSet
         LDY #>mainCharacterSet
-        STX a12
-        STY a13
+        STX secondHalfTextCharacterSetLoPtr
+        STY secondHalfTextCharacterSetHiPtr
 
         LDA #$80
         STA initialValueOfY
@@ -6179,7 +6185,7 @@ b30BA   LDA #$00
         DEY
         STY a11
         LDY a10
-        LDA (a12),Y
+        LDA (secondHalfTextCharacterSetLoPtr),Y
         DEY
         STY a10
         LDY a11
@@ -6198,7 +6204,7 @@ b30D8   LDA #$00
         DEY
         STY a11
         LDY a10
-        LDA (a12),Y
+        LDA (secondHalfTextCharacterSetLoPtr),Y
         DEY
         STY a10
         LDY a11
@@ -6216,12 +6222,12 @@ b30D8   LDA #$00
         STA someDataHiPtr
 
         CLC
-        LDA a12
+        LDA secondHalfTextCharacterSetLoPtr
         ADC #$08
-        STA a12
+        STA secondHalfTextCharacterSetLoPtr
 
         BCC b3105
-        INC a13
+        INC secondHalfTextCharacterSetHiPtr
 b3105   DEC initialValueOfY
         BNE b30B4
 
@@ -7577,7 +7583,6 @@ jB34D   STY volumeTens
         LDY #>volumeText
         JSR WriteToScreen
 bB35F   RTS
-
 
 *=$C1B8
 
