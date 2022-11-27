@@ -2570,6 +2570,11 @@ f77E8
                                                 ; 00000000           
                                                 ; 00000000           
                                                 ; 00000000           
+; This is $7800, where the character set for the dreadnought of the current level is
+; stored. The first 100 or so bytes contains part of the text character set at start
+; up and is copied to $7188 or so at start up. (The text character set lives at $7000
+; and both character sets are used during the game by switching between them with
+; regular interrupts, see e.g. IRQInterrupt1.
 surfaceTextureCharacterSet
         .BYTE $00,$00,$FC,$FE,$0E,$06,$06,$06   ;.BYTE $00,$00,$FC,$FE,$0E,$06,$06,$06
                                                 ; CHARACTER $00
@@ -2777,6 +2782,7 @@ f7898
                                                 ; 00000110        ** 
                                                 ; 00000110        ** 
                                                 ; 00000000           
+f7900
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00   ;.BYTE $00,$00,$00,$00,$00,$00,$00,$00
                                                 ; CHARACTER $14
                                                 ; 00000000           

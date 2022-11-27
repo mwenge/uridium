@@ -74,7 +74,7 @@ ramHiPtr = $1D
 a1F = $1F
 currentPlayerLivesLeft = $25
 indexToCurrentLevelTextureData = $26
-a27 = $27
+currentLevel = $27
 a28 = $28
 a29 = $29
 a2A = $2A
@@ -303,38 +303,38 @@ MANTA_FLIP_10    = $6A
 MANTA_FLIP_11    = $6B
 MANTA_FLIP_12    = $6C
 MANTA_FLIP_13    = $6D
-MEANIE_00   = $00
-MEANIE_01   = $01
-MEANIE_02   = $02
-MEANIE_03   = $03
-MEANIE_04   = $04
-MEANIE_05   = $05
-MEANIE_06   = $06
-MEANIE_07   = $07
-MEANIE_08   = $08
-MEANIE_09   = $09
-MEANIE_0A   = $0A
-MEANIE_0B   = $0B
-MEANIE_0C   = $0C
-MEANIE_0D   = $0D
-MEANIE_0E   = $0E
-MEANIE_0F   = $0F
-MEANIE_10   = $10
-MEANIE_11   = $11
-MEANIE_12   = $12
-MEANIE_13   = $13
-MEANIE_14   = $14
-MEANIE_15   = $15
-MEANIE_16   = $16
-MEANIE_17   = $17
-MEANIE_18   = $18
-MEANIE_19   = $19
-MEANIE_1A   = $1A
-MEANIE_1B   = $1B
-MEANIE_1C   = $1C
-MEANIE_1D   = $1D
-MEANIE_1E   = $1E
-MEANIE_1F   = $1F
+MEANIE_00   = $A0
+MEANIE_01   = $A1
+MEANIE_02   = $A2
+MEANIE_03   = $A3
+MEANIE_04   = $A4
+MEANIE_05   = $A5
+MEANIE_06   = $A6
+MEANIE_07   = $A7
+MEANIE_08   = $A8
+MEANIE_09   = $A9
+MEANIE_0A   = $AA
+MEANIE_0B   = $AB
+MEANIE_0C   = $AC
+MEANIE_0D   = $AD
+MEANIE_0E   = $AE
+MEANIE_0F   = $AF
+MEANIE_10   = $B0
+MEANIE_11   = $B1
+MEANIE_12   = $B2
+MEANIE_13   = $B3
+MEANIE_14   = $B4
+MEANIE_15   = $B5
+MEANIE_16   = $B6
+MEANIE_17   = $B7
+MEANIE_18   = $B8
+MEANIE_19   = $B9
+MEANIE_1A   = $BA
+MEANIE_1B   = $BB
+MEANIE_1C   = $BC
+MEANIE_1D   = $BD
+MEANIE_1E   = $BE
+MEANIE_1F   = $BF
 DROPSHIP_1              = $00
 DROPSHIP_2              = $01
 DROPSHIP_3              = $02
@@ -985,14 +985,14 @@ b0D41   LDA a32
 ; MaybeStartNewLevel
 ;--------------------------------------------------------------------
 MaybeStartNewLevel
-        LDA a27
+        LDA currentLevel
         CMP indexToCurrentLevelTextureData
         BEQ CheckIfGameIsOver
         STA indexToCurrentLevelTextureData
         CMP #$10
         BCC b0D62
         LDA #$01
-        STA a27
+        STA currentLevel
         STA indexToCurrentLevelTextureData
         LDA a28
         CLC
@@ -2182,10 +2182,10 @@ b15B2   LDA a2A
         ; Falls through
 
 ;-------------------------------------------------------------------
-; IncrementTwoValues
+; IncrementCurrentLevel
 ;-------------------------------------------------------------------
-IncrementTwoValues
-        INC a27
+IncrementCurrentLevel
+        INC currentLevel
         INC a32
         RTS
 
@@ -3153,7 +3153,7 @@ UpdateSpritePositionValueAndFunctionPtrIndex
         BNE b1C57
         INC currentSpriteValue
         LDA currentSpriteValue
-        CMP #MEANIE_1E
+        CMP #$1E
         BCC b1C57
         LDA #$00
         STA currentSpriteDisplayEnable
@@ -4350,7 +4350,7 @@ b2490   LDA loopCounter
         CLC
         ADC currentSpriteXPos
         STA currentSpriteXPos
-        LDA #$30
+        LDA #EXPLOSION_MAJOR1
         STA currentSpriteValue
         LDA $D41B    ; Random Number Generator
         AND #$0F
@@ -4361,12 +4361,13 @@ b2490   LDA loopCounter
         JSR UpdateSpriteSizeColorAndPriority
 b24BF   JSR ProcessGameFrameWithoutCheckingPause
 
+        ; Animte the ship explosion
         LDA #$07
         STA spriteIndex
 b24C6   JSR StoreShipSpriteState
         INC currentSpriteValue
         LDA currentSpriteValue
-        CMP #$3B
+        CMP #EXPLOSION_MAJOR11 + $01
         BCC b24D5
         LDA #$00
         STA currentSpriteDisplayEnable
@@ -6869,6 +6870,9 @@ p3FD6   RTI
 .include "enemy_sprites.asm"
 .include "charset.asm"
 
+; FIXME: There's a lot of dead code below this point. Figure out how to remove it without
+; breaking the game.
+
 *=$A900
 fA900
 ;--------------------------------------------------------------------
@@ -7012,7 +7016,7 @@ aA9E7   LDA #$BF
         STA $DC00    ;CIA1: Data Port Register A
         RTS
 
-bA9F1   JSR IncrementTwoValues
+bA9F1   JSR IncrementCurrentLevel
         JMP jC9EB
 
 bA9F7   LDA #$01
@@ -8123,7 +8127,7 @@ jC9EB   LDA #$FF
         STA $DC00    ;CIA1: Data Port Register A
         RTS
 
-bC9F1   JSR IncrementTwoValues
+bC9F1   JSR IncrementCurrentLevel
         JMP jC9EB
 
 bC9F7   LDA #$01
