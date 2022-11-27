@@ -12,7 +12,7 @@ uridium.prg: src/uridium.asm src/data.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/ur.prg -L bin/list-co1.txt -l bin/labels.txt src/uridium.asm
 	echo "57f29fe929daf46e5033a22c7c88c82a  bin/ur.prg" | md5sum -c
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/data.prg -L bin/list-data.txt src/data.asm
-	echo "181da4625337449ff8153324ff77b940  bin/data.prg" | md5sum -c
+	echo "d974ff7591692856982270cc1a2d4934  bin/data.prg" | md5sum -c
 	exomizer sfx 0x0900 bin/ur.prg bin/data.prg,0xe000 -n -o bin/uridium.prg
 
 d64: uridium.prg

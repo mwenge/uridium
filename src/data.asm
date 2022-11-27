@@ -16,6 +16,7 @@
         .cdef "ww", $54
         .cdef "xz", $21
         .cdef "09", $00
+*=$E000
 pE000   .BYTE $00,$09,$00,$09,$C3,$C2,$CD,$38
         .BYTE $30,$00,$00,$00,$00,$00,$00,$00
 fE010
@@ -31,30 +32,30 @@ levelSurfaceDataHiPtrArray
         .BYTE $D8,$DC,$D4,$DC,$D4,$D8,$DC,$D8
         .BYTE $D4,$D8,$DC,$D4,$DC,$D8,$D4,$DC
 levelNameLoPtrArray
-        .BYTE $DF,$70,$84,$98,$AC,$C0,$D5,$E9
-        .BYTE $55,$69,$7E,$92,$A6,$B8,$CC,$DF
+        .BYTE <level15Name,<level1Name,<level2Name,<level3Name,<level4Name,<level5Name,<level6Name,<level7Name
+        .BYTE <level8Name,<level9Name,<level10Name,<level11Name,<level12Name,<level13Name,<level14Name,<level15Name
 levelNameHiPtrArray
-        .BYTE $EF,$E0,$E0,$E0,$E0,$E0,$E0,$E0
-        .BYTE $EF,$EF,$EF,$EF,$EF,$EF,$EF,$EF
-fE070
+        .BYTE >level15Name,>level1Name,>level2Name,>level3Name,>level4Name,>level5Name,>level6Name,>level7Name
+        .BYTE >level8Name,>level9Name,>level10Name,>level11Name,>level12Name,>level13Name,>level14Name,>level15Name
+level1Name
         .BYTE $02,$0C
         .TEXT "    01. Zinc.    ", $FF, ""
-fE084
+level2Name
         .BYTE $02,$0C
         .TEXT "    02. Lead.    ", $FF, ""
-fE098
+level3Name
         .BYTE $02,$0C
         .TEXT "   03. Copper.   ", $FF, ""
-fE0AC
+level4Name
         .BYTE $02,$0C
         .TEXT "   04. Silver.   ", $FF, ""
-fE0C0
+level5Name
         .BYTE $02,$0C
         .TEXT "    05. Iron.     ", $FF, ""
-fE0D5
+level6Name
         .BYTE $02,$0C
         .TEXT "    06. Gold.    ", $FF, ""
-fE0E9
+level7Name
         .BYTE $02,$0C
         .TEXT "  07. Platinum. ", $FF, ""
 
@@ -520,28 +521,28 @@ someKindOfTextureData
         .BYTE $09,$20,$20,$20,$20,$53,$52,$52
         .BYTE $52,$51,$09,$20,$20,$20,$20,$27
         .BYTE $28,$28,$28,$29,$00
-fEF55
+level8Name
         .BYTE $02,$0C
         .TEXT "  08. Tungsten.  ", $FF, ""
-fEF69
+level9Name
         .BYTE $02,$0C
         .TEXT "   09. Iridon.    ", $FF, ""
-fEF7E
+level10Name
         .BYTE $02,$0C
         .TEXT "  10. Kallisto.  ", $FF, ""
-fEF92
+level11Name
         .BYTE $02,$0C
         .TEXT " 11. Tri-alloy.  ", $FF, ""
-fEFA6
+level12Name
         .BYTE $02,$0C
         .TEXT " 12. Quadmium. ", $FF, ""
-fEFB8
+level13Name
         .BYTE $02,$0C
         .TEXT "  13. Ergonite.  ", $FF, ""
-fEFCC
+level14Name
         .BYTE $02,$0C
         .TEXT " 14. Galactium. ", $FF, ""
-fEFDF
+level15Name
         .BYTE $02,$0C
         .TEXT "  15. Uridium.  ", $FF, ""
 .include "theme_tune.asm"
