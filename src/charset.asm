@@ -1295,7 +1295,7 @@ secondHalfTextCharacterSet
 ; level7DreadnoughtData and level8DreadnoughtData are copied to $AA00 and $ABD8 at startup.
 ; This region ($7400) is then used for the second 1024 bytes of the text character
 ; set.
-level7DreadnoughtData
+level7DreadnoughtData = $AA00
         .BYTE $20,$20,$20,$20,$05,$5C,$5C,$5C   
         .BYTE $09,$0B,$05,$5C,$04,$0E,$0F,$0F   
         .BYTE $05,$5C,$06,$06,$06,$06,$06,$5C   
@@ -1356,7 +1356,7 @@ f7588
         .BYTE $A7,$68,$9F,$A7,$68,$99,$B5,$5F   
         .BYTE $99,$B4,$8A,$95,$B5,$65,$00,$00   
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00   
-level8DreadnoughtData
+level8DreadnoughtData = $ABD8
         .BYTE $20,$20,$20,$20,$05,$07,$20,$20   
         .BYTE $20,$20,$05,$07,$05,$07,$20,$20   
         .BYTE $20,$20,$05,$07,$20,$20,$20,$20   

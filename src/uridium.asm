@@ -255,7 +255,6 @@ M_LTBLUE                                  = $FE
 M_GRAY3                                   = $FF
 
 randomDataStorage = $0800
-pE000 = $E000
 
 MANTA            = $40
 MANTA1           = $41
@@ -471,6 +470,7 @@ b091C   LDX #<p8000
         JSR CopyDataFrommainCharacterSetTosecondHalfTextCharacterSet
         JSR CopyDataWithin71007800
 
+p8000 = $8000
 ;-------------------------------------------------------------------
 ; DrawTitleScreen
 ;-------------------------------------------------------------------
@@ -497,9 +497,9 @@ DrawTitleScreen
         LDX #<DrawTitleScreen
         LDY #>DrawTitleScreen
         STX p8000
-        STY a8001
-        STX a8002
-        STY a8003
+        STY p8000 + $01
+        STX p8000 + $02
+        STY p8000 + $03
         STX $FFFC    ;Hardware Reset
         STY $FFFD    ;Hardware Reset
         LDX #<p3FD6
@@ -1160,7 +1160,6 @@ b0E3C   CMP #$11
         BEQ b0E49
         RTS
 
-themeTuneData = $FE00
 b0E49   JSR PlaySound
         LDA a95
         STA aEF
@@ -2878,7 +2877,6 @@ UpdatePointersAndFetchSurfaceData
         JSR FetchCurrentSurfaceData
         RTS
 
-levelSurfaceDataHiPtrArray = $E040
 ;-------------------------------------------------------------------
 ; FetchCurrentSurfaceData
 ;-------------------------------------------------------------------
@@ -4130,8 +4128,6 @@ b232D   LDX #<inGameBanner
         JSR WriteToScreen
         RTS
 
-levelNameLoPtrArray = $E050
-levelNameHiPtrArray = $E060
 b2335   LDY indexToCurrentLevelTextureData
         LDX levelNameLoPtrArray,Y
         LDA levelNameHiPtrArray,Y
@@ -5523,7 +5519,6 @@ b2C42   LDA a31
         STA a51
         RTS
 
-someKindOfTextureData = $E100
 textureDataLoPtrArray = someDataHiPtrArray ; $A400
 newValueofSrcLoPtr = $11
 ;-------------------------------------------------------------------
@@ -5579,8 +5574,6 @@ b2CA8   STA textureDataLoPtrArray,Y
         BNE b2CA8
         RTS
 
-textureDataForLevelLoPtrArray = $E010
-textureDataForLevelHiPtrArray = $E020
 
 textureIndexLoPtrMaybe = $12
 textureIndexHiPtrMaybe = $13
@@ -5953,7 +5946,6 @@ b2F2D   STA (ramLoPtr),Y
         BPL b2F17
         RTS
 
-indexIntoLevelColorScheme = $E030
 ;-------------------------------------------------------------------
 ; UpdateScreenColors
 ;-------------------------------------------------------------------
@@ -6153,8 +6145,8 @@ b308A   LDA $D41B    ; Random Number Generator
         LDX a10
         EOR randomDataStorage,X
         STA randomDataStorage,X
-        ROL a800F
-        ROR a800F
+        ROL p8000 + $0F
+        ROR p8000 + $0F
         INC a10
         BNE b308A
         RTS
