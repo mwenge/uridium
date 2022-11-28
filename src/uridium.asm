@@ -17,6 +17,23 @@
 ;
 ; **** ZP FIELDS ****
 ;
+fC078 = $C078
+fC0A0 = $C0A0
+fC0C8 = $C0C8
+fC0F0 = $C0F0
+fC100 = $C100
+fC110 = $C110
+fC118 = $C118
+fC120 = $C120
+fC140 = $C140
+fC168 = $C168
+fC190 = $C190
+fCA00 = $CA00
+fCAAC = $CAAC
+fCAC0 = $CAC0
+pC000 = $C000
+pC800 = $C800
+
 playerScore = $20
 a70 = $70
 a71 = $71
