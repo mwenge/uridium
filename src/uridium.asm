@@ -17,22 +17,10 @@
 ;
 ; **** ZP FIELDS ****
 ;
-fC078 = $C078
-fC0A0 = $C0A0
-fC0C8 = $C0C8
-fC0F0 = $C0F0
-fC100 = $C100
-fC110 = $C110
-fC118 = $C118
-fC120 = $C120
-fC140 = $C140
-fC168 = $C168
-fC190 = $C190
 fCA00 = $CA00
 fCAAC = $CAAC
 fCAC0 = $CAC0
-pC000 = $C000
-pC800 = $C800
+finalLocationOfSomeLevelDataAndGameData = $C000
 
 playerScore = $20
 a70 = $70
@@ -160,7 +148,7 @@ a69 = $69
 bulletSpriteCurrentLevel = $6A
 a6B = $6B
 usedToCheckIfWeShouldLaunchMine = $6C
-a6E = $6E
+HiPtrToDataUsedForScoring = $6E
 a6F = $6F
 a7C = $7C
 a7D = $7D
@@ -229,7 +217,7 @@ aFC = $FC
 a12 = $12
 a1E = $1E
 a52 = $52
-a6D = $6D
+loPtrToDataUsedForScoring = $6D
 dataLoPtr = $BE
 
 COLOR_RAM = $D800
@@ -437,8 +425,8 @@ b091C   LDX #<startOfMainLevelData
         JSR CopyDataUntilXIsZero
 
         ; Copy data from $A000-$AFFF to $C000-$CFFF
-        LDX #<pC000
-        LDY #>pC000
+        LDX #<finalLocationOfSomeLevelDataAndGameData
+        LDY #>finalLocationOfSomeLevelDataAndGameData
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
         LDX #$10
@@ -467,6 +455,7 @@ b091C   LDX #<startOfMainLevelData
         LDX #$0C
         JSR CopyDataUntilXIsZero
 
+        pA600 = $A600
         ; Copy data from $4800-$4CFF to $A600-$A9FF
         LDX #<SCREEN_RAM_HIBANK + $0000
         LDY #>SCREEN_RAM_HIBANK + $0000
@@ -2347,7 +2336,7 @@ b1675   RTS
         ; Looks like the score is used to determine if the land now
         ; should be activated?
 b1676   LDY playerScore + $04
-        LDA (a6D),Y
+        LDA (loPtrToDataUsedForScoring),Y
         CMP #$FF
         BNE b1675
         LDA #$01
@@ -2898,10 +2887,10 @@ b1A36   CLD
 ;-------------------------------------------------------------------
 UpdatePointersAndFetchSurfaceData
         LDY indexToCurrentLevelTextureData
-        LDA fC100,Y
-        STA a6D
-        LDA fC110,Y
-        STA a6E
+        LDA scoringStrategyForLevelLoPtrArray,Y
+        STA loPtrToDataUsedForScoring
+        LDA scoringStrategyForLevelHiPtrArray,Y
+        STA HiPtrToDataUsedForScoring
         LDA #$00
         STA formationAnnihilationBonus
         STA landNowActivated
@@ -2963,7 +2952,7 @@ b1A98   LDA #$00
         LDA #$AE
         STA a92
         LDY playerScore + $04
-        LDA (a6D),Y
+        LDA (loPtrToDataUsedForScoring),Y
         CMP #$FF
         BNE b1AB9
         LDA $D41B    ; Random Number Generator
@@ -4307,7 +4296,7 @@ SetUpSomeData
         STX a11
 b241B   LDY f349F,X
         BMI b244D
-        LDA pC000,Y
+        LDA finalLocationOfSomeLevelDataAndGameData,Y
         CLC
         ADC #$60
         STA srcLoPtr
@@ -7018,6 +7007,7 @@ bA989   LDA SCREEN_RAM + $0000,X
         STA $DC0D    ;CIA1: CIA Interrupt Control Register
         STA $DD0D    ;CIA2: CIA Interrupt Control Register
         CLI
+
 jC9B1 = $C9B1
         LDA #$01
         STA aC90A

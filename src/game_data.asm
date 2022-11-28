@@ -1417,10 +1417,19 @@ themeTuneData = $FE00
         .BYTE $42,$00,$00,$00,$43,$25,$44,$00
         .BYTE $20,$20,$20,$20,$1F,$00,$00,$00
         .BYTE $4F,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$90,$99,$A2,$AC,$B6,$C1,$CC
-        .BYTE $D8,$E4,$F1,$FE,$0C,$1A,$29,$38
-        .BYTE $00,$C5,$C5,$C5,$C5,$C5,$C5,$C5
-        .BYTE $C5,$C5,$C5,$C5,$C6,$C6,$C6,$C6
+
+scoringStrategyForLevelLoPtrArray = $C100
+        .BYTE <a0000,<level1ScoringStrategy,<level2ScoringStrategy,<level3ScoringStrategy
+        .BYTE <level4ScoringStrategy,<level5ScoringStrategy,<level6ScoringStrategy,<level7ScoringStrategy
+        .BYTE <level8ScoringStrategy,<level9ScoringStrategy,<level10ScoringStrategy,<level11ScoringStrategy
+        .BYTE <level12ScoringStrategy,<level13ScoringStrategy,<level14ScoringStrategy,<level15ScoringStrategy
+scoringStrategyForLevelHiPtrArray = $C110
+        .BYTE >a0000,>level1ScoringStrategy,>level2ScoringStrategy,>level3ScoringStrategy
+        .BYTE >level4ScoringStrategy,>level5ScoringStrategy,>level6ScoringStrategy,>level7ScoringStrategy
+        .BYTE >level8ScoringStrategy,>level9ScoringStrategy,>level10ScoringStrategy,>level11ScoringStrategy
+        .BYTE >level12ScoringStrategy,>level13ScoringStrategy,>level14ScoringStrategy,>level15ScoringStrategy
+                                        
+fC120 = $C120
         .BYTE $00,$48,$4C,$5E,$6A,$76,$82,$8E
         .BYTE $9C,$AA,$B8,$C6,$DE,$EC,$04,$18
         .BYTE $2C,$40,$54,$74,$78,$88,$9A,$BA
@@ -1435,6 +1444,7 @@ themeTuneData = $FE00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+fC190 = $C190
         .BYTE $00,$C6,$C6,$C6,$C6,$C6,$C6,$C6
         .BYTE $C6,$C6,$C6,$C6,$C6,$C6,$C7,$C7
         .BYTE $C7,$C7,$C7,$C7,$C7,$C7,$C7,$C7
@@ -1573,29 +1583,53 @@ fA518   .BYTE $9C,$B4,$CC,$00,$07,$80,$04,$00
         .BYTE $9C,$B4,$CC,$00,$07,$80,$03,$00
         .BYTE $01,$22,$22,$28,$00,$00,$9C,$84
         .BYTE $B4,$9C,$00,$00,$00,$FF,$0A,$00
+
+level1ScoringStrategy = $C590
         .BYTE $00,$19,$04,$0C,$01,$29,$02,$00
-        .BYTE $FF,$0C,$2F,$22,$08,$1E,$20,$02
-        .BYTE $0C,$FF,$21,$06,$1F,$1C,$25,$0F
-        .BYTE $31,$26,$21,$FF,$1D,$07,$1A,$0A
-        .BYTE $34,$0B,$0D,$31,$1D,$FF,$04,$0E
-        .BYTE $2A,$1C,$37,$32,$23,$17,$2E,$04
-        .BYTE $FF,$29,$1E,$0D,$2C,$0F,$1F,$2D
-        .BYTE $2F,$0A,$29,$FF,$0B,$05,$1C,$0C
-        .BYTE $16,$2E,$36,$11,$02,$0A,$0B,$FF
+        .BYTE $FF
+level2ScoringStrategy = $C599
+        .BYTE $0C,$2F,$22,$08,$1E,$20,$02,$0C
+        .BYTE $FF
+level3ScoringStrategy = $C5A2
+        .BYTE $21,$06,$1F,$1C,$25,$0F,$31,$26
+        .BYTE $21,$FF
+level4ScoringStrategy = $C5AC
+        .BYTE $1D,$07,$1A,$0A,$34,$0B,$0D,$31
+        .BYTE $1D,$FF
+level5ScoringStrategy = $C5B6
+        .BYTE $04,$0E,$2A,$1C,$37,$32,$23,$17
+        .BYTE $2E,$04,$FF
+level6ScoringStrategy = $C5C1
+        .BYTE $29,$1E,$0D,$2C,$0F,$1F,$2D,$2F
+        .BYTE $0A,$29,$FF
+level7ScoringStrategy = $C5CC
+        .BYTE $0B,$05,$1C,$0C,$16,$2E,$36,$11
+        .BYTE $02,$0A,$0B,$FF
+level8ScoringStrategy = $C5D8
         .BYTE $07,$19,$03,$17,$24,$1D,$02,$21
-        .BYTE $0E,$0D,$07,$FF,$18,$09,$11,$30
-        .BYTE $0A,$35,$0D,$26,$2B,$23,$17,$18
-        .BYTE $FF,$2F,$1B,$11,$25,$2A,$33,$31
-        .BYTE $08,$1C,$10,$06,$2F,$FF,$05,$16
-pA600   .BYTE $35,$27,$0D,$22,$0A,$00,$36,$1D
-        .BYTE $2F,$19,$05,$FF,$37,$1C,$08,$1E
-        .BYTE $2F,$2C,$28,$20,$34,$16,$2D,$1F
-        .BYTE $37,$FF,$35,$18,$33,$09,$0B,$2A
-        .BYTE $00,$0E,$31,$16,$2C,$29,$37,$35
-        .BYTE $FF,$36,$2E,$0D,$16,$1B,$1A,$1D
-        .BYTE $04,$20,$28,$30,$27,$03,$36,$FF
+        .BYTE $0E,$0D,$07,$FF
+level9ScoringStrategy = $C5E4
+        .BYTE $18,$09,$11,$30,$0A,$35,$0D,$26
+        .BYTE $2B,$23,$17,$18,$FF
+level10ScoringStrategy = $C5F1
+        .BYTE $2F,$1B,$11,$25,$2A,$33,$31
+        .BYTE $08,$1C,$10,$06,$2F,$FF
+level11ScoringStrategy = $C5FE
+        .BYTE $05,$16,$35,$27,$0D,$22,$0A,$00
+        .BYTE $36,$1D,$2F,$19,$05,$FF
+level12ScoringStrategy = $C60C
+        .BYTE $37,$1C,$08,$1E,$2F,$2C,$28,$20
+        .BYTE $34,$16,$2D,$1F,$37,$FF
+level13ScoringStrategy = $C61A
+        .BYTE $35,$18,$33,$09,$0B,$2A,$00,$0E
+        .BYTE $31,$16,$2C,$29,$37,$35,$FF
+level14ScoringStrategy = $C629
+        .BYTE $36,$2E,$0D,$16,$1B,$1A,$1D,$04
+        .BYTE $20,$28,$30,$27,$03,$36,$FF
+level15ScoringStrategy = $C638
         .BYTE $38,$19,$34,$31,$20,$06,$18,$32
         .BYTE $30,$16,$16,$1F,$0C,$35,$38,$FF
+
         .BYTE $82,$08,$00,$FF,$82,$08,$80,$10
         .BYTE $84,$08,$80,$10,$88,$10,$80,$10
         .BYTE $84,$08,$82,$08,$00,$FF,$82,$08

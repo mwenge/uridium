@@ -4,12 +4,12 @@ import re
 
 
 s1 = """
-        .BYTE $10,$18,$E8,$00,$D0,$10,$28,$00
-        .BYTE $D8,$20,$D0,$30,$00,$B0,$D0,$00
+        .BYTE $00,$90,$99,$A2,$AC,$B6,$C1,$CC
+        .BYTE $D8,$E4,$F1,$FE,$0C,$1A,$29,$38
 """
 s2 = """
-        .BYTE $80,$F4,$F1,$F0,$F8,$FB,$FD,$AA
-        .BYTE $AB,$F6,$BA,$B8,$B6,$BC,$B3,$CE
+        .BYTE $00,$C5,$C5,$C5,$C5,$C5,$C5,$C5
+        .BYTE $C5,$C5,$C5,$C5,$C6,$C6,$C6,$C6
 """
 ls1 = re.split("([, \n])", s1)
 ls2 = re.split("([, \n])", s2)
