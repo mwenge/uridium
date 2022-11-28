@@ -10,7 +10,7 @@ original: clean d64_orig run_orig
 
 uridium.prg: src/uridium.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/uridium.prg -L bin/list-co1.txt -l bin/labels.txt src/uridium.asm
-	echo "ab16405c86a2c2227a1c993ec87d5410  bin/uridium.prg" | md5sum -c
+	echo "e5c40d3a4b23702af14c6af804dc5063  bin/uridium.prg" | md5sum -c
 
 d64: uridium.prg
 	$(C1541) -format "uridium,rq" d64 $(D64_IMAGE)

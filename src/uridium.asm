@@ -6910,8 +6910,7 @@ fA900
 ;--------------------------------------------------------------------
 ; ResetSomeValues
 ;--------------------------------------------------------------------
-; ResetSomeValues = $C900
-sA900
+ResetSomeValues = $C900
         STA initial3
 aA904   =*+$01
         LDA #$01
@@ -6921,8 +6920,8 @@ aA904   =*+$01
 ;--------------------------------------------------------------------
 ; GameOverCheckHiScore
 ;--------------------------------------------------------------------
-; GameOverCheckHiScore = $C909
-jA909
+GameOverCheckHiScore = $C909
+aC90A   = $C90A
         LDA #$01
         BEQ PrepareHiScoreScreen
         JMP jC9B1
@@ -6948,6 +6947,7 @@ bA92A   LDA hiScoreForScrollingBanner,X
         DEX
         BPL bA92A
 
+aC933 = $C933
         LDX #$6F
 
 bA935
@@ -6977,8 +6977,7 @@ bA95B   STA a90,X
 ;-------------------------------------------------------------------
 ; sC962 sA962
 ;-------------------------------------------------------------------
-; sC962 = $C962
-sA962
+sC962 = $C962
         LDA #$01
         TAY
         LDX #$08
@@ -6994,6 +6993,7 @@ sA962
         LDX #$CE
         LDA #$FB
         JSR $FFD8 ;- save after call SETLFS,SETNAM
+aC982 = $C982
         SEI
         LDA #$35
         STA RAM_ACCESS_MODE
@@ -7018,6 +7018,7 @@ bA989   LDA SCREEN_RAM + $0000,X
         STA $DC0D    ;CIA1: CIA Interrupt Control Register
         STA $DD0D    ;CIA2: CIA Interrupt Control Register
         CLI
+jC9B1 = $C9B1
         LDA #$01
         STA aC90A
         STA initialPlayerScore + $06
@@ -7034,8 +7035,7 @@ fA9C0
 ;--------------------------------------------------------------------
 ; CheckLandNowWarning
 ;--------------------------------------------------------------------
-; CheckLandNowWarning = $C9D2
-sA9D2
+CheckLandNowWarning = $C9D2
         JSR MaybeDisplayLandNowWarning
         LDA $DC00    ;CIA1: Data Port Register A
         STA aC9EC
@@ -7046,6 +7046,8 @@ aA9E3   LDA #$DF
         BEQ bA9F1
 aA9E7   LDA #$BF
         BEQ bA9F7
+jC9EB = $C9EB
+aC9EC = $C9EC
         LDA #$FF
         STA $DC00    ;CIA1: Data Port Register A
         RTS
@@ -7612,560 +7614,4 @@ jB34D   STY volumeTens
         JSR WriteToScreen
 bB35F   RTS
 
-*=$C1B8
-
-dreadnoughtLoPtr = spriteIndex
-dreadnoughtHiPtr = currentSpriteXPos
-;-------------------------------------------------------------------
-; NotTheDreadnoughDestructionSequence
-;-------------------------------------------------------------------
-NotTheDreadnoughDestructionSequence
-        JSR $E544
-        ; Switch charset to $1800?
-        LDA #$16
-        STA $D018    ;VIC Memory Control Register
-        LDA #$80
-        STA $D020    ;Border Color
-        STA $D021    ;Background Color 0
-        STA $0291
-
-jC1CB   LDA #>pC800
-        STA dreadnoughtHiPtr
-        LDX #<pC800
-        STX dreadnoughtLoPtr
-
-        TXA
-bC1D4   STA COLOR_RAM + $0000,X
-        STA COLOR_RAM + $0100,X
-        STA COLOR_RAM + $0200,X
-        STA COLOR_RAM + $0300,X
-        INX
-        BNE bC1D4
-
-bC1E3   LDA #$0B
-        STA $D011    ;VIC Control Register 1
-bC1E8   LDA $D011    ;VIC Control Register 1
-        BPL bC1E8
-
-        SEI
-        LDA #$34
-        STA RAM_ACCESS_MODE
-
-        LDY #$00
-bC1F4   LDA (dreadnoughtLoPtr),Y
-        EOR #$80
-        STA SCREEN_RAM + $0000,Y
-        INY
-        BNE bC1F4
-
-        INC dreadnoughtHiPtr
-bC200   LDA (dreadnoughtLoPtr),Y
-        EOR #$80
-        STA SCREEN_RAM + $0100,Y
-        INY
-        BNE bC200
-
-        INC dreadnoughtHiPtr
-bC20C   LDA (dreadnoughtLoPtr),Y
-        EOR #$80
-        STA SCREEN_RAM + $0200,Y
-        INY
-        BNE bC20C
-
-        INC dreadnoughtHiPtr
-bC218   LDA (dreadnoughtLoPtr),Y
-        EOR #$80
-        STA SCREEN_RAM + $0300,Y
-        INY
-        CPY #$E8
-        BNE bC218
-        LDA #$37
-        STA RAM_ACCESS_MODE
-        CLI
-        LDA dreadnoughtLoPtr
-        CLC
-        ADC #$E8
-        STA dreadnoughtLoPtr
-        LDA dreadnoughtHiPtr
-        ADC #$00
-        STA dreadnoughtHiPtr
-bC236   LDA $D011    ;VIC Control Register 1
-        BPL bC236
-        LDA #$1B
-        STA $D011    ;VIC Control Register 1
-        LDX #$00
-        JSR FlashBackgroundDuringDreadnoughtDestruction
-bC245   LDA $DC01    ;CIA1: Data Port Register B
-        CMP #$7F
-        BEQ bC2A2
-        CMP #$EF
-        BNE bC245
-        LDX #$0C
-        JSR FlashBackgroundDuringDreadnoughtDestruction
-        LDA dreadnoughtHiPtr
-        CMP #$DF
-        BNE bC1E3
-        LDA dreadnoughtLoPtr
-        CMP #$70
-        BNE bC1E3
-        JMP jC1CB
-
-;-------------------------------------------------------------------
-; FlashBackgroundDuringDreadnoughtDestruction
-;-------------------------------------------------------------------
-FlashBackgroundDuringDreadnoughtDestruction
-        LDY #$00
-bC266   STY currentSpriteMSB
-        STX spriteMixerValue
-        LDX #$10
-        LDY #$00
-bC26E   DEY
-        BNE bC26E
-        DEX
-        BNE bC26E
-        LDX spriteMixerValue
-        LDY currentSpriteMSB
-bC278   LDA $D011    ;VIC Control Register 1
-        BPL bC278
-        LDA backgroundColors,X
-        STA $D021    ;Background Color 0
-        INX
-        INY
-        CPY #$0C
-        BNE bC266
-        RTS
-
-backgroundColors
-        .BYTE BROWN,BROWN,RED,RED,ORANGE,ORANGE,LTRED,LTRED
-        .BYTE GRAY3,GRAY3,GRAY3,GRAY3,GRAY3,GRAY3,GRAY3,GRAY3
-        .BYTE GRAY2,GRAY2,ORANGE,ORANGE,GRAY1,GRAY1,BROWN,BROWN
-
-;--------------------------------------------------------------------
-; bC2A2
-;--------------------------------------------------------------------
-bC2A2
-        LDX #$0C
-        JSR FlashBackgroundDuringDreadnoughtDestruction
-        LDA #$00
-        STA currentSpriteMSB
-        STA $D021    ;Background Color 0
-        JSR $E544
-        SEI
-        LDA #$35
-        STA RAM_ACCESS_MODE
-        JMP jC4CD
-
-;-------------------------------------------------------------------
-; jC2B9
-;-------------------------------------------------------------------
-jC2B9
-        SEI
-        LDA #$0B
-        STA $D011    ;VIC Control Register 1
-bC2BF   LDA $D011    ;VIC Control Register 1
-        BPL bC2BF
-        LDA #$00
-        STA $D021    ;Background Color 0
-        LDA #$C8
-        STA $D016    ;VIC Control Register 2
-
-        ; Switch bank to $0000
-        LDA #$97
-        STA $DD00    ;CIA2: Data Port Register A
-
-        ; Switch charset to $1800?
-        LDA #$16
-        STA $D018    ;VIC Memory Control Register
-
-        LDX #$00
-bC2DA   LDA fA900,X
-        STA ResetSomeValues,X
-        LDA #$00
-        STA fCA00,X
-        INX
-        BNE bC2DA
-        LDA #$37
-        STA RAM_ACCESS_MODE
-        CLI
-        LDX #$1F
-bC2EF   LDA $FD30,X
-        STA $0314,X  ;IRQ
-        DEX
-        BPL bC2EF
-        LDX #$27
-bC2FA   LDA #$0E
-        STA COLOR_RAM + $0000,X
-        LDA #$06
-        STA COLOR_RAM + $0028,X
-        LDA #$03
-        STA COLOR_RAM + $0050,X
-        DEX
-        BPL bC2FA
-        LDX #$77
-bC30E   LDA pC000,X
-        STA SCREEN_RAM + $0000,X
-        DEX
-        BPL bC30E
-        LDA #$1B
-        STA $D011    ;VIC Control Register 1
-bC31C   JSR $FFE4 ; - get a byte from channel
-        CMP #$54
-        BEQ bC32A
-        CMP #$48
-        BNE bC31C
-        JMP jC455
-
-bC32A   LDA #$01
-        STA aA904
-        LDX #$27
-bC331   LDA fC078,X
-        STA SCREEN_RAM + $0050,X
-        DEX
-        BPL bC331
-bC33A   JSR $FFE4 ;- get a byte from channel
-        CMP #$4E
-        BEQ bC34A
-        CMP #$59
-        BNE bC33A
-        LDA #$00
-        STA a0D7C
-bC34A   LDX #$27
-bC34C   LDA fC0A0,X
-        STA SCREEN_RAM + $0050,X
-        DEX
-        BPL bC34C
-bC355   JSR $FFE4 ;- get a byte from channel
-        CMP #$4E
-        BEQ bC37C
-        CMP #$59
-        BNE bC355
-        LDA #$A5
-        STA a15D1
-        STA a1EDF
-        STA a204A
-        LDA #$00
-        STA a27EC
-        STA a27FA
-        STA a280A
-        STA a281E
-        STA a2831
-bC37C   LDX #$27
-bC37E   LDA fC0C8,X
-        STA SCREEN_RAM + $0050,X
-        DEX
-        BPL bC37E
-bC387   JSR $FFE4 ;- get a byte from channel
-        CMP #$4E
-        BEQ bC397
-        CMP #$59
-        BNE bC387
-        LDA #$60
-        STA a134B
-bC397   LDX #$27
-bC399   LDA fC0F0,X
-        STA SCREEN_RAM + $0050,X
-        DEX
-        BPL bC399
-bC3A2   JSR $FFE4 ;- get a byte from channel
-        CMP #$4E
-        BEQ bC3BE
-        CMP #$59
-        BNE bC3A2
-        LDA #$16
-        STA a3922
-        STA a3923
-        STA a3924
-        STA a3925
-        STA a3926
-bC3BE   LDX #$27
-bC3C0   LDA fC118,X
-        STA SCREEN_RAM + $0050,X
-        DEX
-        BPL bC3C0
-bC3C9   JSR $FFE4 ;- get a byte from channel
-        CMP #$4E
-        BEQ bC3D9
-        CMP #$59
-        BNE bC3C9
-        LDA #$C9
-        STA aA9E7
-bC3D9   LDX #$27
-bC3DB   LDA fC140,X
-        STA SCREEN_RAM + $0050,X
-        DEX
-        BPL bC3DB
-bC3E4   JSR $FFE4 ;- get a byte from channel
-        CMP #$0D
-        BEQ bC434
-        CMP #$11
-        BEQ bC415
-        CMP #$91
-        BNE bC3E4
-        LDA initialPlayerScore + $06
-        CMP #$0F
-        BEQ bC3E4
-        INC initialPlayerScore + $06
-        LDA SCREEN_RAM + $0061
-        CMP #$39
-        BEQ bC40A
-        INC SCREEN_RAM + $0061
-        JMP bC3E4
-
-bC40A   INC SCREEN_RAM + $0060
-        LDA #$30
-jC40F   STA SCREEN_RAM + $0061
-        JMP bC3E4
-
-bC415   LDA initialPlayerScore + $06
-        CMP #$01
-        BEQ bC3E4
-        DEC initialPlayerScore + $06
-        LDA SCREEN_RAM + $0061
-        CMP #$30
-        BEQ bC42C
-        DEC SCREEN_RAM + $0061
-        JMP bC3E4
-
-bC42C   DEC SCREEN_RAM + $0060
-        LDA #$39
-        JMP jC40F
-
-bC434   LDA initialPlayerScore + $06
-        STA initialPlayerScore + $07
-        LDX #$27
-bC43C   LDA fC168,X
-        STA SCREEN_RAM + $0050,X
-        DEX
-        BPL bC43C
-bC445   JSR $FFE4 ;- get a byte from channel
-        CMP #$4E
-        BEQ jC455
-        CMP #$59
-        BNE bC445
-        LDA #$C9
-        STA aA9E3
-jC455   LDX #$27
-bC457   LDA fC190,X
-        STA SCREEN_RAM + $0050,X
-        DEX
-        BPL bC457
-        LDA #$00
-        STA a9D
-bC464   JSR $FFE4 ;- get a byte from channel
-        CMP #$52
-        BEQ bC4B4
-        CMP #$4C
-        BNE bC464
-        JSR $E544
-        JSR sC4C5
-        LDA #$01
-        TAY
-        LDX #$08
-        JSR $FFBA; - set file parameters
-        LDA #$10
-        LDX #$C2
-        LDY #$C9
-        JSR $FFBD ;- set file name
-        LDA #$00
-        TAX
-        LDY #$CA
-        JSR $FFD5; - load after call SETLFS,SETNAM
-        LDX #$00
-bC490   LDA fCA00,X
-        STA firstInHallofFame,X
-        INX
-        CPX #$AC
-        BNE bC490
-        LDX #$13
-bC49D   LDA fCAAC,X
-        STA inGameBanner,X
-        DEX
-        BPL bC49D
-        LDX #$0D
-bC4A8   LDA fCAC0,X
-        STA hiScoreForScrollingBanner,X
-        DEX
-        BPL bC4A8
-        JMP LaunchUridium
-
-bC4B4   JSR $E544
-        JSR sC4C5
-        LDA #$60
-        STA aC982
-        JSR sC962
-        JMP LaunchUridium
-
-;-------------------------------------------------------------------
-; sC4C5
-;-------------------------------------------------------------------
-sC4C5
-        LDA #$60
-        STA aC933
-        JMP SetUpHiScoreForScrollingBanner
-
-;--------------------------------------------------------------------
-; jC4CD
-;--------------------------------------------------------------------
-jC4CD
-        LDA #<pC4DA
-        STA $FFFA    ;NMI
-        LDA #>pC4DA
-        STA $FFFB    ;NMI
-        JMP $E000
-
-pC4DA   RTI
-
-
-
-*=$C900
-;-------------------------------------------------------------------
-; ResetSomeValues
-;-------------------------------------------------------------------
-ResetSomeValues
-        STA initial3
-        LDA #$00
-        STA aC90A
-        RTS
-
-;--------------------------------------------------------------------
-; GameOverCheckHiScore
-;--------------------------------------------------------------------
-GameOverCheckHiScore
-
-aC90A   =*+$01
-        LDA #$01
-        BEQ SetUpHiScoreForScrollingBanner
-        JMP jC9B1
-
-;--------------------------------------------------------------------
-; SetUpHiScoreForScrollingBanner
-;--------------------------------------------------------------------
-SetUpHiScoreForScrollingBanner
-        LDX #$00
-bC912   LDA firstInHallofFame,X
-        STA fCA00,X
-        INX
-        CPX #$AC
-        BNE bC912
-        LDX #$13
-bC91F   LDA inGameBanner,X
-        STA fCAAC,X
-        DEX
-        BPL bC91F
-        LDX #$0D
-bC92A   LDA hiScoreForScrollingBanner,X
-        STA fCAC0,X
-        DEX
-        BPL bC92A
-aC933   RTS
-
-        .BYTE $6F
-
-;--------------------------------------------------------------------
-; bC935
-;--------------------------------------------------------------------
-bC935
-        LDA a90,X
-        STA SCREEN_RAM + $0000,X
-        DEX
-        BPL bC935
-        SEI
-        LDA #$F0
-        STA $D01A    ;VIC Interrupt Mask Register (IMR)
-        LDA #$00
-        STA $DC0D    ;CIA1: CIA Interrupt Control Register
-        LDA #$0B
-        STA $D011    ;VIC Control Register 1
-        LDA #$37
-        STA RAM_ACCESS_MODE
-        JSR $FDA3 ;(jmp) - initialize CIA & IRQ
-        CLI
-        LDX #$00
-        STX $02A1
-        TXA
-bC95B   STA a90,X
-        INX
-        CPX #$70
-        BNE bC95B
-;-------------------------------------------------------------------
-; sC962
-;-------------------------------------------------------------------
-sC962
-        LDA #$01
-        TAY
-        LDX #$08
-        JSR $FFBA ;- set file parameters
-        LDA #$13
-        LDX #$BF
-        LDY #$C9
-        JSR $FFBD ;- set file name
-        LDA #<fCA00
-        STA aFB
-        LDY #>fCA00
-        STY aFC
-        LDX #$CE
-        LDA #$FB
-        JSR $FFD8 ;- save after call SETLFS,SETNAM
-aC982   RTS
-
-        LDA #$35
-        STA RAM_ACCESS_MODE
-        LDX #$6F
-bC989   LDA SCREEN_RAM + $0000,X
-        STA a90,X
-        DEX
-        BPL bC989
-
-        ; Switch bank to Bank 1 ($4000)
-        LDA $DD02    ;CIA2: Data Direction Register A
-        ORA #$03
-        STA $DD02    ;CIA2: Data Direction Register A
-        LDA $DD00    ;CIA2: Data Port Register A
-        AND #$FC
-        ORA #$02
-        STA $DD00    ;CIA2: Data Port Register A
-
-        LDA #$01
-        STA $D01A    ;VIC Interrupt Mask Register (IMR)
-        LDA #$7F
-        STA $DC0D    ;CIA1: CIA Interrupt Control Register
-        STA $DD0D    ;CIA2: CIA Interrupt Control Register
-        CLI
-jC9B1   LDA #$01
-        STA aC90A
-        STA initialPlayerScore + $06
-        STA initialPlayerScore + $07
-        JMP PrepareTitleScreen
-
-        RTI
-
-.enc "none"
-        .TEXT "S:URIDIUM HIGH/REM"
-;-------------------------------------------------------------------
-; CheckLandNowWarning
-;-------------------------------------------------------------------
-CheckLandNowWarning
-        JSR MaybeDisplayLandNowWarning
-        LDA $DC00    ;CIA1: Data Port Register A
-        STA aC9EC
-        LDA #$7F
-        STA $DC00    ;CIA1: Data Port Register A
-        LDA $DC01    ;CIA1: Data Port Register B
-        LDA #$DF
-        BEQ bC9F1
-        LDA #$BF
-        BEQ bC9F7
-aC9EC   =*+$01
-jC9EB   LDA #$FF
-        STA $DC00    ;CIA1: Data Port Register A
-        RTS
-
-bC9F1   JSR IncrementCurrentLevel
-        JMP jC9EB
-
-bC9F7   LDA #$01
-        STA landNowActivated
-        JMP jC9EB
-
-        .BYTE $00,$00
 ; vim: tabstop=8 expandtab shiftwidth=8
