@@ -6734,6 +6734,7 @@ someMiniGameColors
 
 
 .include "game_data.asm"
+.include "level_data.asm"
 .include "surface_charset.asm"
 
 *=$3F00
