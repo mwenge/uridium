@@ -180,8 +180,10 @@ f3D90   .BYTE $3D,$3D,$3D,$3D,$3D,$3D,$3D,$3E
         .BYTE $03,$6D,$2D,$4D,$4D,$FF,$00,$03
         .BYTE $69,$29,$49,$49,$FF,$00,$03,$06
         .BYTE $FF
-themeTuneLoPtr   .BYTE $00
-themeTuneHiPtr   .BYTE $FE,$00,$FF,$00,$FF,$00,$FF,$00
+themeTuneLoPtr
+        .BYTE $00
+themeTuneHiPtr
+        .BYTE $FE,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
@@ -324,12 +326,12 @@ initialPositionOfMiniGameScreenData
         .BYTE $49,$19,$59,$59,$59,$A5,$55,$55
         .BYTE $55,$40,$45,$45,$45,$6A,$55,$55
         .BYTE $19,$19,$59,$59,$59,$A5,$55,$55
-        .FILL 512,$00
-*=$8000
-a8000
+        .FILL 512,$00 ; to $7FF9
 f8010 = $8010
 notUsed = $8010 
-pE000 = $E000
+finalLocationOfMainLevelData = $E000
+*=$8000
+startOfMainLevelData
         .BYTE $00,$09,$00,$09,$C3,$C2,$CD,$38
         .BYTE $30,$00,$00,$00,$00,$00,$00,$00
 textureDataForLevelLoPtrArray = $E010

@@ -407,17 +407,19 @@ b0916   STA RAM_ACCESS_MODE,Y
         DEY
         BNE b0916
 
-b091C   LDX #<p8000
-        LDY #>p8000
+        ; Copy data from $8000-$9FFF to $E000-$FFFF
+b091C   LDX #<startOfMainLevelData
+        LDY #>startOfMainLevelData
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
-        LDX #<pE000
-        LDY #>pE000
+        LDX #<finalLocationOfMainLevelData
+        LDY #>finalLocationOfMainLevelData
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
         LDX #$20
         JSR CopyDataUntilXIsZero
 
+        ; Copy data from $A000-$AFFF to $C000-$CFFF
         LDX #<pC000
         LDY #>pC000
         STX tempLoPtrCopyTo
@@ -425,6 +427,7 @@ b091C   LDX #<p8000
         LDX #$10
         JSR CopyDataUntilXIsZero
 
+        ; Copy data from $7C00-$7DFF to $D200-$D3FF
         LDX #<initialPositionOfMiniGameScreenData
         LDY #>initialPositionOfMiniGameScreenData
         STX tempLoPtrCopyFrom
@@ -436,9 +439,10 @@ b091C   LDX #<p8000
         LDX #$02
         JSR CopyDataUntilXIsZero
 
-        ; Copying the surface charset data to $D400. At the start of each level
-        ; levelSurfaceDataHiPtrArray is used to write to pull the appropriate
-        ; charset data for the level from this to surfaceTextureCharacterSet($7800).
+        ; Copy the surface charset data at $5C00-$67FF to $D400-$E000. 
+        ; At the start of each level levelSurfaceDataHiPtrArray is used to
+        ; write to pull the appropriate charset data for the level from this to
+        ; surfaceTextureCharacterSet($7800).
         LDX #<surfaceCharset
         LDY #>surfaceCharset
         STX tempLoPtrCopyFrom
@@ -446,6 +450,7 @@ b091C   LDX #<p8000
         LDX #$0C
         JSR CopyDataUntilXIsZero
 
+        ; Copy data from $4800-$4CFF to $A600-$A9FF
         LDX #<SCREEN_RAM_HIBANK + $0000
         LDY #>SCREEN_RAM_HIBANK + $0000
         STX tempLoPtrCopyFrom
@@ -457,6 +462,7 @@ b091C   LDX #<p8000
         LDX #$04
         JSR CopyDataUntilXIsZero
 
+        ; Copy data from $7400-$77FF to $AA00-$ADFF
         LDX #<secondHalfTextCharacterSet
         LDY #>secondHalfTextCharacterSet
         STX tempLoPtrCopyFrom
@@ -464,7 +470,8 @@ b091C   LDX #<p8000
         LDX #$04
         JSR CopyDataUntilXIsZero
 
-        ; Copy code from SomeSoundROutine to UpdateSoundPtr to randomDataStorage to LaunchUridium.
+        ; Copy code from SomeSoundROutine ($1000) - UpdateSoundPtr ($1100)
+        ; to randomDataStorage($0800) to LaunchUridium ($0900).
         LDX #<SomeSoundROutine
         LDY #>SomeSoundROutine
         STX tempLoPtrCopyFrom
@@ -477,9 +484,8 @@ b091C   LDX #<p8000
         JSR CopyDataUntilYIsZero
 
         JSR CopyDataFrommainCharacterSetTosecondHalfTextCharacterSet
-        JSR CopyDataWithin71007800
+        JSR ShuffleCharacterSetData
 
-p8000 = $8000
 ;-------------------------------------------------------------------
 ; DrawTitleScreen
 ;-------------------------------------------------------------------
@@ -505,10 +511,10 @@ DrawTitleScreen
         STY $FFFF    ;IRQ
         LDX #<DrawTitleScreen
         LDY #>DrawTitleScreen
-        STX p8000
-        STY p8000 + $01
-        STX p8000 + $02
-        STY p8000 + $03
+        STX startOfMainLevelData
+        STY startOfMainLevelData + $01
+        STX startOfMainLevelData + $02
+        STY startOfMainLevelData + $03
         STX $FFFC    ;Hardware Reset
         STY $FFFD    ;Hardware Reset
         LDX #<p3FD6
@@ -1908,9 +1914,11 @@ a134B   DEC aA8
 b138D   RTS
 
 ;-------------------------------------------------------------------
-; CopyDataWithin71007800
+; ShuffleCharacterSetData
+; Shuffles data around within the first character set between $7000
+; and $7800.
 ;-------------------------------------------------------------------
-CopyDataWithin71007800
+ShuffleCharacterSetData
         LDY #$47
 b1390   LDA surfaceTextureCharacterSet,Y
         STA f7188,Y
@@ -6154,8 +6162,8 @@ b308A   LDA $D41B    ; Random Number Generator
         LDX a10
         EOR randomDataStorage,X
         STA randomDataStorage,X
-        ROL p8000 + $0F
-        ROR p8000 + $0F
+        ROL startOfMainLevelData + $0F
+        ROR startOfMainLevelData + $0F
         INC a10
         BNE b308A
         RTS
