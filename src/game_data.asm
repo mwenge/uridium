@@ -1,3 +1,488 @@
+.enc "petscii"  ;define an ascii->petscii encoding
+        .cdef "  ", $30  ;characters
+        .cdef "..", $28  ;characters
+        .cdef ",,", $29  ;characters
+        .cdef "::", $2A  ;characters
+        .cdef "!!", $25  ;characters
+        .cdef "??", $24  ;characters
+        .cdef "--", $2E  ;characters
+        .cdef "==", $2F  ;characters
+        .cdef "AH", $3A
+        .cdef "II", $16
+        .cdef "JZ", $43
+        .cdef "mm", $42
+        .cdef "al", $0A
+        .cdef "nv", $17
+        .cdef "ww", $54
+        .cdef "xz", $21
+        .cdef "09", $00
+
+miniGameUpdateRateForLevel
+        .BYTE $00,$90,$98,$A0,$A8,$B0,$B8,$C0
+        .BYTE $C4,$C8,$CC,$D0,$D4,$D8,$DC,$E0
+        .BYTE $E4,$E8,$EC,$F0
+someArrayForTextureData
+        .BYTE $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
+
+player1Text
+        .BYTE $00,$01
+        .TEXT "Player1", $FF
+player2Text
+        .BYTE $00,$1F
+        .TEXT "Player2", $FF
+oneUpText
+        .BYTE $00,$01
+        .TEXT "1up ", $7A, $7B
+livesLeftPlayerOneText
+        .BYTE $30,$03,$FF
+
+livesLeftPlayerTwoText = *+$04
+twoUpText
+        .BYTE $00,$1F
+        .TEXT "", $7A, "", $7B, " 3 2up", $FF, ""
+spaces
+        .BYTE $00,$0F
+        .TEXT "           ", $FF
+landNowText
+        .BYTE $00,$0F
+        .TEXT "Land now!", $FF
+
+playerLinesColorScheme1
+        .BYTE LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE
+        .BYTE LTBLUE,LTBLUE,LTRED,LTRED,LTRED,LTRED,LTRED,LTRED
+        .BYTE LTRED,LTRED,LTRED,LTRED,LTRED,LTRED,LTRED,LTRED
+        .BYTE LTRED,LTRED,LTRED,LTRED,LTRED,LTRED,LTBLUE,LTBLUE
+        .BYTE LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE,LTBLUE
+playerLinesColorScheme2
+        .BYTE LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN
+        .BYTE LTGREEN,LTGREEN,WHITE,WHITE,WHITE,WHITE,WHITE,WHITE
+        .BYTE WHITE,WHITE,WHITE,WHITE,WHITE,WHITE,WHITE,WHITE
+        .BYTE WHITE,WHITE,WHITE,WHITE,WHITE,WHITE,LTGREEN,LTGREEN
+        .BYTE LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN,LTGREEN
+playerLinesColorScheme3
+        .BYTE GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN
+        .BYTE GREEN,GREEN,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW
+        .BYTE YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW
+        .BYTE YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,GREEN,GREEN
+        .BYTE GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN
+a0000 = $0000
+a31E2
+        .BYTE $04,$4D,$4E,$4F,$40,$00,$FF
+a31E9
+        .BYTE $04,$45,$44,$43,$42,$00,$FF
+a31F0
+        .BYTE $04,$41,$42,$43,$44,$00,$FF
+a31F7
+        .BYTE $04,$41,$42,$43,$44,$00,$FF
+a31FE
+        .BYTE $10,$59,$58,$57,$56,$55,$54
+        .BYTE $53,$52,$51,$66,$65,$64,$63
+        .BYTE $62,$61,$60,$28,$28
+a3211
+        .BYTE $10,$41,$40,$4F,$4E,$4D,$4C,$4B
+        .BYTE $4A,$49,$48,$47,$46,$45,$44,$43
+        .BYTE $42,$00,$FF
+a3224
+        .BYTE $04,$55,$56,$57,$58,$00,$01
+a322B
+        .BYTE $04,$5D,$5C,$5B,$5A,$00,$01
+a3232
+        .BYTE $04,$59,$58,$57,$56,$00,$01
+a3239
+        .BYTE $04,$59,$5A,$5B,$5C,$00,$01
+a3240
+        .BYTE $10,$41,$40,$4F,$4E,$4D,$4C,$4B
+        .BYTE $4A,$49,$67,$68,$69,$6A,$6B,$6C
+        .BYTE $6D,$D8,$D8
+a3253
+        .BYTE $10,$59,$58,$57,$56,$55,$54,$53
+        .BYTE $52,$51,$50,$5F,$5E,$5D,$5C,$5B
+        .BYTE $5A,$00,$01
+spriteValueOffsetLoPtrArray
+        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<a3232,<a0000,<a0000
+        .BYTE <a0000,<a3240,<a0000,<a0000,<a3224,<a3253,<a322B,<a0000
+        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<a3239
+spriteValueOffsetHiPtrArray
+        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>a3232,>a0000,>a0000
+        .BYTE >a0000,>a3240,>a0000,>a0000,>a3224,>a3253,>a322B,>a0000
+        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>a3239
+
+spriteValueLoPtrArray
+        .BYTE <a0000,<a31F0,<a0000,<a0000,<a0000,<a0000,<a0000,<a0000
+        .BYTE <a31E2,<a3211,<a31E9,<a0000,<a0000,<a31FE,<a0000,<a0000
+        .BYTE <a0000,<a31F7
+spriteValueHiPtrArray
+        .BYTE >a0000,>a31F0,>a0000,>a0000,>a0000,>a0000,>a0000,>a0000
+        .BYTE >a31E2,>a3211,>a31E9,>a0000,>a0000,>a31FE,>a0000,>a0000
+        .BYTE >a0000,>a31F7
+spriteVariables9
+        .BYTE $06,$70,$00,$98,$FF,$00,$00,$FF
+        .BYTE $00,$F0,$59
+spriteVariablesDemo
+        .BYTE $06,$AA,$00,$98,$FF,$00,$00,$FF
+        .BYTE $00,$F0,$59
+spriteVariablesManta
+        .BYTE $06,$A0,$00,$AE,$FF,$00,$00,$FF
+        .BYTE $00,$F0,$41
+spriteVariables10
+        .BYTE $07,$BA,$00,$A8,$FF,$00,$FF,$00
+        .BYTE $00,$FB,$89
+spriteVariablesExplosion
+        .BYTE $07,$AA,$00,$00,$FF,$00,$00,$FF
+        .BYTE $00,$F7,$30
+someKindOfSettingArray
+        .BYTE $FD,$03,$F8,$08,$B0,$40,$50,$C0
+f32F5   .BYTE $00,$00,$FF,$FE,$FD,$FD,$FE,$FE
+        .BYTE $FF,$00,$01,$02,$03,$03,$02,$02
+        .BYTE $01
+loPtrsToShipDeploymentSpriteVariables
+        .BYTE <spriteVariables1,<spriteVariables2,<spriteVariables3,<spriteVariables4
+        .BYTE <spriteVariables5,<spriteVariables6,<spriteVariables7,<spriteVariables8
+        .BYTE <spriteVariables9,<spriteVariables10
+hiPtrsToShipDeploymentSpriteVariables
+        .BYTE >spriteVariables1,>spriteVariables2,>spriteVariables3,>spriteVariables4
+        .BYTE >spriteVariables5,>spriteVariables6,>spriteVariables7,>spriteVariables8
+        .BYTE >spriteVariables9,>spriteVariables10
+
+; The values in these arrays get loaded by UpdateSpriteVariablesAndThenRedrawSprites to:
+; spriteIndex, currentSpriteXPos, currentSpriteMSBXPosOffset, currentSpriteYPos,
+; currentSpriteDisplayEnable, currentSpriteExpandVertical,
+; currentSpriteBackgroundDisplayPriority, currentSpriteMultiColorMode,
+; currentSpriteExpandHorizontal, currentSpriteColor, currentSpriteValue.
+spriteVariables1
+        .BYTE $00,$82,$00,$8D,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$00
+spriteVariables2
+        .BYTE $01,$6A,$00,$8D,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$01
+spriteVariables3
+        .BYTE $02,$52,$00,$8D,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$02
+spriteVariables4
+        .BYTE $03,$82,$00,$A2,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$03
+spriteVariables5
+        .BYTE $04,$6A,$00,$A2,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$04
+spriteVariables6
+        .BYTE $05,$52,$00,$A2,$FF,$00,$00,$FF
+        .BYTE $00,$FC,$05
+spriteVariables7
+        .BYTE $06,$82,$00,$8E,$FF,$FF,$00,$00
+        .BYTE $00,$FB,$07
+spriteVariables8
+        .BYTE $07,$82,$00,$8E,$FF,$FF,$00,$FF
+        .BYTE $00,$FE,$06
+
+levelColorScheme
+        .BYTE M_GRAY1
+        .BYTE M_GRAY3,M_ORANGE,M_GRAY2,M_GRAY1,M_BLACK,M_GRAY1,M_LTBLUE,M_LTRED
+        .BYTE M_RED,M_BLACK,M_GRAY2,M_LTRED,M_LTBLUE,M_BLUE,M_GREEN,M_LTGREEN
+        .BYTE M_ORANGE,M_LTBLUE,M_BLUE,M_RED,M_LTRED,M_ORANGE,M_YELLOW,M_ORANGE
+        .BYTE M_GRAY1,M_GRAY2,M_GRAY2,M_LTRED,M_RED,M_BLUE,M_LTBLUE,M_ORANGE
+        .BYTE M_LTGREEN,M_GREEN,M_ORANGE,M_YELLOW,M_ORANGE,M_GRAY2,M_BLACK,M_GRAY1
+        .BYTE M_CYAN,M_LTGREEN,M_LTRED,M_RED,M_BROWN,M_ORANGE
+bulletColorScheme
+        .BYTE M_ORANGE,M_LTGREEN,M_GREEN,M_GRAY1,M_GRAY3,M_ORANGE,M_YELLOW,M_ORANGE
+        .BYTE M_BLUE,M_CYAN,M_ORANGE,M_GRAY2,M_GRAY1,M_GRAY1,M_GRAY3,M_ORANGE
+
+        .BYTE $FE,$F6,$04,$02,$03,$06,$07,$08
+        .BYTE $08,$06,$05,$02,$03,$06,$08,$0B
+        .BYTE $07,$06,$05,$02,$03
+f33C6   .BYTE $06,$08,$0B,$07,$06,$04,$02,$03
+        .BYTE $06,$07,$08,$08,$06,$00,$00,$00
+f33D6   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$10,$11,$0F,$0D,$0C
+f33E6   .BYTE $00,$0B
+f33E8   .BYTE $0D,$10,$11,$0E,$0D,$0B,$00,$0C
+        .BYTE $0D,$10,$11,$0E,$0D,$0B
+anotherIndexToScoresToAddArray
+        .BYTE $00,$0C,$0D,$10,$11,$0F,$0D,$0C
+        .BYTE $00,$0B,$0D,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00
+colorLineHiPtrArray
+        .BYTE $D8,$D8,$D8,$D8,$D8,$D8,$D8,$D9
+        .BYTE $D9,$D9,$D9,$D9,$D9,$DA,$DA,$DA
+        .BYTE $DA,$DA,$DA,$DA,$DB,$DB,$DB,$DB
+        .BYTE $DB,$80,$80,$80,$80,$00,$00,$00
+        .BYTE $80,$80,$80,$80,$80,$00,$00,$00
+        .BYTE $80,$80,$80,$80,$80,$00,$00,$00
+        .BYTE $80,$80,$80,$80,$80,$00,$00,$00
+        .BYTE $80,$80,$80,$81,$81,$81,$80,$80
+        .BYTE $80,$80,$81,$81,$81,$80,$80,$00
+        .BYTE $01,$00,$01,$00,$01,$02,$00,$01
+        .BYTE $02,$00,$01,$02,$00,$00,$00,$00
+        .BYTE $00,$02,$02,$00,$00,$00,$02,$02
+        .BYTE $02,$04,$04,$04,$00,$00,$00,$01
+        .BYTE $01,$01,$01,$02,$02,$02,$02,$02
+        .BYTE $02,$02,$02,$02,$00,$00,$00,$02
+        .BYTE $02,$02,$02,$04,$04,$04,$04,$04
+        .BYTE $04,$04,$04,$04,$01,$01,$01
+initialPlayerScore
+        .BYTE $00,$00,$00,$00,$00,$03,$01,$01
+        .BYTE $00
+f349F   .BYTE $4E,$1B,$12,$0D,$12,$1E,$42,$30
+        .BYTE $0B,$22,$30,$3A,$17,$0D,$1B,$0E
+        .BYTE $54,$30,$3B,$1B,$0A,$22,$0B,$1B
+        .BYTE $18,$18,$14,$28,$30,$41,$12,$10
+        .BYTE $11,$30,$2E
+
+hiScoreForScrollingBanner
+        .TEXT " 12000 AEB", $FF, $FF, $FF, $FF
+player1Symbol
+        .BYTE $00,$0F
+        .TEXT "  ", $55, $55, " ", $56, "  ", $FF
+player2Symbol
+        .BYTE $00,$0F
+        .TEXT " ", $55, $55, " ", $56, $56, " ", $FF
+playerAndJoystickSymbol
+        .BYTE $00,$0F
+        .TEXT "   ", $55, " ", $56, "   ", $FF
+arrowKeysSymbol
+        .BYTE $02,$0A,$57,$FF
+globeSymbol
+        .BYTE $02,$0A,$58,$FF
+uridiumDecal
+        .BYTE $02,$0A
+        .BYTE $30,$30,$30,$30,$30,$31,$32,$33
+        .BYTE $34,$35,$36,$37,$38,$39,$7D,$30
+        .BYTE $30,$30,$30,$30,$FF
+hiScoreLabel
+        .BYTE $02,$0A
+        .TEXT "     Hi-score      ", $FF
+
+inGameHiScoreDisplay =*+$04
+inGameBanner ; $3526
+        .BYTE $02,$0A
+        .TEXT "     12000 AEB   ", $FF, "2c    "
+        .TEXT " ", $55, $55, "     ", $56, $56, $FF, "2c     ", $55, " "
+        .TEXT "        ", $56, $FF, "2c     ", $55, $55, " "
+        .TEXT "      ", $56, $FF
+scrollingTitleScreenDataLoPtrArray   .BYTE $3A,$4B,$5E
+scrollingTitleScreenDataHiPtrArray   .BYTE $35,$35,$35
+
+hewson
+        .BYTE $06,$0E
+        .TEXT "HEWSON", $FF
+presents
+        .BYTE $09,$10
+        .TEXT "presents", $FF
+uridiumTitlePlaceholder
+        .BYTE $0C,$0F
+        .TEXT "", $31, "", $32, "", $33, "", $34, "", $35, "", $36, "", $37, "", $38, "", $39, "", $7D, "", $FF, ""
+graftgoldLtd
+        .BYTE $0F,$07
+        .TEXT "", $59, " Graftgold Ltd. 1986.", $FF
+designedAndProgrammedBy
+        .BYTE $12,$05
+        .TEXT "Designed and programmed by", $FF
+andrewBraybrook
+        .BYTE $15,$0B
+        .TEXT "Andrew Braybrook.", $FF
+hallOfFame
+        .BYTE $06,$0C
+        .TEXT "Hall of Fame", $FF
+
+currentHighestScore =*+$05
+firstInHallofFame
+        .BYTE $09,$0B
+        .TEXT "1.    12000 AEB", $FF
+        .BYTE $00,$01,$20
+        .BYTE $00
+secondInHallOfFame
+        .BYTE $0B,$0B
+        .TEXT "2.    11000    ", $FF
+        .BYTE $00,$01,$10,$00
+thirdInHallofFame
+        .BYTE $0D,$0B
+        .TEXT "3.    10000    ", $FF
+        .BYTE $00,$01,$00,$00
+fourthInHallofFame
+        .BYTE $0F,$0B
+        .TEXT "4.     9000    ", $FF
+        .BYTE $00,$00,$90,$00
+fifthInHallOfFame
+        .BYTE $11,$0B
+        .TEXT "5.     8000    ", $FF
+        .BYTE $00,$00,$80,$00
+sixthInHallOfFame
+        .BYTE $13,$0B
+        .TEXT "6.     7000    ", $FF
+        .BYTE $00,$00,$70,$00
+seventhInHallOfFame
+        .BYTE $15,$0B
+        .TEXT "7.     6000    ", $FF
+        .BYTE $00,$00,$60,$00
+eighthInHallOfFame
+        .BYTE $17,$0B
+        .TEXT "8.     5000    ", $FF
+        .BYTE $00,$00,$50,$00
+colorLabel
+        .BYTE $00,$0F
+        .TEXT "  Colour  ", $FF
+blckWhiteLabel
+        .BYTE $00,$0F
+        .TEXT "Blck-Whte", $FF
+demoLabel
+        .BYTE $00,$0F
+        .TEXT "  Demo   ", $FF
+currentColorValueArray
+        .BYTE M_LTBLUE,M_GRAY2,M_GRAY1,M_LTGREEN,M_GRAY3,M_LTGREEN,M_GRAY1,M_GRAY2
+
+
+screenWriteJumpTableLoPtr
+        .BYTE <MaybeChangeTitleDecal,<UpdateAndDisplaySomeSprites,<UpdatePlayerScore,<MaybeShowPauseScreen
+        .BYTE <ReturnEarly,<MaybeLaunchMine,<UpdateCurrentColorValue,<MaybeShowPauseScreen
+screenWriteJumpTableHiPtr
+        .BYTE >MaybeChangeTitleDecal,>UpdateAndDisplaySomeSprites,>UpdatePlayerScore,>MaybeShowPauseScreen
+        .BYTE >ReturnEarly,>MaybeLaunchMine,>UpdateCurrentColorValue,>MaybeShowPauseScreen
+
+
+DemoModeLoPtrFuncArray
+        .BYTE <MaybeChangeTitleDecal,<MaybeLaunchMine,<MaybeUpdateColorScheme,<UpdatePlayerAndJoystickDisplay
+DemoModeHiPtrFuncArray
+        .BYTE >MaybeChangeTitleDecal,>MaybeLaunchMine,>MaybeUpdateColorScheme,>UpdatePlayerAndJoystickDisplay
+
+functionPtrArray
+        .BYTE <ReturnEarly,>ReturnEarly,<PerformDetailedUpdateForSprite,>PerformDetailedUpdateForSprite
+        .BYTE <MaybeAnimateEnemyBullet,>MaybeAnimateEnemyBullet
+        .BYTE <UpdateSpritePositionValueAndFunctionPtrIndex,>UpdateSpritePositionValueAndFunctionPtrIndex
+        .BYTE <MaybeAnimateMineCreation,>MaybeAnimateMineCreation,<MaybeMineExplodes,>MaybeMineExplodes
+        .BYTE <ReturnEarly,>ReturnEarly
+f36F3   .BYTE $A0,$80,$80,$60,$A0,$A0,$C0,$B0
+        .BYTE $A0,$40,$70,$60,$80,$90,$70,$80
+f3703   .BYTE $61,$61,$81,$71,$81,$91,$81,$91
+        .BYTE $B1,$21,$61,$51,$41,$71,$61,$41
+f3713   .BYTE $10,$10,$14,$18,$1C,$0C,$18,$1C
+        .BYTE $0C,$0A,$18,$10,$0C,$14,$0E,$18
+bulletSpriteArray
+        .BYTE BULLET_NARROW,BULLET_5,BULLET_NARROW,BULLET_WIDE,BULLET_5,BULLET_NARROW,BULLET_VERYNARROW,BULLET_NARROW
+        .BYTE EXPLOSION_1,BULLET_SINGLE,BULLET_WIDE,BULLET_WIDE,BULLET_VERYNARROW,BULLET_NARROW,BULLET_NARROW,BULLET_WIDE
+
+indexToScoresToAddArray
+        .BYTE $06,$05,$06,$07,$07,$05,$09,$08
+        .BYTE $04,$04,$08,$06,$04,$06,$05,$07
+enemeyBulletSpeedForLevel
+        .BYTE $05,$04,$06,$07
+bulletAnimationArrayOfSomeSort
+        .BYTE $06,$04,$06,$06,$04,$05,$06,$06
+enemyBulletSpriteTransformOffset
+        .BYTE $05,$06,$06,$07,$00,$02,$05,$09
+        .BYTE $09,$09,$02,$00,$14,$12,$0F,$0C
+        .BYTE $0C,$0C,$12,$00
+colorsForSomething2
+        .BYTE M_LTGREEN,M_GREEN,M_GREEN,M_CYAN,M_CYAN,M_LTBLUE,M_LTBLUE,M_PURPLE
+        .BYTE M_PURPLE,M_RED,M_RED,M_ORANGE,M_ORANGE,M_YELLOW,M_YELLOW,M_WHITE
+        .BYTE M_BLACK,M_LTGREEN,M_GREEN,M_BLACK,M_BLACK
+colorsForSomething1
+        .BYTE M_LTBLUE,M_LTBLUE,M_CYAN,M_LTBLUE,M_BLACK,M_LTBLUE,M_BLUE,M_BLACK
+        .BYTE M_BLUE,M_PURPLE,M_BLACK,M_PURPLE,M_RED,M_BLACK,M_RED,M_ORANGE
+        .BYTE M_BLACK,M_ORANGE,M_YELLOW,M_BLACK,M_BLACK
+colorsForBonusSequence
+        .BYTE M_LTBLUE,M_LTBLUE,M_LTBLUE,M_LTBLUE,M_YELLOW,M_GREEN,M_BLACK,M_GREEN
+        .BYTE M_LTGREEN,M_BLACK,M_LTGREEN,M_CYAN,M_BLACK,M_CYAN,M_LTBLUE,M_BLACK
+        .BYTE M_LTBLUE,M_BLUE,M_BLACK,M_BLACK,M_BLACK
+colorsForHiScoreInitials
+        .BYTE M_WHITE, M_WHITE,M_BLACK, M_WHITE, M_WHITE
+        .BYTE M_BLACK, M_WHITE, M_WHITE,M_BLACK, M_WHITE
+        .BYTE M_WHITE,M_BLACK,M_BLACK,M_BLACK,M_BLACK
+        .BYTE M_BLACK,M_BLACK, M_YELLOW, M_ORANGE, M_RED
+        .BYTE M_PURPLE, M_LTBLUE,M_CYAN,M_LTGREEN,M_GREEN
+        .BYTE M_YELLOW,M_ORANGE,M_RED,M_PURPLE
+
+newLevelColors
+        .BYTE M_GRAY3,M_WHITE,M_BLACK,M_WHITE,M_GRAY3,M_BLACK,M_GRAY3,M_GRAY2
+        .BYTE M_BLACK,M_BLACK,M_BLACK,M_BLACK,M_BLACK,M_BLACK
+
+gameOverColors
+        .BYTE M_CYAN,M_LTGREEN,M_BLACK,M_LTGREEN,M_GREEN,M_BLACK,M_BLACK,M_BLACK
+        .BYTE M_BLACK,M_BLACK,M_BLACK
+
+player1
+        .BYTE $0A,$0F
+        .TEXT "Player 1", $FF
+player2
+        .BYTE $0A,$0F
+        .TEXT "Player 2", $FF
+gameOn
+        .BYTE $0D,$0E
+        .TEXT "Game On!", $FF
+
+tensLivesLeftDisplayed = *+$02
+livesLeftDisplayed = *+$03
+livesLeftText
+        .BYTE $10,$0E
+        .TEXT " 3     left.", $FF
+gameOver
+        .BYTE $0D,$0D
+        .TEXT "Game Over!", $FF
+
+destructSequencePrimed
+        .BYTE $07,$07
+        .TEXT "Destruct sequence primed!", $FF
+formationAnnihilationBonusText
+        .BYTE $0A,$05
+        .TEXT "Formation annihilation bonus:", $FF
+shipDestructBonusText
+        .BYTE $10,$0A
+        .TEXT "Ship destruct bonus:"
+        .TEXT "", $FF
+
+scoreBonusMultiplierValue = *+$08
+scoreBonusResult = *+$0D
+scoreBonusText
+        .BYTE $0D,$0D
+        .TEXT "100 X 00 = 0000", $FF
+youveAmassedAHighScore
+        .BYTE $0D,$04
+        .TEXT "You have amassed a great score!", $FF
+pleaseEnterYourInitials
+        .BYTE $10,$06
+        .TEXT "Please enter your initials.", $FF
+
+initialOne = *+$02
+initial2 = *+$03
+initial3 = *+$04
+initialsInputField
+        .BYTE $13,$11
+        .TEXT "A..   ", $FF
+alphabetText
+        .TEXT "ABCDEFGHIJKLMNOPQRSTUVWXYZ "
+miniGameColorSequence3   .BYTE M_WHITE,M_GRAY3,M_GRAY2,M_GRAY1,M_BLACK
+miniGameColorSequence1   .BYTE M_GRAY3,M_GRAY2,M_GRAY1,M_BLACK,M_BLACK
+miniGameColorSequence2   .BYTE M_GRAY1,M_GRAY1,M_BLACK,M_BLACK,M_BLACK
+
+; The score are decimal so: 10,24,50,100 etc.
+scoresToAddArray2
+        .BYTE $00,$00,$00,$00,$01,$01,$02,$05
+        .BYTE $07,$10,$20,$50
+scoresToAddArray1
+        .BYTE $00,$10,$25,$50,$00,$50,$50,$00
+        .BYTE $50,$00,$00,$00
+
+LoPtrArrayForMiniGame
+        .BYTE $04,$06,$09,$0C,$0F,$12,$15
+loPtrOffsetForMiniGame
+        .BYTE $04,$0D,$0B,$09,$07,$05,$03
+
+indexToHiPtrArrayForMiniGame
+        .BYTE $04,$06,$09,$0C,$0F,$12,$15
+miniGameScreenDataPtrArray
+        .BYTE $04,$17,$19,$1B,$1D,$1F,$21
+f3921   .BYTE $03
+a3922   .BYTE $05
+a3923   .BYTE $07
+a3924   .BYTE $09
+a3925   .BYTE $0C
+a3926   .BYTE $10,$16
+a3928   .BYTE $80
+a3929   .BYTE $80,$80,$80
+f392C   .BYTE $A0,$A1,$A2,$A3
+someMiniGameColors
+        .BYTE M_RED,M_RED,M_YELLOW,M_BLUE,M_PURPLE,M_CYAN,M_GREEN
+
+
 *=$3937
 p9392 = $9392   
 p83E0 = $83E0
