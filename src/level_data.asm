@@ -1091,3 +1091,5 @@ level13DreadnoughtData
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
+; vim: tabstop=8 expandtab shiftwidth=8
