@@ -4951,6 +4951,7 @@ b2860   LDA #$06
         LDA currentSpriteValue
         CMP #$0B
         BCC b2860
+
         JSR CheckInputDuringDeploymentSequence
         LDA hiPtrsToShipDeploymentSpriteVariables + $08
         STA spriteVariablesHiPtr
@@ -6402,6 +6403,7 @@ p3FD6   RTI
         .BYTE $00,$FF,$00,$FF,$00,$FF,$00,$FF
         .BYTE $00
 
+.include "dropship_sprites.asm"
 .include "explosion_sprites.asm"
 .include "ship_sprites.asm"
 .include "enemy_sprites.asm"
