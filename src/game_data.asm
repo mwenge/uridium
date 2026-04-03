@@ -65,57 +65,73 @@ playerLinesColorScheme3
         .BYTE YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW
         .BYTE YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,YELLOW,GREEN,GREEN
         .BYTE GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN,GREEN
-a0000 = $0000
-a31E2
-        .BYTE $04,$4D,$4E,$4F,$40,$00,$FF
-a31E9
-        .BYTE $04,$45,$44,$43,$42,$00,$FF
-a31F0
-        .BYTE $04,$41,$42,$43,$44,$00,$FF
-a31F7
-        .BYTE $04,$41,$42,$43,$44,$00,$FF
-a31FE
-        .BYTE $10,$59,$58,$57,$56,$55,$54
-        .BYTE $53,$52,$51,$66,$65,$64,$63
-        .BYTE $62,$61,$60,$28,$28
-a3211
-        .BYTE $10,$41,$40,$4F,$4E,$4D,$4C,$4B
-        .BYTE $4A,$49,$48,$47,$46,$45,$44,$43
-        .BYTE $42,$00,$FF
-a3224
-        .BYTE $04,$55,$56,$57,$58,$00,$01
-a322B
-        .BYTE $04,$5D,$5C,$5B,$5A,$00,$01
-a3232
-        .BYTE $04,$59,$58,$57,$56,$00,$01
-a3239
-        .BYTE $04,$59,$5A,$5B,$5C,$00,$01
-a3240
-        .BYTE $10,$41,$40,$4F,$4E,$4D,$4C,$4B
-        .BYTE $4A,$49,$67,$68,$69,$6A,$6B,$6C
-        .BYTE $6D,$D8,$D8
-a3253
-        .BYTE $10,$59,$58,$57,$56,$55,$54,$53
-        .BYTE $52,$51,$50,$5F,$5E,$5D,$5C,$5B
-        .BYTE $5A,$00,$01
-spriteValueOffsetLoPtrArray
-        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<a3232,<a0000,<a0000
-        .BYTE <a0000,<a3240,<a0000,<a0000,<a3224,<a3253,<a322B,<a0000
-        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<a3239
-spriteValueOffsetHiPtrArray
-        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>a3232,>a0000,>a0000
-        .BYTE >a0000,>a3240,>a0000,>a0000,>a3224,>a3253,>a322B,>a0000
-        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>a3239
 
-spriteValueLoPtrArray
-        .BYTE <a0000,<a31F0,<a0000,<a0000,<a0000,<a0000,<a0000,<a0000
-        .BYTE <a31E2,<a3211,<a31E9,<a0000,<a0000,<a31FE,<a0000,<a0000
-        .BYTE <a0000,<a31F7
-spriteValueHiPtrArray
-        .BYTE >a0000,>a31F0,>a0000,>a0000,>a0000,>a0000,>a0000,>a0000
-        .BYTE >a31E2,>a3211,>a31E9,>a0000,>a0000,>a31FE,>a0000,>a0000
-        .BYTE >a0000,>a31F7
-spriteVariables9
+; Manta manoeuvres. These data structures are used to animate the movement
+; of the player's ship when it changes direction, rolls, or flips.
+
+a0000 = $0000
+mantaRollRightFrom90Degrees
+        .BYTE $04,MANTA_RIGHT_13,MANTA_RIGHT_14,MANTA_RIGHT_15,MANTA,$00,$FF
+mantaRollLeftFromUpsideDown
+        .BYTE $04,MANTA_RIGHT_5,MANTA_RIGHT_4,MANTA_RIGHT_3,MANTA_2,$00,$FF
+mantaRollLeft1
+        .BYTE $04,MANTA1,MANTA_2,MANTA_RIGHT_3,MANTA_RIGHT_4,$00,$FF
+mantaRollLeft
+        .BYTE $04,MANTA1,MANTA_2,MANTA_RIGHT_3,MANTA_RIGHT_4,$00,$FF
+
+mantaFlipFromRightToLeft
+        .BYTE $10,MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6,MANTA_LEFT_5,MANTA_LEFT_4
+        .BYTE MANTA_LEFT_3,MANTA_LEFT_2,MANTA_LEFT_1,MANTA_FLIP_6,MANTA_FLIP_5,MANTA_FLIP_4,MANTA_FLIP_3
+        .BYTE MANTA_FLIP_2,MANTA_FLIP_1,MANTA_FLIP_0,$28,$28
+mantaRollFacingRight
+        .BYTE $10,MANTA1,MANTA,MANTA_RIGHT_15,MANTA_RIGHT_14,MANTA_RIGHT_13,MANTA_RIGHT_12,MANTA_RIGHT_11
+        .BYTE MANTA_RIGHT_10,MANTA_RIGHT_9,MANTA_RIGHT_8,MANTA_RIGHT_7,MANTA_RIGHT_6,MANTA_RIGHT_5,MANTA_RIGHT_4,MANTA_RIGHT_3
+        .BYTE MANTA_2,$00,$FF
+
+mantaRollLeft90DegreesFacingLeft
+        .BYTE $04,MANTA_LEFT_5,MANTA_LEFT_6,MANTA_LEFT_7,MANTA_LEFT_8,$00,$01
+mantaRollRight90DegreesFacingLeft
+        .BYTE $04,MANTA_LEFT_13,MANTA_LEFT_12,MANTA_LEFT_11,MANTA_LEFT_10,$00,$01
+mantaRollRightFrom180DegreesFacingLeft
+        .BYTE $04,MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6,$00,$01
+mantaRollLeftFrom180DegreesFacingLeft
+        .BYTE $04,MANTA_LEFT_9,MANTA_LEFT_10,MANTA_LEFT_11,MANTA_LEFT_12,$00,$01
+mantaRollAndFlipLeft
+        .BYTE $10,MANTA1,MANTA,MANTA_RIGHT_15,MANTA_RIGHT_14
+        .BYTE MANTA_RIGHT_13,MANTA_RIGHT_12,MANTA_RIGHT_11
+        .BYTE MANTA_RIGHT_10,MANTA_RIGHT_9,MANTA_FLIP_7,MANTA_FLIP_8
+        .BYTE MANTA_FLIP_9,MANTA_FLIP_10,MANTA_FLIP_11,MANTA_FLIP_12
+        .BYTE MANTA_FLIP_13,$D8,$D8
+manta360RollLeft
+        .BYTE $10,MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6,MANTA_LEFT_5,MANTA_LEFT_4,MANTA_LEFT_3
+        .BYTE MANTA_LEFT_2,MANTA_LEFT_1,MANTA_LEFT_0,MANTA_LEFT_15,MANTA_LEFT_14,MANTA_LEFT_13,MANTA_LEFT_12,MANTA_LEFT_11
+        .BYTE MANTA_LEFT_10,$00,$01
+
+
+mantaleftFacingAnimationLoPtrArray
+        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<mantaRollRightFrom180DegreesFacingLeft,<a0000,<a0000
+        .BYTE <a0000,<mantaRollAndFlipLeft,<a0000,<a0000,<mantaRollLeft90DegreesFacingLeft,<manta360RollLeft,<mantaRollRight90DegreesFacingLeft,<a0000
+        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<mantaRollLeftFrom180DegreesFacingLeft
+mantaleftFacingAnimationHiPtrArray
+        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>mantaRollRightFrom180DegreesFacingLeft,>a0000,>a0000
+        .BYTE >a0000,>mantaRollAndFlipLeft,>a0000,>a0000,>mantaRollLeft90DegreesFacingLeft,>manta360RollLeft,>mantaRollRight90DegreesFacingLeft,>a0000
+        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>mantaRollLeftFrom180DegreesFacingLeft
+
+mantaRightFacingAnimationLoPtrArray
+        .BYTE <a0000,<mantaRollLeft1,<a0000,<a0000,<a0000,<a0000,<a0000,<a0000
+        .BYTE <mantaRollRightFrom90Degrees,<mantaRollFacingRight,<mantaRollLeftFromUpsideDown,<a0000,<a0000,<mantaFlipFromRightToLeft,<a0000,<a0000
+        .BYTE <a0000,<mantaRollLeft
+mantaRightFacingAnimationHiPtrArray
+        .BYTE >a0000,>mantaRollLeft1,>a0000,>a0000,>a0000,>a0000,>a0000,>a0000
+        .BYTE >mantaRollRightFrom90Degrees,>mantaRollFacingRight,>mantaRollLeftFromUpsideDown,>a0000,>a0000,>mantaFlipFromRightToLeft,>a0000,>a0000
+        .BYTE >a0000,>mantaRollLeft
+
+; The values in these arrays get loaded by UpdateSpriteVariablesAndThenRedrawSprites to:
+; spriteIndex, currentSpriteXPos, currentSpriteMSBXPosOffset, currentSpriteYPos,
+; currentSpriteDisplayEnable, currentSpriteExpandVertical,
+; currentSpriteBackgroundDisplayPriority, currentSpriteMultiColorMode,
+; currentSpriteExpandHorizontal, currentSpriteColor, currentSpriteValue.
+mantaAnimationVariables
         .BYTE $06,$70,$00,$98,$FF,$00,$00,$FF
         .BYTE $00,$F0,$59
 spriteVariablesDemo
@@ -124,7 +140,7 @@ spriteVariablesDemo
 spriteVariablesManta
         .BYTE $06,$A0,$00,$AE,$FF,$00,$00,$FF
         .BYTE $00,$F0,$41
-spriteVariables10
+dropshipSpriteVariables10
         .BYTE $07,$BA,$00,$A8,$FF,$00,$FF,$00
         .BYTE $00,$FB,$89
 spriteVariablesExplosion
@@ -132,45 +148,48 @@ spriteVariablesExplosion
         .BYTE $00,$F7,$30
 someKindOfSettingArray
         .BYTE $FD,$03,$F8,$08,$B0,$40,$50,$C0
-f32F5   .BYTE $00,$00,$FF,$FE,$FD,$FD,$FE,$FE
+mantaShadowOffsets   
+        .BYTE $00,$00,$FF,$FE,$FD,$FD,$FE,$FE
         .BYTE $FF,$00,$01,$02,$03,$03,$02,$02
         .BYTE $01
 loPtrsToShipDeploymentSpriteVariables
-        .BYTE <spriteVariables1,<spriteVariables2,<spriteVariables3,<spriteVariables4
-        .BYTE <spriteVariables5,<spriteVariables6,<spriteVariables7,<spriteVariables8
-        .BYTE <spriteVariables9,<spriteVariables10
+        .BYTE <dropshipSpriteVariables1,<dropshipSpriteVariables2,<dropshipSpriteVariables3,<dropshipSpriteVariables4
+        .BYTE <dropshipSpriteVariables5,<dropshipSpriteVariables6,<bayDoorSection,<dropshipSpriteVariables8
+loPtrToMantaAnimationVariables
+        .BYTE <mantaAnimationVariables,<dropshipSpriteVariables10
 hiPtrsToShipDeploymentSpriteVariables
-        .BYTE >spriteVariables1,>spriteVariables2,>spriteVariables3,>spriteVariables4
-        .BYTE >spriteVariables5,>spriteVariables6,>spriteVariables7,>spriteVariables8
-        .BYTE >spriteVariables9,>spriteVariables10
+        .BYTE >dropshipSpriteVariables1,>dropshipSpriteVariables2,>dropshipSpriteVariables3,>dropshipSpriteVariables4
+        .BYTE >dropshipSpriteVariables5,>dropshipSpriteVariables6,>bayDoorSection,>dropshipSpriteVariables8
+hiPtrToMantaAnimationVariables
+        .BYTE >mantaAnimationVariables,>dropshipSpriteVariables10
 
 ; The values in these arrays get loaded by UpdateSpriteVariablesAndThenRedrawSprites to:
 ; spriteIndex, currentSpriteXPos, currentSpriteMSBXPosOffset, currentSpriteYPos,
 ; currentSpriteDisplayEnable, currentSpriteExpandVertical,
 ; currentSpriteBackgroundDisplayPriority, currentSpriteMultiColorMode,
 ; currentSpriteExpandHorizontal, currentSpriteColor, currentSpriteValue.
-spriteVariables1
+dropshipSpriteVariables1
         .BYTE $00,$82,$00,$8D,$FF,$00,$00,$FF
         .BYTE $00,$FC,$00
-spriteVariables2
+dropshipSpriteVariables2
         .BYTE $01,$6A,$00,$8D,$FF,$00,$00,$FF
         .BYTE $00,$FC,$01
-spriteVariables3
+dropshipSpriteVariables3
         .BYTE $02,$52,$00,$8D,$FF,$00,$00,$FF
         .BYTE $00,$FC,$02
-spriteVariables4
+dropshipSpriteVariables4
         .BYTE $03,$82,$00,$A2,$FF,$00,$00,$FF
         .BYTE $00,$FC,$03
-spriteVariables5
+dropshipSpriteVariables5
         .BYTE $04,$6A,$00,$A2,$FF,$00,$00,$FF
         .BYTE $00,$FC,$04
-spriteVariables6
+dropshipSpriteVariables6
         .BYTE $05,$52,$00,$A2,$FF,$00,$00,$FF
         .BYTE $00,$FC,$05
-spriteVariables7
+bayDoorSection
         .BYTE $06,$82,$00,$8E,$FF,$FF,$00,$00
         .BYTE $00,$FB,$07
-spriteVariables8
+dropshipSpriteVariables8
         .BYTE $07,$82,$00,$8E,$FF,$FF,$00,$FF
         .BYTE $00,$FE,$06
 
@@ -484,8 +503,6 @@ someMiniGameColors
 
 
 *=$3937
-p9392 = $9392   
-p83E0 = $83E0
 surfaceForCurrentLevel = $8200
 currentLevelSurfaceDataCharSetLoPtrArray
         .BYTE $00,$08,$10,$18,$20,$28,$30,$38
@@ -905,6 +922,7 @@ someKindOfTextureData = $E100
         .BYTE $03,$88,$85,$82,$03,$5C,$5C,$C9
         .BYTE $03,$5C,$CE,$CA,$03,$03,$21,$22
         .BYTE $23,$03,$24,$25,$26,$03,$27,$28
+randomTextureDataMaybe
         .BYTE $29,$02,$01,$20,$01,$20,$03,$08
         .BYTE $21,$22,$22,$22,$22,$22,$22,$23
         .BYTE $08,$24,$25,$25,$25,$25,$25,$25
