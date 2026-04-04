@@ -503,7 +503,6 @@ someMiniGameColors
 
 
 *=$3937
-surfaceForCurrentLevel = $8200
 currentLevelSurfaceDataCharSetLoPtrArray
         .BYTE $00,$08,$10,$18,$20,$28,$30,$38
         .BYTE $40,$48,$50,$58,$60,$68,$70,$78
@@ -698,71 +697,7 @@ themeTuneHiPtr
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00
-*=$7A10
-        .BYTE $FF,$FF,$FF,$FF,$FF
-a7A15   .BYTE $3F,$FF,$FF,$FF,$FF
-a7A1A   .BYTE $3F
-a7A1B   .BYTE $3F,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$A8,$A0,$80,$00,$AF,$AF,$AF
-        .BYTE $AF,$AF,$AF,$AF,$AF,$FA,$F2,$F0
-        .BYTE $F0,$F0,$F0,$F0,$F0,$AA,$AA,$AA
-        .BYTE $AA,$FF,$FF,$FF,$FF,$55,$55,$95
-        .BYTE $A5,$A8,$A0,$80,$00,$AA,$AA,$A5
-        .BYTE $A5,$A5,$A5,$A5,$A5,$6A,$58,$50
-        .BYTE $50,$50,$50,$50,$50,$AA,$AA,$AA
-        .BYTE $AA,$AA,$AA,$AA,$A5,$55,$95,$A5
-        .BYTE $A5,$A5,$A5,$A5,$A5,$A5,$A5,$A5
-        .BYTE $A5,$A5,$A5,$A5,$A5,$6A,$5A,$55
-        .BYTE $55,$55,$55,$55,$55,$AA,$AA,$55
-        .BYTE $55,$55,$55,$55,$55,$A5,$A5,$55
-        .BYTE $55,$55,$55,$55,$55,$A0,$A8,$A9
-        .BYTE $A9,$A9,$A9,$A9,$A9,$A9,$A9,$A9
-        .BYTE $A9,$A9,$A9,$A9,$A9,$A9,$A9,$A9
-        .BYTE $A9,$A9,$A9,$AA,$AA,$55,$11,$55
-        .BYTE $55,$55,$55,$55,$55,$55,$55,$55
-        .BYTE $01,$01,$55,$55,$55,$55,$15,$05
-        .BYTE $01,$01,$05,$15,$55,$55,$51,$41
-        .BYTE $01,$01,$41,$51,$55,$55,$55,$55
-        .BYTE $55,$55,$55,$11,$55,$AA,$A8,$BC
-        .BYTE $BC,$BC,$BC,$80,$00,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$40
-        .BYTE $95,$95,$AA,$FF,$FF,$AA,$AA,$AA
-        .BYTE $AA,$AA,$AA,$AA,$AA,$AA,$A8,$A0
-        .BYTE $80,$55,$55,$55,$55,$00,$00,$00
-        .BYTE $00,$55,$55,$55,$55,$55,$55,$55
-        .BYTE $55,$AA,$AA,$AA,$AA,$55,$55,$55
-        .BYTE $55,$A8,$A0,$80,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$AA,$AA,$A5
-        .BYTE $A5,$A5,$A5,$A5,$A5,$55,$55,$50
-        .BYTE $4A,$29,$25,$25,$25,$55,$55,$00
-        .BYTE $AA,$55,$56,$58,$62,$55,$55,$05
-        .BYTE $A9,$8A,$22,$92,$52,$25,$26,$28
-        .BYTE $22,$68,$5A,$55,$55,$89,$25,$95
-        .BYTE $55,$00,$AA,$55,$55,$52,$52,$52
-        .BYTE $42,$09,$A5,$55,$55,$49,$49,$61
-        .BYTE $61,$49,$49,$61,$61,$55,$55,$22
-        .BYTE $22,$88,$88,$55,$55,$55,$55,$62
-        .BYTE $62,$48,$48,$61,$61,$55,$55,$21
-        .BYTE $21,$89,$89,$61,$61,$49,$49,$62
-        .BYTE $62,$48,$48,$55,$55,$49,$49,$21
-        .BYTE $21,$89,$89,$55,$55,$55,$15,$05
-        .BYTE $01,$01,$05,$15,$55,$51,$58,$56
-        .BYTE $4E,$61,$DA,$9E,$8A,$55,$59,$31
-        .BYTE $B9,$95,$B9,$AC,$66,$6D,$66,$E9
-        .BYTE $0A,$A6,$72,$29,$65,$A5,$31,$89
-        .BYTE $A2,$D9,$9D,$E5,$55,$59,$12,$56
-        .BYTE $56,$A6,$6B,$5A,$65,$55,$12,$5A
-        .BYTE $9A,$97,$EE,$DF,$7F,$A5,$A1,$95
-        .BYTE $55,$55,$95,$66,$E9,$6A,$AB,$46
-        .BYTE $29,$AE,$6B,$54,$5A,$AF,$FD,$BE
-        .BYTE $BF,$0F,$E7,$7B,$FF,$A5,$95,$AA
-        .BYTE $E9,$01,$A5,$29,$CA,$5A,$6B,$AA
-        .BYTE $96,$56,$57,$1B,$68,$7F,$9F,$EF
-        .BYTE $DC,$EB,$19,$92,$56,$D9,$D9,$65
-        .BYTE $D9,$A6,$65,$29,$55,$44,$26,$04
-        .BYTE $91,$6A,$06,$1A,$A4,$45,$2D,$8D
-        .BYTE $E1,$38,$BE,$65,$49,$61,$95,$25
-        .BYTE $99,$51,$16,$A4,$45
+*=$7C00
 initialPositionOfMiniGameScreenData
         .BYTE $FF,$C3,$99,$99,$99,$99,$C3,$FF
         .BYTE $FF,$E3,$C3,$F3,$F3,$F3,$C1,$FF
@@ -829,7 +764,7 @@ initialPositionOfMiniGameScreenData
         .BYTE $55,$40,$45,$45,$45,$6A,$55,$55
         .BYTE $19,$19,$59,$59,$59,$A5,$55,$55
 *=$8100
-someKindOfTextureData = $E100
+surfaceStructureData = $E100
         .BYTE $01,$01,$20,$01,$11,$21,$22,$22
         .BYTE $22,$22,$22,$22,$22,$22,$22,$22
         .BYTE $22,$22,$22,$22,$22,$23,$01,$11
@@ -922,7 +857,6 @@ someKindOfTextureData = $E100
         .BYTE $03,$88,$85,$82,$03,$5C,$5C,$C9
         .BYTE $03,$5C,$CE,$CA,$03,$03,$21,$22
         .BYTE $23,$03,$24,$25,$26,$03,$27,$28
-randomTextureDataMaybe
         .BYTE $29,$02,$01,$20,$01,$20,$03,$08
         .BYTE $21,$22,$22,$22,$22,$22,$22,$23
         .BYTE $08,$24,$25,$25,$25,$25,$25,$25
@@ -1290,6 +1224,7 @@ randomTextureDataMaybe
         .BYTE $09,$20,$20,$20,$20,$53,$52,$52
         .BYTE $52,$51,$09,$20,$20,$20,$20,$27
         .BYTE $28,$28,$28,$29,$00
+
 *=$A100                                        
 scoringStrategyForLevelLoPtrArray = $C100
         .BYTE <a0000,<level1ScoringStrategy,<level2ScoringStrategy,<level3ScoringStrategy
@@ -1331,7 +1266,8 @@ fC190 = $C190
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-endofsurfaceDataForCurrentLevel
+        ; End of the Surface Data for Current Level
+
         .BYTE $01,$01,$01,$01,$01,$00,$9C,$6C
         .BYTE $B4,$84,$CC,$00,$05,$00,$09,$00
         .BYTE $02,$02,$02,$00,$00,$00,$9C,$9C
@@ -1340,7 +1276,8 @@ endofsurfaceDataForCurrentLevel
         .BYTE $CC,$00,$00,$00,$06,$FF,$08,$00
         .BYTE $03,$01,$05,$00,$00,$00,$84,$9C
         .BYTE $B4,$00,$00,$00,$00,$00,$03,$00
-pA240
+endofCurrentLevelSurfaceData
+
         .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
         .BYTE $9C,$9C,$9C,$00,$06,$80,$01,$00
         .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
@@ -1397,15 +1334,14 @@ pA240
         .BYTE $9C,$9C,$CC,$00,$08,$80,$0B,$00
         .BYTE $19,$18,$17,$1A,$1B,$00,$6C,$84
         .BYTE $9C,$B4,$CC,$00,$08,$80,$09,$00
-aA401 = *+$01
 
+textureDataLoPtrArray
 someDataHiPtrArray   
         .BYTE $02,$1C,$02,$1C,$00,$00,$9C,$9C
         .BYTE $9C,$9C,$00,$00,$06,$80,$0E,$00
 someDataLoPtrArray   
         .BYTE $02,$02,$1C,$1C,$17,$00,$84,$84
         .BYTE $B4,$B4,$9C,$00,$07,$80,$0E,$00
-
 fA420   .BYTE $1D,$1E,$1F,$21,$20,$00,$6C,$84
         .BYTE $9C,$B4,$CC,$00,$00,$00,$08,$00
 fA430   .BYTE $02,$1C,$02,$1C,$00,$00,$9C,$9C
@@ -1421,25 +1357,30 @@ fA470   .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
 hiPtrArrayForTextureDataMaybe
         .BYTE $01,$22,$22,$23,$23,$00,$9C,$84
         .BYTE $B4,$6C,$CC,$00,$00,$80,$02,$00
-indexToFunctionPtrArray   .BYTE $01,$01,$01,$22,$23,$00,$84,$9C
-currentSpriteXPosArray   .BYTE $B4,$9C,$9C,$00,$00,$80,$00,$00
-currentSpriteYPosArray   .BYTE $01,$01,$22,$23,$23,$00,$84,$B4
-currentSpriteMSBXPosOffsetArray   .BYTE $9C,$84,$B4,$00,$00,$80,$0C,$00
+indexToFunctionPtrArray
+        .BYTE $01,$01,$01,$22,$23,$00,$84,$9C
+currentSpriteXPosArray
+        .BYTE $B4,$9C,$9C,$00,$00,$80,$00,$00
+currentSpriteYPosArray
+        .BYTE $01,$01,$22,$23,$23,$00,$84,$B4
+currentSpriteMSBXPosOffsetArray
+        .BYTE $9C,$84,$B4,$00,$00,$80,$0C,$00
 fA4B0   .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84
 fA4B8   .BYTE $9C,$B4,$CC,$00,$05,$80,$06,$00
 fA4C0   .BYTE $02,$1C,$17,$02,$1C,$00,$6C,$B4
-apparentDuplicateOfCurrentSpriteYPosArray   .BYTE $9C,$84,$CC,$00,$07,$00,$06,$00
+apparentDuplicateOfCurrentSpriteYPosArray
+         .BYTE $9C,$84,$CC,$00,$07,$00,$06,$00
 fA4D0   .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
         .BYTE $9C,$9C,$9C,$00,$06,$80,$07,$00
         .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84
 fA4E8   .BYTE $9C,$B4,$CC,$00,$07,$80,$0D,$00
         .BYTE $03,$01,$05,$00,$00,$00,$84,$9C
         .BYTE $B4,$00,$00,$00,$00,$80,$0F,$00
+
 textureDataHiPtrArray
-        .BYTE $05
-aA501   .BYTE $06,$01,$04,$03,$00,$6C,$84,$9C
-        .BYTE $B4,$CC,$00,$07,$80,$0B,$00,$01
-        .BYTE $02,$01,$1C,$01,$00,$6C,$84
+        .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
+        .BYTE $9C,$B4,$CC,$00,$07,$80,$0B,$00
+        .BYTE $01,$02,$01,$1C,$01,$00,$6C,$84
 fA518   .BYTE $9C,$B4,$CC,$00,$07,$80,$04,$00
         .BYTE $0A,$0C,$08,$00,$00,$00,$84,$9C
         .BYTE $B4,$00,$00,$00,$00,$00,$05,$00

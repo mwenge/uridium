@@ -48,6 +48,7 @@ aF9 = $F9
 ;
 ; **** ZP ABSOLUTE ADRESSES ****
 ;
+SPACE = $20
 RAM_ACCESS_MODE = $01
 currentSpriteMSB = $02
 spriteMixerValue = $03
@@ -64,7 +65,7 @@ currentSpriteColor = $0D
 currentSpriteValue = $0E
 a0F = $0F
 dataIndex = $10
-a11 = $11
+stashedYValue = $11
 colorRamHiPtr = $13
 someDataLoPtr = $14
 someDataHiPtr = $15
@@ -379,6 +380,9 @@ EXPLOSION_MAJOR8        = $37
 EXPLOSION_MAJOR9        = $38
 EXPLOSION_MAJOR10       = $39
 EXPLOSION_MAJOR11       = $3A
+
+surfaceDataForCurrentLevel = $8200
+randomTextureDataMaybe = $83E0
 
 * = $0801
 ;------------------------------------------------------------------
@@ -2742,21 +2746,21 @@ CheckInitialsInput
         LDA loopCounter
         BEQ b1973
         LDY #$00
-        STY a11
+        STY stashedYValue
 b1922   JSR CheckInputMaybeUpdateDecal
         JSR CheckInputMaybeUpdateDecal
         JSR UpdateColorsOfInitials
         LDA leftPressed
         ORA rightPressed
         CLC
-        ADC a11
+        ADC stashedYValue
         BMI b193C
         CMP #$1B
         BCC b193E
         LDA #$00
         BEQ b193E
 b193C   LDA #$1A
-b193E   STA a11
+b193E   STA stashedYValue
         TAY
         LDA alphabetText,Y
         LDX dataIndex
@@ -3091,10 +3095,10 @@ j1B83   LDY #$0C
         LDA #$00
         STA a7D
         LDY #>SCREEN_RAM + $010A
-        STY a11
+        STY stashedYValue
         LDX #<SCREEN_RAM + $010A
         STX dataIndex
-b1B95   LDY a11
+b1B95   LDY stashedYValue
         STY spriteIndex
         LDA (srcLoPtr),Y
         BEQ b1BC0
@@ -3105,7 +3109,7 @@ b1B95   LDY a11
         INX
         LDA fC190,Y
         STA a70,X
-        LDY a11
+        LDY stashedYValue
         LDA #$02
         STA indexToFunctionPtrArray,Y
         INC usedToCheckIfWeShouldLaunchMine
@@ -3124,7 +3128,7 @@ b1BC0   TYA
         LDA a33
 b1BCB   STA currentSpriteYPos
         JSR ApplySpriteVariablesAndDisplay
-        LDY a11
+        LDY stashedYValue
         LDA a6B
         STA fA4E8,Y
         LDA #$00
@@ -3140,11 +3144,11 @@ b1BCB   STA currentSpriteYPos
         STA currentSpriteMSBXPosOffsetArray,Y
 b1BF4   DEC dataIndex
         DEC dataIndex
-        DEC a11
+        DEC stashedYValue
         BPL b1B95
         RTS
 
-numberOfSpritesToDo = a11
+numberOfSpritesToDo = stashedYValue
 ;-------------------------------------------------------------------
 ; UpdateSpriteAndRunFunctionPerSprite
 ;-------------------------------------------------------------------
@@ -3198,7 +3202,7 @@ UpdateSpritePositionValueAndFunctionPtrIndex
         BCC b1C57
         LDA #$00
         STA currentSpriteDisplayEnable
-        LDY a11
+        LDY stashedYValue
         STA indexToFunctionPtrArray,Y
         DEC usedToCheckIfWeShouldLaunchMine
         JSR DisplayCurrentSprite
@@ -3461,7 +3465,7 @@ b1E4B   LDA a68
         JSR AddScoresFromHittingStuff
 b1E54   LDA #$26
         STA soundVariable2
-        LDY a11
+        LDY stashedYValue
         LDA #$06
         STA indexToFunctionPtrArray,Y
         LDA #$14
@@ -3591,7 +3595,7 @@ b1F11   LDA indexToFunctionPtrArray,Y
         BEQ FireBulletFromEnemyShip
         DEY
         BPL b1F11
-        LDY a11
+        LDY stashedYValue
         RTS
 
 ;--------------------------------------------------------------------
@@ -3606,7 +3610,7 @@ FireBulletFromEnemyShip
         LDA bulletSpriteCurrentLevel
         STA currentSpriteValue
         JSR DisplayCurrentSprite
-        LDY a11
+        LDY stashedYValue
         LDA currentSpriteXPosArray,Y
         LDX currentSpriteMSBXPosOffsetArray,Y
         LDY spriteIndex
@@ -3626,7 +3630,7 @@ FireBulletFromEnemyShip
         PLA
         STA currentSpriteValue
         INC usedToCheckIfWeShouldLaunchMine
-        LDY a11
+        LDY stashedYValue
         STY spriteIndex
         LDA #$0B
         STA soundVariable2
@@ -3867,7 +3871,7 @@ b20DE   LDA currentSpriteXPosArray,Y
 ; SetUpScreenForScrolling
 ;-------------------------------------------------------------------
 SetUpScreenForScrolling
-        JSR UpdatePositionOfPointersToTextureData
+        JSR LoadSurfaceStructureData
         LDA #$40
         STA a29
         LDA #$F1
@@ -4323,7 +4327,7 @@ b2402   LDA #$F2
 SetUpSomeData
         LDX #$00
         STX dataIndex
-        STX a11
+        STX stashedYValue
 b241B   LDY f349F,X
         BMI b244D
         LDA finalLocationOfSomeLevelDataAndGameData,Y
@@ -4334,7 +4338,7 @@ b241B   LDY f349F,X
         ADC #$00
         STA srcHiPtr
         LDY #$00
-        LDX a11
+        LDX stashedYValue
 b2432   LDA (srcLoPtr),Y
         BEQ b243A
         STA f8010,X
@@ -4345,12 +4349,12 @@ b243A   INY
         LDA #$01
         STA f8010,X
         INX
-        STX a11
+        STX stashedYValue
         INC dataIndex
         LDX dataIndex
         BPL b241B
 
-b244D   LDX a11
+b244D   LDX stashedYValue
         LDY #$03
         LDA #$00
 b2453   STA f8010,X
@@ -5000,7 +5004,7 @@ OpenBayDoorsLoop
         JSR CheckInputDuringDeploymentSequence
         LDA hiPtrToMantaAnimationVariables
         STA spriteVariablesHiPtr
-        LDA loPtrToMantaAnimationVariables
+        LDA loPtrsToShipDeploymentSpriteVariables + $08
         STA spriteVariablesLoPtr
         JSR LoadSpriteVariablesAndDisplay
 
@@ -5372,7 +5376,7 @@ MaybeAddSurvivalScore
         SBC f33D6,Y
         STA srcHiPtr
         LDA f33E6,Y
-        STA a11
+        STA stashedYValue
         STA initialValueOfY
         LDA anotherIndexToScoresToAddArray,Y
         TAY
@@ -5381,7 +5385,7 @@ MaybeAddSurvivalScore
         LDX dataIndex
         LDA #$1B
         STA soundVariable2
-j2B11   LDY a11
+j2B11   LDY stashedYValue
 b2B13   LDA (srcLoPtr),Y
         CMP #$20
         BCC b2B33
@@ -5524,6 +5528,7 @@ ExitPauseScreen
         STA pausedOrNotPaused
         RTS
 
+
 ;-------------------------------------------------------------------
 ; ScrollShipSurface
 ;-------------------------------------------------------------------
@@ -5542,40 +5547,42 @@ ScrollShipSurface
         ROR a31
         AND #$01
         STA a0F
-        LDA #>surfaceForCurrentLevel
+        LDA #>surfaceDataForCurrentLevel
         ORA a0F
         STA a30
-        STA a2C21
+        STA surfaceDataForCurrentLevelHiPtr
         LDA a31
-        STA a2C20
+        STA surfaceDataForCurrentLevelLoPtr
         LDA #>SCREEN_RAM_HIBANK + $00F0
-        STA a2C24
+        STA screenRAMToDrawHiPtr
         LDA #<SCREEN_RAM_HIBANK + $00F0
-        STA a2C23
+        STA screenRAMToDrawLoPtr
 
         LDX #$11
-b2C1D   LDY #$26
-a2C20   =*+$01
-a2C21   =*+$02
-b2C1F   LDA surfaceForCurrentLevel,Y
-a2C23   =*+$01
-a2C24   =*+$02
+DrawScrollingSurfaceRows   
+        LDY #$26
+surfaceDataForCurrentLevelLoPtr   =*+$01
+surfaceDataForCurrentLevelHiPtr   =*+$02
+DrawRowOfScrollingSurface   
+        LDA surfaceDataForCurrentLevel,Y
+screenRAMToDrawLoPtr   =*+$01
+screenRAMToDrawHiPtr   =*+$02
         STA SCREEN_RAM_HIBANK + $00F0,Y
         DEY
-        BPL b2C1F
+        BPL DrawRowOfScrollingSurface
         DEX
-        BEQ b2C42
-        INC a2C21
-        INC a2C21
-        LDA a2C23
+        BEQ FinishScrollingAndCleanUp
+        INC surfaceDataForCurrentLevelHiPtr
+        INC surfaceDataForCurrentLevelHiPtr
+        LDA screenRAMToDrawLoPtr
         CLC
         ADC #$28
-        STA a2C23
-        BCC b2C1D
-        INC a2C24
-        JMP b2C1D
+        STA screenRAMToDrawLoPtr
+        BCC DrawScrollingSurfaceRows
+        INC screenRAMToDrawHiPtr
+        JMP DrawScrollingSurfaceRows
 
-b2C42   LDA a31
+FinishScrollingAndCleanUp   LDA a31
         CLC
         ADC #$12
         STA a52
@@ -5599,30 +5606,31 @@ b2C42   LDA a31
         STA a51
         RTS
 
-textureDataLoPtrArray = someDataHiPtrArray ; $A400
 newValueofSrcLoPtr = $11
 ;-------------------------------------------------------------------
-; UpdatePositionOfPointersToTextureData
+; LoadSurfaceStructureData
 ; Updates the position of srcLoPtr and srcHiPtr to the right spot
 ; for the scrolling surface.
 ;-------------------------------------------------------------------
-UpdatePositionOfPointersToTextureData
-        LDX #<someKindOfTextureData
-        LDY #>someKindOfTextureData
+LoadSurfaceStructureData
+        LDX #<surfaceStructureData
+        LDY #>surfaceStructureData
         STX srcLoPtr
         STY srcHiPtr
 
         LDX #$01
-b2C70   LDY #$00
+UpdateTextureDataLoop   
+        LDY #$00
         STY newValueofSrcLoPtr
         LDA srcLoPtr
         STA textureDataLoPtrArray,X
         LDA srcHiPtr
         STA textureDataHiPtrArray,X
         INX
-        BEQ b2CA4
+        BEQ ReturnFromUpdatingPosition
         LDA (srcLoPtr),Y
-        BEQ b2CA4
+        BEQ ReturnFromUpdatingPosition
+
         STA initialValueOfY
         INC newValueofSrcLoPtr
 b2C89   LDY newValueofSrcLoPtr
@@ -5632,15 +5640,16 @@ b2C89   LDY newValueofSrcLoPtr
         STA newValueofSrcLoPtr
         DEC initialValueOfY
         BNE b2C89
+
         LDA srcLoPtr
         CLC
         ADC newValueofSrcLoPtr
         STA srcLoPtr
-        BCC b2C70
+        BCC UpdateTextureDataLoop
         INC srcHiPtr
-        JMP b2C70
+        JMP UpdateTextureDataLoop
 
-b2CA4   RTS
+ReturnFromUpdatingPosition   RTS
 
 ;-------------------------------------------------------------------
 ; ClearTextureDataPtrArray
@@ -5655,8 +5664,10 @@ b2CA8   STA textureDataLoPtrArray,Y
         RTS
 
 
-textureIndexLoPtrMaybe = $12
-textureIndexHiPtrMaybe = $13
+dreadnoughtDataLoPtr = $12
+dreadnoughtDataHiPtr = $13
+currentLevelSurfaceDataHiPtr = someDataHiPtr
+currentLevelSurfaceDataLoPtr = someDataLoPtr
 ;-------------------------------------------------------------------
 ; UpdateTextureDataForCurrentShip
 ;-------------------------------------------------------------------
@@ -5666,117 +5677,138 @@ UpdateTextureDataForCurrentShip
         LDA indexToCurrentLevelTextureData
         AND #$0F
         TAY
-        LDA textureDataForLevelLoPtrArray,Y
-        STA textureIndexLoPtrMaybe
-        LDA textureDataForLevelHiPtrArray,Y
-        STA textureIndexHiPtrMaybe
+        LDA dreadnoughtDataForLevelLoPtrArray,Y
+        STA dreadnoughtDataLoPtr
+        LDA dreadnoughtDataForLevelHiPtrArray,Y
+        STA dreadnoughtDataHiPtr
 
         ; Clear down the surface data first.
-        LDA #>endofsurfaceDataForCurrentLevel
-        STA someDataHiPtr
-        LDA #<endofsurfaceDataForCurrentLevel
-        STA someDataLoPtr
+        LDA #>surfaceDataForCurrentLevel + $2000
+        STA currentLevelSurfaceDataHiPtr
+        LDA #<surfaceDataForCurrentLevel + $2000
+        STA currentLevelSurfaceDataLoPtr
 b2CCD   LDY #$3F
         LDA #$20
-b2CD1   STA (someDataLoPtr),Y
+b2CD1   STA (currentLevelSurfaceDataLoPtr),Y
         DEY
         BPL b2CD1
-        DEC someDataHiPtr
-        DEC someDataHiPtr
-        LDA someDataHiPtr
-        CMP #>surfaceForCurrentLevel
+        DEC currentLevelSurfaceDataHiPtr
+        DEC currentLevelSurfaceDataHiPtr
+        LDA currentLevelSurfaceDataHiPtr
+        CMP #>surfaceDataForCurrentLevel
         BCS b2CCD
 
-        LDX #<pA240
-        LDY #>pA240
-        STX someDataLoPtr
-        STY someDataHiPtr
-b2CE8   LDY #$00
-        LDA (textureIndexLoPtrMaybe),Y
-        BEQ b2D57
-        TAX
+        ; dreadnoughtData gives us an index into textureDataLoPtrArray. 
+        ; We use this textureData to write the structure of an object
+        ; built from charsets into currentLevelSurfaceData. 
+        LDX #<endofCurrentLevelSurfaceData
+        LDY #>endofCurrentLevelSurfaceData
+        STX currentLevelSurfaceDataLoPtr
+        STY currentLevelSurfaceDataHiPtr
+DrawColumnLoop   
+        ; Get the first structure in the dreadnought data.
+        LDY #$00
+        LDA (dreadnoughtDataLoPtr),Y
+        BEQ ReadNextStructure
+        TAX                           ; Make it an index into textureDataLoPtrArray
+        ; Get the object structure from textureData.
         LDA textureDataHiPtrArray,X
         STA srcHiPtr
         LDA textureDataLoPtrArray,X
         STA srcLoPtr
         CLC
-        LDA textureIndexLoPtrMaybe
+        ; Move to the next structure in dreadnought data, for the next time around..
+        LDA dreadnoughtDataLoPtr
         ADC #$01
-        STA textureIndexLoPtrMaybe
-        BCC b2D04
-        INC textureIndexHiPtrMaybe
-b2D04   LDA (srcLoPtr),Y
-        INY
-        STA initialValueOfY
-b2D09   LDA someDataLoPtr
+        STA dreadnoughtDataLoPtr
+        BCC ReadSurfaceStructure
+        INC dreadnoughtDataHiPtr
+
+numberOfColumns = initialValueOfY
+        ; Read in and interpret the object structure.
+ReadSurfaceStructure   
+        LDA (srcLoPtr),Y                ; Get the first value, the length of the object.
+        INY                             ; Move to the next value.
+        STA numberOfColumns
+
+        ; Point ramLo/HiPtr to currentLevelSurfaceData for writing out the surface data.
+DrawColumn   
+        LDA currentLevelSurfaceDataLoPtr
         STA ramLoPtr
-        LDA someDataHiPtr
+        LDA currentLevelSurfaceDataHiPtr
         STA ramHiPtr
-        LDA (srcLoPtr),Y
-        INY
-        AND #$1F
-        TAX
-b2D17   LDA (srcLoPtr),Y
-        INY
-        STY a11
-        LDY #$00
-        STA (ramLoPtr),Y
-        LDY a11
-        DEC ramHiPtr
+
+        LDA (srcLoPtr),Y   ; Read in the run-length of the data.
+        INY                ; Move index to next position.
+        AND #$1F           ; Cap length to 31.
+        TAX                ; Store the run-length in X.
+ReadInStructure   
+        LDA (srcLoPtr),Y   ; Get a charset value from the object.
+        INY                ; Increment Y.
+        STY stashedYValue  ; Stash Y.
+        LDY #$00           ; 
+        STA (ramLoPtr),Y   ; Store the charset value in currentLevelSurfaceData.
+        LDY stashedYValue  ; Restore Y.
+        DEC ramHiPtr       ; Not sure why we're decrementing the high pointers here.
         DEC ramHiPtr
         DEX
-        BNE b2D17
+        BNE ReadInStructure ; Loop until all data read.
 
-        ; Clear more data down again with $20.
-j2D29   LDA ramHiPtr
-        CMP #>surfaceForCurrentLevel
+        ; Fill any remaining space with blank spaces.
+BlankSpacesLoop   
+        LDA ramHiPtr
+        CMP #>surfaceDataForCurrentLevel
         BCC b2D40
-        STY a11
+        STY stashedYValue
         LDY #$00
-        LDA #$20
+        LDA #SPACE
         STA (ramLoPtr),Y
-        LDY a11
+        LDY stashedYValue
         DEC ramHiPtr
         DEC ramHiPtr
-        JMP j2D29
+        JMP BlankSpacesLoop
 
+        ; Do the next column of data.
 b2D40   CLC
-        LDA someDataLoPtr
+        LDA currentLevelSurfaceDataLoPtr
         ADC #$01
-        STA someDataLoPtr
+        STA currentLevelSurfaceDataLoPtr
         BCC b2D4B
-        INC someDataHiPtr
-b2D4B   LDA someDataHiPtr
-        CMP #$A4
+        INC currentLevelSurfaceDataHiPtr
+b2D4B   LDA currentLevelSurfaceDataHiPtr
+        CMP #>textureDataLoPtrArray
         BCS b2D66
-        DEC initialValueOfY
-        BNE b2D09
-        BEQ b2CE8
-b2D57   LDA aA401
+        DEC numberOfColumns
+        BNE DrawColumn
+        BEQ DrawColumnLoop
+
+ReadNextStructure   
+        LDA textureDataLoPtrArray + $01
         STA srcLoPtr
-        LDA aA501
+        LDA textureDataHiPtrArray + $01
         STA srcHiPtr
         LDY #$00
-        JMP b2D04
+        JMP ReadSurfaceStructure
 
 b2D66   LDY #$00
         CLC
-        LDA textureIndexLoPtrMaybe
+        LDA dreadnoughtDataLoPtr
         ADC #$01
-        STA textureIndexLoPtrMaybe
+        STA dreadnoughtDataLoPtr
         BCC b2D73
-        INC textureIndexHiPtrMaybe
-b2D73   LDA (textureIndexLoPtrMaybe),Y
+        INC dreadnoughtDataHiPtr
+
+b2D73   LDA (dreadnoughtDataLoPtr),Y
         ORA #$80
         AND #$BF
-        STA someDataHiPtr
+        STA currentLevelSurfaceDataHiPtr
         CMP #$A4
         BCS b2DE3
         INY
-        LDA (textureIndexLoPtrMaybe),Y
-        STA someDataLoPtr
+        LDA (dreadnoughtDataLoPtr),Y
+        STA currentLevelSurfaceDataLoPtr
         INY
-        LDA (textureIndexLoPtrMaybe),Y
+        LDA (dreadnoughtDataLoPtr),Y
         BEQ b2DE3
         TAX
         LDA textureDataHiPtrArray,X
@@ -5784,34 +5816,34 @@ b2D73   LDA (textureIndexLoPtrMaybe),Y
         LDA textureDataLoPtrArray,X
         STA srcLoPtr
         CLC
-        LDA textureIndexLoPtrMaybe
+        LDA dreadnoughtDataLoPtr
         ADC #$03
-        STA textureIndexLoPtrMaybe
+        STA dreadnoughtDataLoPtr
         BCC b2D9F
-        INC textureIndexHiPtrMaybe
+        INC dreadnoughtDataHiPtr
 b2D9F   LDY #$00
         LDA (srcLoPtr),Y
         INY
-        STA initialValueOfY
-b2DA6   LDA someDataLoPtr
+        STA numberOfColumns
+b2DA6   LDA currentLevelSurfaceDataLoPtr
         STA ramLoPtr
-        LDA someDataHiPtr
+        LDA currentLevelSurfaceDataHiPtr
         STA ramHiPtr
         LDA (srcLoPtr),Y
         INY
         AND #$1F
         TAX
 
-        ; Main loop for populating the surface data.
+        ; 
 b2DB4   LDA (srcLoPtr),Y
         INY
-        STY a11
+        STY stashedYValue
         LDY #$00
-        CMP #$20
+        CMP #SPACE
         BEQ b2DC1
         STA (ramLoPtr),Y
-b2DC1   JSR UpdateSomeStorageForTextureData
-        LDY a11
+b2DC1   JSR SomeKindOfFixUpToTheSurfaceData
+        LDY stashedYValue
         DEC ramHiPtr
         DEC ramHiPtr
         BPL b2DE3
@@ -5819,12 +5851,12 @@ b2DC1   JSR UpdateSomeStorageForTextureData
         BNE b2DB4
 
         CLC
-        LDA someDataLoPtr
+        LDA currentLevelSurfaceDataLoPtr
         ADC #$01
-        STA someDataLoPtr
+        STA currentLevelSurfaceDataLoPtr
         BCC b2DDA
-        INC someDataHiPtr
-b2DDA   DEC initialValueOfY
+        INC currentLevelSurfaceDataHiPtr
+b2DDA   DEC numberOfColumns
         BNE b2DA6
         LDY #$00
         JMP b2D73
@@ -5832,9 +5864,9 @@ b2DDA   DEC initialValueOfY
 b2DE3   RTS
 
 ;-------------------------------------------------------------------
-; UpdateSomeStorageForTextureData
+; SomeKindOfFixUpToTheSurfaceData
 ;-------------------------------------------------------------------
-UpdateSomeStorageForTextureData
+SomeKindOfFixUpToTheSurfaceData
         CMP #$59
         BCC b2E16
         CMP #$5C
@@ -6255,12 +6287,12 @@ b30B4   LDX #$07
 b30BA   LDA #$00
         STA (someDataLoPtr),Y
         DEY
-        STY a11
+        STY stashedYValue
         LDY dataIndex
         LDA (secondHalfTextCharacterSetLoPtr),Y
         DEY
         STY dataIndex
-        LDY a11
+        LDY stashedYValue
         STA (someDataLoPtr),Y
         DEY
         BPL b30BA
@@ -6274,12 +6306,12 @@ b30BA   LDA #$00
 b30D8   LDA #$00
         STA (someDataLoPtr),Y
         DEY
-        STY a11
+        STY stashedYValue
         LDY dataIndex
         LDA (secondHalfTextCharacterSetLoPtr),Y
         DEY
         STY dataIndex
-        LDY a11
+        LDY stashedYValue
         STA (someDataLoPtr),Y
         DEY
         BPL b30D8
@@ -6307,7 +6339,9 @@ b3105   DEC initialValueOfY
 
 .include "game_data.asm"
 .include "level_data.asm"
-.include "surface_charset.asm"
+.include "surface1_charset.asm"
+.include "surface2_charset.asm"
+.include "surface3_charset.asm"
 
 *=$3F00
 ;---------------------------------------------------------------------------------

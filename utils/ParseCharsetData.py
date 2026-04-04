@@ -1,5 +1,5 @@
-f = open("../src/planet_textures_in.asm", 'r')
-o = open("../src/planet_textures.asm", 'w')
+f = open("charset.asm", 'r')
+o = open("charset_out.asm", 'w')
 
 bytes = []
 labels = {}
@@ -59,7 +59,7 @@ def writeChar(cur, cur_raw, char_count, cur_byte):
 cur = []
 cur_raw = []
 tag = "$A1B"
-char_count = 0
+char_count = 0x42
 index = 2
 while (index < len(bytes)):
     i = index - 2

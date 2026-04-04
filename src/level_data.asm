@@ -5,13 +5,13 @@ finalLocationOfMainLevelData = $E000
 startOfMainLevelData
         .BYTE $00,$09,$00,$09,$C3,$C2,$CD,$38
         .BYTE $30,$00,$00,$00,$00,$00,$00,$00
-textureDataForLevelLoPtrArray = $E010
-        .BYTE <notUsed,<levelOneDreadnoughtData,<level2DreadnoughtData,<level3DreadnoughtData
+dreadnoughtDataForLevelLoPtrArray = $E010
+        .BYTE <notUsed,<level1DreadnoughtData,<level2DreadnoughtData,<level3DreadnoughtData
         .BYTE <level4DreadnoughtData,<level5DreadnoughtData,<level6DreadnoughtData,<level7DreadnoughtData
         .BYTE <level8DreadnoughtData,<level9DreadnoughtData,<level10DreadnoughtData,<level11DreadnoughtData
         .BYTE <level12DreadnoughtData,<level13DreadnoughtData,<level14DreadnoughtData,<level15DreadnoughtData
-textureDataForLevelHiPtrArray = $E020
-        .BYTE >notUsed,>levelOneDreadnoughtData,>level2DreadnoughtData,>level3DreadnoughtData
+dreadnoughtDataForLevelHiPtrArray = $E020
+        .BYTE >notUsed,>level1DreadnoughtData,>level2DreadnoughtData,>level3DreadnoughtData
         .BYTE >level4DreadnoughtData,>level5DreadnoughtData,>level6DreadnoughtData,>level7DreadnoughtData
         .BYTE >level8DreadnoughtData,>level9DreadnoughtData,>level10DreadnoughtData,>level11DreadnoughtData
         .BYTE >level12DreadnoughtData,>level13DreadnoughtData,>level14DreadnoughtData,>level15DreadnoughtData
@@ -19,8 +19,8 @@ indexIntoLevelColorScheme = $E030
         .BYTE $00,$0A,$01,$09,$0C,$03,$07,$08
         .BYTE $02,$06,$05,$09,$0B,$01,$06,$04
 levelSurfaceDataHiPtrArray = $E040
-        .BYTE $D8,$DC,$D4,$DC,$D4,$D8,$DC,$D8
-        .BYTE $D4,$D8,$DC,$D4,$DC,$D8,$D4,$DC
+        .BYTE >surfaceCharset2,>surfaceCharset3,>surfaceCharset1,>surfaceCharset3,>surfaceCharset1,>surfaceCharset2,>surfaceCharset3,>surfaceCharset2
+        .BYTE >surfaceCharset1,>surfaceCharset2,>surfaceCharset3,>surfaceCharset1,>surfaceCharset3,>surfaceCharset2,>surfaceCharset1,>surfaceCharset3
 levelNameLoPtrArray = $E050
         .BYTE <level15Name,<level1Name,<level2Name,<level3Name,<level4Name,<level5Name,<level6Name,<level7Name
         .BYTE <level8Name,<level9Name,<level10Name,<level11Name,<level12Name,<level13Name,<level14Name,<level15Name
@@ -209,7 +209,7 @@ level2DreadnoughtData = $F1E8
         .BYTE $B7,$19,$8B,$BA,$65,$A1,$BC,$54
         .BYTE $A1,$B6,$54,$92,$46,$1A,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-levelOneDreadnoughtData = $F418
+level1DreadnoughtData = $F418
         .BYTE $05,$5C,$5C,$06,$06,$06,$06,$5C
         .BYTE $5C,$07,$0C,$08,$08,$08,$08,$08
         .BYTE $08,$08,$08,$08,$08,$05,$5C,$09
