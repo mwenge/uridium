@@ -115,12 +115,12 @@ a46 = $46
 a47 = $47
 fireButtonDebounce = $48
 buttonPressDebounce = $49
-a4A = $4A
-a4B = $4B
-a4C = $4C
-a4D = $4D
-a4E = $4E
-a4F = $4F
+currentBackgroundColor = $4A
+backgroundColor2 = $4B
+backgroundColor1 = $4C
+loadedCharacterColor = $4D
+multiColor0 = $4E
+spriteColorForLevel = $4F
 a50 = $50
 a51 = $51
 a53 = $53
@@ -128,7 +128,7 @@ someKindOfTextureColorVariable = $54
 currentColorValue = $55
 a56 = $56
 a57 = $57
-a58 = $58
+updatedCharacterColor = $58
 loopCounter = $59
 pausedOrNotPaused = $5A
 a5B = $5B
@@ -382,7 +382,11 @@ EXPLOSION_MAJOR10       = $39
 EXPLOSION_MAJOR11       = $3A
 
 surfaceDataForCurrentLevel = $8200
+startOfSurfaceDataForCurrentLevel = $A240
+
 randomTextureDataMaybe = $83E0
+surfaceStructureDataLoPtrArray = $A400
+surfaceStructureDataHiPtrArray = $A500
 
 * = $0801
 ;------------------------------------------------------------------
@@ -403,7 +407,7 @@ LaunchUridium
         LDA #$0B
         STA $D011    ;VIC Control Register 1
 
-        LDA #$F0
+        LDA #M_BLACK
         STA $D021    ;Background Color 0
         STA $D020    ;Border Color
 
@@ -571,8 +575,8 @@ DrawTitleScreen
 PrepareTitleScreen
         LDX #$FF
         TXS
-        LDA #$F0
-        STA a4A
+        LDA #M_BLACK
+        STA currentBackgroundColor
 
         ; Store pointers to joysticks 1 and 2
         LDX #<$DC00
@@ -909,7 +913,7 @@ b0C71   STX tensLivesLeftDisplayed
         LDX #<uridiumDecal
         LDY #>uridiumDecal
         JSR WriteToScreen
-        LDA #$F1
+        LDA #M_WHITE
         STA $D026    ;Sprite Multi-Color Register 1
         LDA #$FE
         STA $D025    ;Sprite Multi-Color Register 0
@@ -959,7 +963,7 @@ SpinningShipAnimationOver
         JSR UpdatePointersAndFetchSurfaceData
         JSR PlayShipDeploymentSequence
 
-        LDA a4B
+        LDA backgroundColor2
         STA $D02E    ;Sprite 7 Color
         LDY #$07
 b0CF0   LDA someKindOfSettingArray,Y
@@ -1628,8 +1632,8 @@ storageForMiniGameData = $D200
 ; DestructSequenceMiniGame
 ;-------------------------------------------------------------------
 DestructSequenceMiniGame
-        LDA #$F0
-        STA a4A
+        LDA #M_BLACK
+        STA currentBackgroundColor
         STA $D021    ;Background Color 0
         STA $D022    ;Background Color 1, Multi-Color Register 0
         STA $D023    ;Background Color 2, Multi-Color Register 1
@@ -1676,7 +1680,7 @@ b11A4   LDA shouldWaitUntilReady
         JSR MaybeShowPauseScreen
         LDY initialValueOfY
         LDA miniGameColorSequence3,Y
-        STA a4A
+        STA currentBackgroundColor
         LDA miniGameColorSequence1,Y
         STA $D022    ;Background Color 1, Multi-Color Register 0
         LDA miniGameColorSequence2,Y
@@ -2554,7 +2558,7 @@ b17CB   RTS
 SetInterruptToIRQInterrupt1
         LDA shouldWaitUntilReady
         BNE SetInterruptToIRQInterrupt1
-        LDA #$F0
+        LDA #M_BLACK
         STA $D021    ;Background Color 0
         SEI
         LDX #<IRQInterrupt1
@@ -3003,7 +3007,7 @@ j1ABF   ASL
         STA currentSpriteDisplayEnable
         STA currentSpriteMultiColorMode
         STA currentSpriteMSBXPosOffset
-        LDA a4F
+        LDA spriteColorForLevel
         STA currentSpriteColor
         LDY #$0E
         LDA (srcLoPtr),Y
@@ -3874,12 +3878,12 @@ SetUpScreenForScrolling
         JSR LoadSurfaceStructureData
         LDA #$40
         STA a29
-        LDA #$F1
-        STA a4A
+        LDA #M_WHITE
+        STA currentBackgroundColor
         LDA #$00
         STA a2A
-        JSR UpdateTextureDataForCurrentShip
-        JSR ClearTextureDataPtrArray
+        JSR CreateDreadnoughtForCurrentLevel
+        JSR ClearSurfaceStructureDataPtrArray
         JSR UpdateScreenColors
         JSR DoStuffWithTextureData
         JSR ScrollShipSurface
@@ -3909,7 +3913,7 @@ SetUpScreenForScrolling
         STA fireButtonDebounce
         LDA referenceTo07
         STA buttonPressDebounce
-        LDA a4B
+        LDA backgroundColor2
         STA $D02E    ;Sprite 7 Color
         LDA #$2F
         STA charsetSwitcher
@@ -4006,9 +4010,9 @@ EnterDemoModeUntilDeadOrPlayerPressesFire
         LDA loPtrsToShipDeploymentSpriteVariables + $09
         STA spriteVariablesLoPtr
         JSR LoadSpriteVariablesAndDisplay
-        LDA a4E
+        LDA multiColor0
         STA $D025    ;Sprite Multi-Color Register 0
-        LDA a4B
+        LDA backgroundColor2
         STA $D02E    ;Sprite 7 Color
         LDA #$FF
         STA currentColorValue
@@ -4305,7 +4309,7 @@ b23D7   LDX #<blckWhiteLabel
 PaintPlayerScoreColors
         LDA monochromEnabled
         BEQ b2402
-        LDA #$F1
+        LDA #M_WHITE
         STA COLOR_RAM + $005A
         STA COLOR_RAM + $005B
         STA COLOR_RAM + $0082
@@ -5082,7 +5086,7 @@ MoveRestOfDropShip
         LDA loPtrsToShipDeploymentSpriteVariables + $09
         STA spriteVariablesLoPtr
         JSR LoadSpriteVariablesAndDisplay
-        LDA a4E
+        LDA multiColor0
         STA $D025    ;Sprite Multi-Color Register 0
         RTS
 
@@ -5153,7 +5157,7 @@ FireBullets
         STX dataIndex
         JSR UpdateBulletArrays
         LDX newSpriteValue
-        LDA bulletColorScheme,X
+        LDA levelColorScheme + 47,X
         BEQ b2993
         CLC
         ADC a33
@@ -5609,8 +5613,7 @@ FinishScrollingAndCleanUp   LDA a31
 newValueofSrcLoPtr = $11
 ;-------------------------------------------------------------------
 ; LoadSurfaceStructureData
-; Updates the position of srcLoPtr and srcHiPtr to the right spot
-; for the scrolling surface.
+; Reads in the surface structure data
 ;-------------------------------------------------------------------
 LoadSurfaceStructureData
         LDX #<surfaceStructureData
@@ -5623,9 +5626,9 @@ UpdateTextureDataLoop
         LDY #$00
         STY newValueofSrcLoPtr
         LDA srcLoPtr
-        STA textureDataLoPtrArray,X
+        STA surfaceStructureDataLoPtrArray,X
         LDA srcHiPtr
-        STA textureDataHiPtrArray,X
+        STA surfaceStructureDataHiPtrArray,X
         INX
         BEQ ReturnFromUpdatingPosition
         LDA (srcLoPtr),Y
@@ -5652,13 +5655,13 @@ b2C89   LDY newValueofSrcLoPtr
 ReturnFromUpdatingPosition   RTS
 
 ;-------------------------------------------------------------------
-; ClearTextureDataPtrArray
+; ClearSurfaceStructureDataPtrArray
 ;-------------------------------------------------------------------
-ClearTextureDataPtrArray
+ClearSurfaceStructureDataPtrArray
         LDA #$00
         TAY
-b2CA8   STA textureDataLoPtrArray,Y
-        STA textureDataHiPtrArray,Y
+b2CA8   STA surfaceStructureDataLoPtrArray,Y
+        STA surfaceStructureDataHiPtrArray,Y
         INY
         BNE b2CA8
         RTS
@@ -5669,9 +5672,9 @@ dreadnoughtDataHiPtr = $13
 currentLevelSurfaceDataHiPtr = someDataHiPtr
 currentLevelSurfaceDataLoPtr = someDataLoPtr
 ;-------------------------------------------------------------------
-; UpdateTextureDataForCurrentShip
+; CreateDreadnoughtForCurrentLevel
 ;-------------------------------------------------------------------
-UpdateTextureDataForCurrentShip
+CreateDreadnoughtForCurrentLevel
         LDA #$FF
         STA someKindOfTextureColorVariable
         LDA indexToCurrentLevelTextureData
@@ -5682,7 +5685,8 @@ UpdateTextureDataForCurrentShip
         LDA dreadnoughtDataForLevelHiPtrArray,Y
         STA dreadnoughtDataHiPtr
 
-        ; Clear down the surface data first.
+        ; Fill the beginning and end of the dreadnought map
+        ; with spaces.
         LDA #>surfaceDataForCurrentLevel + $2000
         STA currentLevelSurfaceDataHiPtr
         LDA #<surfaceDataForCurrentLevel + $2000
@@ -5698,41 +5702,47 @@ b2CD1   STA (currentLevelSurfaceDataLoPtr),Y
         CMP #>surfaceDataForCurrentLevel
         BCS b2CCD
 
-        ; dreadnoughtData gives us an index into textureDataLoPtrArray. 
+        ; dreadnoughtData gives us an index into surfaceStructureDataLoPtrArray. 
         ; We use this textureData to write the structure of an object
         ; built from charsets into currentLevelSurfaceData. 
-        LDX #<endofCurrentLevelSurfaceData
-        LDY #>endofCurrentLevelSurfaceData
+
+
+        LDX #<startOfSurfaceDataForCurrentLevel
+        LDY #>startOfSurfaceDataForCurrentLevel
         STX currentLevelSurfaceDataLoPtr
         STY currentLevelSurfaceDataHiPtr
-DrawColumnLoop   
-        ; Get the first structure in the dreadnought data.
+
+        ; Each objec
+DrawSurfaceSectionsLoop   
+        ; Get the next structure in the dreadnought data.
         LDY #$00
         LDA (dreadnoughtDataLoPtr),Y
-        BEQ ReadNextStructure
-        TAX                           ; Make it an index into textureDataLoPtrArray
+        ; If we've hit a '00' do a special read of the '01' structure before
+        ; moving on to the next section of the dreadnought data in ReadPlacedStructures.
+        BEQ ReachedEndOfSurfaceSections
+        TAX                           ; Make it an index into surfaceStructureDataLoPtrArray
         ; Get the object structure from textureData.
-        LDA textureDataHiPtrArray,X
+        LDA surfaceStructureDataHiPtrArray,X
         STA srcHiPtr
-        LDA textureDataLoPtrArray,X
+        LDA surfaceStructureDataLoPtrArray,X
         STA srcLoPtr
         CLC
         ; Move to the next structure in dreadnought data, for the next time around..
         LDA dreadnoughtDataLoPtr
         ADC #$01
         STA dreadnoughtDataLoPtr
-        BCC ReadSurfaceStructure
+        BCC ReadSurfaceSection
         INC dreadnoughtDataHiPtr
 
-numberOfColumns = initialValueOfY
+numberOfStrips = initialValueOfY
         ; Read in and interpret the object structure.
-ReadSurfaceStructure   
+ReadSurfaceSection   
         LDA (srcLoPtr),Y                ; Get the first value, the length of the object.
         INY                             ; Move to the next value.
-        STA numberOfColumns
+        STA numberOfStrips
 
         ; Point ramLo/HiPtr to currentLevelSurfaceData for writing out the surface data.
-DrawColumn   
+DrawSectionStrip   
         LDA currentLevelSurfaceDataLoPtr
         STA ramLoPtr
         LDA currentLevelSurfaceDataHiPtr
@@ -5749,8 +5759,8 @@ ReadInStructure
         LDY #$00           ; 
         STA (ramLoPtr),Y   ; Store the charset value in currentLevelSurfaceData.
         LDY stashedYValue  ; Restore Y.
-        DEC ramHiPtr       ; Not sure why we're decrementing the high pointers here.
-        DEC ramHiPtr
+        DEC ramHiPtr       ; Move up to the next position in the strip (i.e. 512 bytes) ..
+        DEC ramHiPtr       ; .. by decrementing the high pointer twice.
         DEX
         BNE ReadInStructure ; Loop until all data read.
 
@@ -5764,11 +5774,11 @@ BlankSpacesLoop
         LDA #SPACE
         STA (ramLoPtr),Y
         LDY stashedYValue
-        DEC ramHiPtr
-        DEC ramHiPtr
+        DEC ramHiPtr ; Move up to the next position in the strip (i.e. 512 bytes) ..
+        DEC ramHiPtr ; .. by decrementing the high pointer twice.
         JMP BlankSpacesLoop
 
-        ; Do the next column of data.
+        ; Do the next strip.
 b2D40   CLC
         LDA currentLevelSurfaceDataLoPtr
         ADC #$01
@@ -5776,66 +5786,83 @@ b2D40   CLC
         BCC b2D4B
         INC currentLevelSurfaceDataHiPtr
 b2D4B   LDA currentLevelSurfaceDataHiPtr
-        CMP #>textureDataLoPtrArray
-        BCS b2D66
-        DEC numberOfColumns
-        BNE DrawColumn
-        BEQ DrawColumnLoop
+        CMP #>surfaceStructureDataLoPtrArray
+        BCS ReadPlacedStructures
+        DEC numberOfStrips
+        BNE DrawSectionStrip
+        BEQ DrawSurfaceSectionsLoop
 
-ReadNextStructure   
-        LDA textureDataLoPtrArray + $01
+ReachedEndOfSurfaceSections   
+        LDA surfaceStructureDataLoPtrArray + $01
         STA srcLoPtr
-        LDA textureDataHiPtrArray + $01
+        LDA surfaceStructureDataHiPtrArray + $01
         STA srcHiPtr
         LDY #$00
-        JMP ReadSurfaceStructure
+        JMP ReadSurfaceSection
 
-b2D66   LDY #$00
+        ; Read in the structures that have a defined position.
+ReadPlacedStructures   
+        LDY #$00
         CLC
         LDA dreadnoughtDataLoPtr
         ADC #$01
         STA dreadnoughtDataLoPtr
-        BCC b2D73
+        BCC ReadPlacedStructure
         INC dreadnoughtDataHiPtr
 
-b2D73   LDA (dreadnoughtDataLoPtr),Y
+ReadPlacedStructure   
+        ; Read in the High Pointer Byte
+        LDA (dreadnoughtDataLoPtr),Y
         ORA #$80
         AND #$BF
         STA currentLevelSurfaceDataHiPtr
-        CMP #$A4
-        BCS b2DE3
+        CMP #>surfaceStructureDataLoPtrArray ; If we a high pointer not pointing to an area within the array, bail.
+        BCS FinishSurfaceAndReturn
+
+        ; Read in the Low Pointer Byte
         INY
         LDA (dreadnoughtDataLoPtr),Y
         STA currentLevelSurfaceDataLoPtr
+
+        ; Read in the index to a surface structure.
         INY
         LDA (dreadnoughtDataLoPtr),Y
-        BEQ b2DE3
+        BEQ FinishSurfaceAndReturn
         TAX
-        LDA textureDataHiPtrArray,X
+        LDA surfaceStructureDataHiPtrArray,X
         STA srcHiPtr
-        LDA textureDataLoPtrArray,X
+        LDA surfaceStructureDataLoPtrArray,X
         STA srcLoPtr
+
+        ; Move index forward 3 bytes to the next substructure.
         CLC
         LDA dreadnoughtDataLoPtr
         ADC #$03
         STA dreadnoughtDataLoPtr
         BCC b2D9F
         INC dreadnoughtDataHiPtr
-b2D9F   LDY #$00
+
+       ; Read the structure data pointed to by the index.
+b2D9F   
+        LDY #$00
         LDA (srcLoPtr),Y
         INY
-        STA numberOfColumns
-b2DA6   LDA currentLevelSurfaceDataLoPtr
+        STA numberOfStrips
+
+        ; Process each strip in the structure.
+ProcessStrip   
+        LDA currentLevelSurfaceDataLoPtr
         STA ramLoPtr
         LDA currentLevelSurfaceDataHiPtr
         STA ramHiPtr
         LDA (srcLoPtr),Y
         INY
+
+        ; Process each character in the strip. 
         AND #$1F
         TAX
-
-        ; 
-b2DB4   LDA (srcLoPtr),Y
+ProcessCharacterInStrip   
+        LDA (srcLoPtr),Y
         INY
         STY stashedYValue
         LDY #$00
@@ -5844,24 +5871,28 @@ b2DB4   LDA (srcLoPtr),Y
         STA (ramLoPtr),Y
 b2DC1   JSR SomeKindOfFixUpToTheSurfaceData
         LDY stashedYValue
-        DEC ramHiPtr
-        DEC ramHiPtr
-        BPL b2DE3
+        DEC ramHiPtr ; Move up to the next position in the strip (i.e. 512 bytes) ..
+        DEC ramHiPtr ; .. by decrementing the high pointer twice.
+        BPL FinishSurfaceAndReturn
         DEX
-        BNE b2DB4
+        BNE ProcessCharacterInStrip
 
+        ; Go to the next strip
         CLC
         LDA currentLevelSurfaceDataLoPtr
         ADC #$01
         STA currentLevelSurfaceDataLoPtr
         BCC b2DDA
         INC currentLevelSurfaceDataHiPtr
-b2DDA   DEC numberOfColumns
-        BNE b2DA6
-        LDY #$00
-        JMP b2D73
+b2DDA   DEC numberOfStrips
+        BNE ProcessStrip
 
-b2DE3   RTS
+        ; Go to the next substructure.
+        LDY #$00
+        JMP ReadPlacedStructure
+
+FinishSurfaceAndReturn   
+        RTS
 
 ;-------------------------------------------------------------------
 ; SomeKindOfFixUpToTheSurfaceData
@@ -5914,7 +5945,7 @@ b2E29   LDX dataIndex
         CLC
         ADC #$07
         TAX
-        LDA textureDataHiPtrArray,X
+        LDA surfaceStructureDataHiPtrArray,X
         BEQ b2E3E
         JSR UpdateInitialValueIndexToTextureSegment
 b2E3E   LDA screenLineHiPtrArray,X
@@ -5923,7 +5954,7 @@ b2E3E   LDA screenLineHiPtrArray,X
         STA someDataLoPtrArray,Y
         LDA colorLineHiPtrArray,X
         STA hiPtrArrayForTextureDataMaybe,Y
-        INC textureDataHiPtrArray,X
+        INC surfaceStructureDataHiPtrArray,X
         LDX dataIndex
         LDA randomDataStorage,X
         INC dataIndex
@@ -5959,7 +5990,7 @@ b2E6B   INC fA518,X
         BPL b2E29
         LDA #$00
         LDY #$40
-b2E9E   STA textureDataHiPtrArray,Y
+b2E9E   STA surfaceStructureDataHiPtrArray,Y
         DEY
         BPL b2E9E
         RTS
@@ -5980,7 +6011,7 @@ b2EA9   TXA
 b2EB3   TAX
         DEC initialValueOfindexToTextureSegment
         BEQ b2EBD
-        LDA textureDataHiPtrArray,X
+        LDA surfaceStructureDataHiPtrArray,X
         BNE b2EA9
 b2EBD   RTS
 
@@ -6020,7 +6051,7 @@ b2ED9   LDA someDataHiPtrArray,X
         STA (someDataLoPtr),Y
         LDA hiPtrArrayForTextureDataMaybe,X
         STA someDataHiPtr
-        LDA a58
+        LDA updatedCharacterColor
 j2EF7   STA (someDataLoPtr),Y
         DEX
         BPL b2ED9
@@ -6034,7 +6065,7 @@ j2EF7   STA (someDataLoPtr),Y
 
 b2F0B   LDA hiPtrArrayForTextureDataMaybe,X
         STA someDataHiPtr
-        LDA a4D
+        LDA loadedCharacterColor
         JMP j2EF7
 
 ;-------------------------------------------------------------------
@@ -6071,11 +6102,13 @@ UpdateScreenColors
         LDA monochromEnabled
         BNE b2F5B
 
+        ; Is there a color scheme for this level?
         LDY indexToCurrentLevelTextureData
         LDA indexIntoLevelColorScheme,Y
         BEQ b2F5B
 
         ; THere's a color scheme for this level.
+        ; Move our pointer to the appropriate position in levelColorScheme.
         STA initialValueOfY
 b2F4C   CLC
         LDA ramLoPtr
@@ -6086,24 +6119,25 @@ b2F4C   CLC
 b2F57   DEC initialValueOfY
         BNE b2F4C
 
+        ; Load the color scheme.
 b2F5B   LDY #$04
 b2F5D
         LDA (ramLoPtr),Y
-        STA a4b,Y
+        STA backgroundColor2,Y
         DEY
         BPL b2F5D
 
-        LDA a4B
+        LDA backgroundColor2
         STA $D023    ;Background Color 2, Multi-Color Register 1
-        LDA a4C
+        LDA backgroundColor1
         STA $D022    ;Background Color 1, Multi-Color Register 0
-        LDA a4E
+        LDA multiColor0
         STA $D025    ;Sprite Multi-Color Register 0
-        LDA #$F1
+        LDA #M_WHITE
         STA $D026    ;Sprite Multi-Color Register 1
-        LDA a4D
+        LDA loadedCharacterColor
         AND #$F7
-        STA a58
+        STA updatedCharacterColor
 
         ; Write the color scheme to the screen.
         LDX #<COLOR_RAM + $00A0
@@ -6111,13 +6145,13 @@ b2F5D
         STX ramLoPtr
         STY ramHiPtr
         LDX #$02
-        LDA a58
+        LDA updatedCharacterColor
         JSR WriteToRam
         LDX #$11
-        LDA a4D
+        LDA loadedCharacterColor
         JSR WriteToRam
         LDX #$02
-        LDA a58
+        LDA updatedCharacterColor
         JSR WriteToRam
         RTS
 
@@ -6158,7 +6192,7 @@ b2FCC   LDY $0220,X
         STA a1E
         LDY $0240,X
         BMI b2FE2
-        LDA a4D
+        LDA loadedCharacterColor
         STA (a1E),Y
 b2FE2   LDA $0200,X
         CMP a50
@@ -6195,7 +6229,7 @@ UpdatePlayerDecalColors
         BEQ b303C
 
         ; Player 2
-b3016   LDA #$F1
+b3016   LDA #M_WHITE
         STA COLOR_RAM + $001E,X
         STA COLOR_RAM + $006E,X
         LDA #$FE
@@ -6213,7 +6247,7 @@ b3016   LDA #$F1
         RTS
 
         ;Player 1
-b303C   LDA #$F1
+b303C   LDA #M_WHITE
         STA COLOR_RAM + $0000,X
         STA COLOR_RAM + $0050,X
         LDA #$FE
@@ -6231,7 +6265,7 @@ b303C   LDA #$F1
         RTS
 
         ; Player 1 and 2 Sharing Same Joystick
-b3062   LDA #$F1
+b3062   LDA #M_WHITE
         STA COLOR_RAM + $0000,X
         STA COLOR_RAM + $0050,X
         LDA #$FE
@@ -6361,7 +6395,7 @@ IRQInterrupt2
         STA $D012    ;Raster Position
         LDA #$1B
         STA $D011    ;VIC Control Register 1
-        LDA #$F0
+        LDA #M_BLACK
         STA $D021    ;Background Color 0
         INC shouldWaitUntilReady
         LDA #<IRQInterrupt3
@@ -6401,7 +6435,7 @@ charsetSwitcher   =*+$01
         LDA #$2F
         STA $D018    ;VIC Memory Control Register
 
-        LDA a4A
+        LDA currentBackgroundColor
         STA $D021    ;Background Color 0
         LDA #$01
         STA $D019    ;VIC Interrupt Request Register (IRR)
@@ -6451,7 +6485,7 @@ b3F97   SBC #$01
         ; Switch charset to mainCharacterSet
         LDA #$2D
         STA $D018    ;VIC Memory Control Register
-        LDA #$F0
+        LDA #M_BLACK
         STA $D021    ;Background Color 0
         LDA #$1B
         STA $D011    ;VIC Control Register 1
