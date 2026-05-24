@@ -82,17 +82,17 @@ currentPlayerLivesLeft = $25
 indexToCurrentLevelTextureData = $26
 currentLevel = $27
 a28 = $28
-a29 = $29
-a2A = $2A
-a2B = $2B
-multiColorModeEnabled = $2C
+scrollingVelocity = $29
+scrollingDirection = $2A
+frameRateBeforePause = $2B
+pixelsToScroll = $2C
 a2D = $2D
-rightwardVelocity = $2E
+mantaDirectionAndSpeed = $2E
 shouldWaitUntilReady = $2F
-a30 = $30
-a31 = $31
+scrollPositionHiPtr = $30
+scrollPositionLoPtr = $31
 hasShipBeenHit = $32
-a33 = $33
+mantaCurrentYPos = $33
 a34 = $34
 a35 = $35
 a36 = $36
@@ -106,7 +106,7 @@ mantaShadowOffset = $3D
 a3E = $3E
 a3F = $3F
 newSpriteValue = $40
-a41 = $41
+mantaShadowSpriteValue = $41
 mantaAnimationLoPtr = $42
 mantaAnimationHiPtr = $43
 framesInAnimation = $44
@@ -163,7 +163,7 @@ a84 = $84
 landNowActivated = $85
 a86 = $86
 formationAnnihilationBonus = $87
-a88 = $88
+numberOfEnemiesSpawned = $88
 randomTextureDataLoPtr = $89
 randomTextureHiPtr = $8A
 indexToTextureSegment = $8D
@@ -189,6 +189,7 @@ aA7 = $A7
 aA8 = $A8
 aA9 = $A9
 aAA = $AA
+MANTA_HORIZONTAL_POSITION = $AA
 anotherRandomNumberBetween0and1 = $AB
 randomNumberBetween0and1 = $AC
 shipDestructBonus = $AD
@@ -212,6 +213,8 @@ aF1 = $F1
 aF2 = $F2
 aFB = $FB
 aFC = $FC
+
+
 ;
 ; **** ZP POINTERS ****
 ;
@@ -680,7 +683,7 @@ PrepareLargeScrollingCreditAndHiScore
         STA indexToTextureSegment
         JSR SetUpScreenForScrolling
         LDA #$FC
-        STA rightwardVelocity
+        STA mantaDirectionAndSpeed
         JSR ShowLargeScrollingCreditAndHiScore
         LDA firePressed
         BNE DrawHiScoreScreen
@@ -978,10 +981,10 @@ MainGameLoop
         LDA shouldWaitUntilReady
         BNE MainGameLoop
 
-        JSR LooksLikeScrollingOfSomeSort
+        JSR AnimatePlayerBullet
         JSR AdjustScrollingVelocityMaybe
         JSR ScrollShipSurface
-        JSR GetSomeTexureData
+        JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
         JSR UpdateSpriteAndRunFunctionPerSprite
         INC someKindOfFrameRate
@@ -999,7 +1002,7 @@ mainGameLoopLoPtr   =*+$01
 mainGameLoopHiPtr   =*+$02
         JSR MaybeChangeTitleDecal
 
-        JSR MaybeFireBullets
+        JSR MaybeFirePlayerBullets
         JSR MaybeMoveLeft
         JSR MaybeMoveRight
         JSR UpdateABunchOfGameVariables
@@ -1968,10 +1971,10 @@ CheckInputMaybeUpdateDecal
 ProcessGameFrame
         LDA shouldWaitUntilReady
         BNE ProcessGameFrame
-        JSR LooksLikeScrollingOfSomeSort
+        JSR AnimatePlayerBullet
         JSR AdjustScrollingVelocityMaybe
         JSR ScrollShipSurface
-        JSR GetSomeTexureData
+        JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
         JSR GetJoystickInput
         JSR MaybeShowPauseScreen
@@ -1979,7 +1982,7 @@ ProcessGameFrame
         STA rightPressed
         JSR MaybeChangeTitleDecal
         INC someKindOfFrameRate
-        JSR MaybeFireBullets
+        JSR MaybeFirePlayerBullets
         JSR MaybeMoveLeft
         JSR MaybeMoveRight
         RTS
@@ -1990,10 +1993,10 @@ ProcessGameFrame
 ProcessGameFrameWithoutCheckingPause
         LDA shouldWaitUntilReady
         BNE ProcessGameFrameWithoutCheckingPause
-        JSR LooksLikeScrollingOfSomeSort
+        JSR AnimatePlayerBullet
         JSR AdjustScrollingVelocityMaybe
         JSR ScrollShipSurface
-        JSR GetSomeTexureData
+        JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
         JSR GetJoystickInput
         LDA #$00
@@ -2023,9 +2026,9 @@ LandingLoop
         JSR ProcessGameFrame
         JSR AnimateMantaShip
         JSR UpdateSpriteAndRunFunctionPerSprite
-        LDA referenceTo07
+        LDA BUTTON_DEBOUNCE
         STA buttonPressDebounce
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         BEQ b1437
         BNE b143B
 b1437   LDA #$00
@@ -2141,7 +2144,7 @@ ReloadGameAfterMiniGame
         LDA #$FF
         STA someKindOfTextureColorVariable
         JSR FetchCurrentSurfaceData
-        JSR GenerateSomeKindOfRandomData
+        JSR DoSomethingToTheDreadnoughtData
         JSR GenerateStarfield
         JSR UpdateScreenColors
         JSR SetInterrupToIRQInterrupt2
@@ -2166,9 +2169,9 @@ ReloadGameAfterMiniGame
 TakeOffLoop   
         JSR ProcessGameFrame
         JSR AnimateMantaShip
-        LDA referenceTo07
+        LDA BUTTON_DEBOUNCE
         STA buttonPressDebounce
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         CMP #$FB
         BCS TakeOffLoop
         LDA mantaShadowOffset
@@ -2197,11 +2200,14 @@ ShipDestructSequence
         JSR AnimateMantaShip
         JSR UpdatePlayerScore
 
-        LDA a2A
+        LDA scrollingDirection
         CMP #$0E
         BCS b1582
 
-        JSR StoreSomeKindOfRandomData
+        JSR DisintegrateDreadnought
+
+        ; Figure out a movement for the manta as it travels
+        ; along the self-destructing dreadnought.
 b1582   LDA $D41B    ; Random Number Generator
         AND #$3F
         BNE b1593
@@ -2210,11 +2216,11 @@ b1582   LDA $D41B    ; Random Number Generator
         BNE b1593
         ORA #$80
         STA a46
-b1593   LDA rightwardVelocity
+b1593   LDA mantaDirectionAndSpeed
         CMP #$07
         BCC b15A3
         LDA #$07
-        STA rightwardVelocity
+        STA mantaDirectionAndSpeed
         LDA #$00
         STA a2D
         STA fakeRightPressed
@@ -2226,7 +2232,7 @@ b15A3   LDA $D41B    ; Random Number Generator
         TAY
         LDA #$1A
         STA soundVariable1,Y
-b15B2   LDA a2A
+b15B2   LDA scrollingDirection
         CMP #$02
         BCS ShipDestructSequence
         ; Falls through
@@ -2377,7 +2383,7 @@ b1683   LDA a86
         BNE b16BC
         LDA #$80
         STA landNowActivated
-        LDA referenceTo07
+        LDA BUTTON_DEBOUNCE
         STA buttonPressDebounce
 
         LDY #$05
@@ -2395,10 +2401,10 @@ b16AC   LDX #<spaces
         JSR WriteToScreen
         RTS
 
-        LDA a88
+        LDA numberOfEnemiesSpawned
         BNE b16BC
         LDA #$FF
-        STA a88
+        STA numberOfEnemiesSpawned
 b16BC   LDA someKindOfFrameRate
         AND #$1F
         BEQ b16AC
@@ -2411,10 +2417,12 @@ b16BC   LDA someKindOfFrameRate
         STA soundVariable1
         RTS
 
+BOTTOM_OF_DREADNOUGHT_NEAR_END = $A4D0
+
 ;-------------------------------------------------------------------
-; StoreSomeKindOfRandomData
+; DisintegrateDreadnought
 ;-------------------------------------------------------------------
-StoreSomeKindOfRandomData
+DisintegrateDreadnought
         LDA randomTextureDataLoPtr
         STA colorRamLoPtr
         LDA randomTextureHiPtr
@@ -2422,12 +2430,13 @@ StoreSomeKindOfRandomData
         CMP #$82
         BNE b16E4
         LDA randomTextureDataLoPtr
-        CMP #$20
+        CMP #SPACE
         BCC b173A
+
 b16E4   LDX #$11
-b16E6   LDY fA4D0,X
+b16E6   LDY BOTTOM_OF_DREADNOUGHT_NEAR_END,X
         LDA (colorRamLoPtr),Y
-        CMP #$20
+        CMP #SPACE
         BEQ b16F9
         LDA $D41B    ; Random Number Generator
         AND #$01
@@ -2436,7 +2445,7 @@ b16E6   LDY fA4D0,X
         STA (colorRamLoPtr),Y
 b16F9   INY
         LDA (colorRamLoPtr),Y
-        CMP #$20
+        CMP #SPACE
         BEQ b170A
         LDA $D41B    ; Random Number Generator
         AND #$01
@@ -2445,7 +2454,7 @@ b16F9   INY
         STA (colorRamLoPtr),Y
 b170A   INY
         LDA (colorRamLoPtr),Y
-        CMP #$20
+        CMP #SPACE
         BEQ b171B
         LDA $D41B    ; Random Number Generator
         AND #$01
@@ -2453,7 +2462,7 @@ b170A   INY
         ADC #$FD
         STA (colorRamLoPtr),Y
 b171B   INY
-        LDA #$20
+        LDA #SPACE
         STA (colorRamLoPtr),Y
         INY
         STA (colorRamLoPtr),Y
@@ -2463,6 +2472,7 @@ b171B   INY
         INC colorRamHiPtr
         DEX
         BNE b16E6
+
         LDA randomTextureDataLoPtr
         SEC
         SBC #$01
@@ -2473,9 +2483,9 @@ b171B   INY
 b173A   RTS
 
 ;-------------------------------------------------------------------
-; GenerateSomeKindOfRandomData
+; DoSomethingToTheDreadnoughtData
 ;-------------------------------------------------------------------
-GenerateSomeKindOfRandomData
+DoSomethingToTheDreadnoughtData
         LDX #<randomTextureDataMaybe
         LDY #>randomTextureDataMaybe
         STX randomTextureDataLoPtr
@@ -2486,7 +2496,7 @@ GenerateSomeKindOfRandomData
 b1749   LDA $D41B    ; Random Number Generator
         CMP #$55
         BCC b1765
-        CMP #$AA
+        CMP #MANTA_HORIZONTAL_POSITION
         BCC b175D
         LDA a0F
         BEQ b1765
@@ -2498,7 +2508,7 @@ b175D   LDA a0F
         BCS b1765
         INC a0F
 b1765   LDA a0F
-        STA fA4D0,X
+        STA BOTTOM_OF_DREADNOUGHT_NEAR_END,X
         DEX
         BNE b1749
         RTS
@@ -2594,8 +2604,8 @@ DisplayHiScoreInputScreen
         LDY #>eighthInHallOfFame
         STX srcLoPtr
         STY srcHiPtr
-        LDX #<someDataHiPtrArray
-        LDY #>someDataHiPtrArray
+        LDX #<starDataHiPtrArray
+        LDY #>starDataHiPtrArray
         STX someDataLoPtr
         STY someDataHiPtr
 j180C   LDY #$12
@@ -2678,9 +2688,9 @@ b18A0   LDA playerScore,X
         DEX
         BPL b18A0
         LDY #$05
-        LDA #<a30
+        LDA #<scrollPositionHiPtr
         STA a0F
-        LDX #>a30
+        LDX #>scrollPositionHiPtr
         STX dataIndex
 b18B2   LDX dataIndex
         LDA playerScore,X
@@ -2882,7 +2892,7 @@ AddScoresFromHittingStuff
         LDA playerScore
         ADC #$00
         STA playerScore
-        BCC b1A21
+        BCC AwardExtraLife
         LDA #$99
         STA playerScore
         STA playerScore + $01
@@ -2892,7 +2902,8 @@ AddScoresFromHittingStuff
         CLD
         RTS
 
-b1A21   PLP
+AwardExtraLife
+        PLP
         BCC b1A36
         CLC
         LDA currentPlayerLivesLeft
@@ -2962,13 +2973,13 @@ UpdateAndDisplaySomeSprites
         BNE b1A97
         LDA #$00
         STA usedToCheckIfWeShouldLaunchMine
-        LDA a88
+        LDA numberOfEnemiesSpawned
         BNE b1A93
         LDA a68
         BNE b1A93
         INC formationAnnihilationBonus
 b1A93   LDA #$00
-        STA a88
+        STA numberOfEnemiesSpawned
 b1A97   RTS
 
 b1A98   LDA #$00
@@ -3052,17 +3063,17 @@ j1ABF   ASL
         BEQ b1B36
         LDA $D41B    ; Random Number Generator
         BPL b1B45
-b1B36   LDA rightwardVelocity
+b1B36   LDA mantaDirectionAndSpeed
         EOR #$FF
         CLC
         ADC #$01
         STA a84
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         BMI b1B4D
         BPL b1B5B
 b1B45   LDA #$00
         STA a84
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         BMI b1B5B
 b1B4D   LDA #$A4
         STA currentSpriteXPos
@@ -3117,7 +3128,7 @@ b1B95   LDY stashedYValue
         LDA #$02
         STA indexToFunctionPtrArray,Y
         INC usedToCheckIfWeShouldLaunchMine
-        INC a88
+        INC numberOfEnemiesSpawned
         LDA a7D
         STA fA4B0,Y
         CLC
@@ -3129,7 +3140,7 @@ b1BC0   TYA
         TAY
         LDA (srcLoPtr),Y
         BNE b1BCB
-        LDA a33
+        LDA mantaCurrentYPos
 b1BCB   STA currentSpriteYPos
         JSR ApplySpriteVariablesAndDisplay
         LDY stashedYValue
@@ -3219,7 +3230,7 @@ b1C57   JMP DetectSpriteLeavingScreen
 ;-------------------------------------------------------------------
 IncrementSpriteXPos
         CLC
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         BMI b1C68
         ADC currentSpriteXPos
         STA currentSpriteXPos
@@ -3348,7 +3359,7 @@ b1D5E   LDA a6F
         AND #$40
         BEQ j1DB0
         LDA currentSpriteYPos
-        CMP a33
+        CMP mantaCurrentYPos
         BEQ b1DA8
         BCC b1D8B
         LDA currentSpriteYPosArray,Y
@@ -3408,20 +3419,22 @@ j1DCB   LDA currentSpriteMSBXPosOffset
 b1DDD   STA a0F
         LDA #$80
         STA fA4E8,Y
-        LDA currentSpriteYPos
-        LSR
+        LDA currentSpriteYPos  ; Get the enemy's Y position.
+        LSR                    ; Divide by 8 to get a character position.
         LSR
         LSR
         SEC
         SBC #$05
-        CMP #$17
+        CMP #$17               ; If it's too low to be hit by a bullet, return.
         BCC b1DF3
         JMP UpdateSPriteContentAndPositionAndReturn
 
-b1DF3   CMP #$06
+b1DF3   CMP #$06               ; If it's too high to be hit by a bullet, return.
         BCS b1DFA
         JMP UpdateSPriteContentAndPositionAndReturn
 
+        ; Check the characters underneath the enemy sprite to see if
+        ; any one of them is a bullet.
 b1DFA   TAX
         LDA screenLineHiPtrArray,X
         STA srcHiPtr
@@ -3431,6 +3444,9 @@ b1DFA   TAX
         STA srcLoPtr
         BCC b1E0C
         INC srcHiPtr
+        ; Bullets have a character value of less than $20.
+        ; Check the 4 character square underneath the enemy sprite to 
+        ; see if one of them is a bullet.
 b1E0C   LDY #$00
         LDA (srcLoPtr),Y
         CMP #$20
@@ -3449,20 +3465,21 @@ b1E0C   LDY #$00
         BCC EnemyShipWasHit
         JMP UpdateSPriteContentAndPositionAndReturn
 
+        ; A bullet has hit the enemy sprite, so kill it and award a score.
 EnemyShipWasHit
         AND #$0F
         TAX
-        LDA fA460,X
+        LDA playerBulletSlotArray,X
         BEQ b1E4B
-        LDA fA430,X
+        LDA playerBulletRamLoPtrArray,X
         STA ramLoPtr
-        LDA fA440,X
+        LDA playerBulletRamHiPtrArray,X
         STA ramHiPtr
         LDY #$00
-        LDA fA450,X
+        LDA charBehindPlayerBulletArray,X
         STA (ramLoPtr),Y
         LDA #$00
-        STA fA460,X
+        STA playerBulletSlotArray,X
 b1E4B   LDA a68
         BNE b1E54
         LDY scoreToAddForHittingEnemy
@@ -3474,7 +3491,7 @@ b1E54   LDA #$26
         STA indexToFunctionPtrArray,Y
         LDA #$14
         STA currentSpriteValue
-        DEC a88
+        DEC numberOfEnemiesSpawned
         JMP UpdateSPriteContentAndPositionAndReturn
 
 ;--------------------------------------------------------------------
@@ -3743,7 +3760,7 @@ AnimateEnemyBullet
         BCS ClearCarry
         LDA currentSpriteYPos
         SEC
-        SBC a33
+        SBC mantaCurrentYPos
         STA a0F
         CLC
 
@@ -3808,7 +3825,7 @@ AnimateMineMovememnt
         AND #$03
         BNE b20D2
         LDA currentSpriteYPos
-        CMP a33
+        CMP mantaCurrentYPos
         BCC b2074
         LDA currentSpriteYPosArray,Y
         SEC
@@ -3823,7 +3840,7 @@ j207A   STA currentSpriteYPosArray,Y
         AND #$01
         BNE b208B
         LDA currentSpriteXPos
-        CMP #$AA
+        CMP #MANTA_HORIZONTAL_POSITION
         BCC b2091
         BCS b20A5
 b208B   LDA currentSpriteXPos
@@ -3877,23 +3894,23 @@ b20DE   LDA currentSpriteXPosArray,Y
 SetUpScreenForScrolling
         JSR LoadSurfaceStructureData
         LDA #$40
-        STA a29
+        STA scrollingVelocity
         LDA #M_WHITE
         STA currentBackgroundColor
         LDA #$00
-        STA a2A
+        STA scrollingDirection
         JSR CreateDreadnoughtForCurrentLevel
         JSR ClearSurfaceStructureDataPtrArray
         JSR UpdateScreenColors
-        JSR DoStuffWithTextureData
+        JSR AddStarsToBackgroundBehindDreadnought
         JSR ScrollShipSurface
-        JSR GetSomeTexureData
+        JSR AddStarsBehindDreadnought
         JSR GenerateStarfield
         LDA #$FB
         STA $D025    ;Sprite Multi-Color Register 0
         LDA #$00
         STA a34
-        STA rightwardVelocity
+        STA mantaDirectionAndSpeed
         STA a3F
         STA a47
         STA a46
@@ -3908,10 +3925,10 @@ SetUpScreenForScrolling
         LDA #$59
         STA newSpriteValue
         LDA #$98
-        STA a33
+        STA mantaCurrentYPos
         LDA #$01
         STA fireButtonDebounce
-        LDA referenceTo07
+        LDA BUTTON_DEBOUNCE
         STA buttonPressDebounce
         LDA backgroundColor2
         STA $D02E    ;Sprite 7 Color
@@ -3955,7 +3972,7 @@ b2182   LDA shouldWaitUntilReady
         BNE b2182
         JSR AdjustScrollingVelocityMaybe
         JSR ScrollShipSurface
-        JSR GetSomeTexureData
+        JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
         JSR GetJoystickInput
         JSR CheckForKeyboardCommands
@@ -3966,10 +3983,10 @@ b2182   LDA shouldWaitUntilReady
         INC someKindOfFrameRate
         LDA firePressed
         BEQ b21B4
-        LDA a2A
+        LDA scrollingDirection
         CMP #$0E
         BCC b2182
-        LDA a29
+        LDA scrollingVelocity
         BPL b2182
 b21B4   RTS
 
@@ -4026,10 +4043,10 @@ b220D   LDA someKindOfSettingArray,Y
 DemoLoop   
         LDA shouldWaitUntilReady
         BNE DemoLoop
-        JSR LooksLikeScrollingOfSomeSort
+        JSR AnimatePlayerBullet
         JSR AdjustScrollingVelocityMaybe
         JSR ScrollShipSurface
-        JSR GetSomeTexureData
+        JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
         JSR UpdateSpriteAndRunFunctionPerSprite
         JSR UpdateAndDisplaySomeSprites
@@ -4052,7 +4069,7 @@ demoModeFuncLoPtr   =*+$01
 demoModeFuncHiPtr   =*+$02
         JSR MaybeChangeTitleDecal
         JSR RandomlyManipulateJoystick
-        JSR MaybeFireBullets
+        JSR MaybeFirePlayerBullets
         JSR MaybeMoveLeft
         JSR MaybeMoveRight
         JSR UpdateABunchOfGameVariables
@@ -4388,13 +4405,13 @@ ShipHasBeenHit
         STX spriteVariablesLoPtr
         STY spriteVariablesHiPtr
         JSR LoadSpriteVariablesAndDisplay
-        LDA a33
+        LDA mantaCurrentYPos
         STA currentSpriteYPos
         JSR DisplayCurrentSprite
 j2488   LDA hasShipBeenHit
         BPL b2490
         LDA #$00
-        STA rightwardVelocity
+        STA mantaDirectionAndSpeed
 b2490   LDA loopCounter
         BMI b24BF
         LDA #$07
@@ -4437,16 +4454,16 @@ b24D5   JSR ApplySpriteVariablesAndDisplay
         JSR ProcessGameFrameWithoutCheckingPause
         JSR ProcessGameFrameWithoutCheckingPause
 
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         BEQ b2506
         BMI b24F8
         LDA a2D
         SEC
         SBC #$80
         STA a2D
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         SBC #$00
-        STA rightwardVelocity
+        STA mantaDirectionAndSpeed
         JMP j2508
 
 b24F8   CLC
@@ -4454,7 +4471,7 @@ b24F8   CLC
         ADC #$80
         STA a2D
         BCC b2503
-        INC rightwardVelocity
+        INC mantaDirectionAndSpeed
 b2503   JMP j2508
 
 b2506   STA a2D
@@ -4496,28 +4513,32 @@ GenerateStarfield
         LDY #>SCREEN_RAM_HIBANK + $00A0
         STX ramLoPtr
         STY ramHiPtr
+
         LDA #$30
         STA dataIndex
-        JSR WriteStuffToScreen
+        JSR WriteStarsToScreen
+
         CLC
         LDA ramLoPtr
         ADC #$28
         STA ramLoPtr
         BCC b254C
         INC ramHiPtr
-b254C   JSR WriteStuffToScreen
+b254C   JSR WriteStarsToScreen
+
         LDX #<SCREEN_RAM_HIBANK + $0398
         LDY #>SCREEN_RAM_HIBANK + $0398
         STX ramLoPtr
         STY ramHiPtr
-        JSR WriteStuffToScreen
+        JSR WriteStarsToScreen
+
         CLC
         LDA ramLoPtr
         ADC #$28
         STA ramLoPtr
         BCC b2565
         INC ramHiPtr
-b2565   JSR WriteStuffToScreen
+b2565   JSR WriteStarsToScreen
 
         LDY #$05
         LDA #$20
@@ -4638,7 +4659,7 @@ b2617
         CLC
         ADC a2D
         STA a2D
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         ADC #$00
         BMI b2650
         JMP j2679
@@ -4646,7 +4667,7 @@ b2617
 b2627   CLC
         ADC a2D
         STA a2D
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         ADC #$FF
         BMI b2650
         JMP j2679
@@ -4667,9 +4688,9 @@ MaybeMoveRight
         CLC
         ADC a39
         STA a2D
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         ADC #$FF
-b2650   STA rightwardVelocity
+b2650   STA mantaDirectionAndSpeed
         EOR #$FF
         CLC
         ADC #$01
@@ -4680,7 +4701,7 @@ b265A   LDA a2D
         CLC
         ADC a3A
         STA a2D
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         ADC #$00
         JMP b2650
 
@@ -4691,14 +4712,14 @@ b2668   LDA rightPressed
         CLC
         ADC a3B
         STA a2D
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         ADC #$00
 
 ;--------------------------------------------------------------------
 ; j2679
 ;--------------------------------------------------------------------
 j2679
-        STA rightwardVelocity
+        STA mantaDirectionAndSpeed
         STA a3E
         RTS
 
@@ -4706,7 +4727,7 @@ b267E   LDA a2D
         CLC
         ADC a3C
         STA a2D
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         ADC #$FF
         JMP j2679
 
@@ -4716,23 +4737,23 @@ b267E   LDA a2D
 UpdateABunchOfGameVariables
         LDA a34
         CLC
-        ADC a33
+        ADC mantaCurrentYPos
         CMP #$62
         BCS b2697
         LDA #$62
 b2697   CMP #$D7
         BCC b269D
         LDA #$D7
-b269D   STA a33
-        LDA rightwardVelocity
+b269D   STA mantaCurrentYPos
+        LDA mantaDirectionAndSpeed
         BMI b26D1
         CMP a38
         BCC b26AB
         LDA a38
-        STA rightwardVelocity
+        STA mantaDirectionAndSpeed
 b26AB   LDA a45
         BMI b26EB
-        LDA a2A
+        LDA scrollingDirection
         BNE b26BA
         LDA #$C8
         STA a3F
@@ -4740,23 +4761,23 @@ b26AB   LDA a45
 
 b26BA   CMP #$0E
         BCC b26EB
-        LDA a29
+        LDA scrollingVelocity
         BPL b26EB
 b26C2   LDA a45
         ORA #$80
         STA a46
         JMP b26EB
 
-b26CB   LDA a29
+b26CB   LDA scrollingVelocity
         BMI b26EB
         BPL b26C2
 b26D1   CMP a37
         BCS b26D9
         LDA a37
-        STA rightwardVelocity
+        STA mantaDirectionAndSpeed
 b26D9   LDA a45
         BMI b26EB
-        LDA a2A
+        LDA scrollingDirection
         BMI b26EB
         BEQ b26CB
         CMP #$0E
@@ -4884,21 +4905,22 @@ DrawMantaAnimationFrame
         STA currentSpriteValue
         CLC
         ADC #$30
-        STA a41
-        LDA a33
+        STA mantaShadowSpriteValue
+        LDA mantaCurrentYPos
         STA currentSpriteYPos
         JSR DisplayCurrentSprite
-        INC spriteIndex
+
         ; Draw the Manta's shadow.
+        INC spriteIndex
         JSR GetCurrentSprite
-        LDA a41
+        LDA mantaShadowSpriteValue
         STA currentSpriteValue
         LDA mantaShadowOffset
         LSR
         CLC
-        ADC a33
+        ADC mantaCurrentYPos
         STA currentSpriteYPos
-        LDA #$AA
+        LDA #MANTA_HORIZONTAL_POSITION
         CLC
         ADC mantaShadowOffset
         STA currentSpriteXPos
@@ -5023,7 +5045,7 @@ MoveMantaOutOfDropShip
         JSR CheckInputDuringDeploymentSequence
         JSR CheckInputDuringDeploymentSequence
         LDA currentSpriteXPos
-        CMP #$AA
+        CMP #MANTA_HORIZONTAL_POSITION
         BCC MoveMantaOutOfDropShip
 
         LDA #$00
@@ -5106,25 +5128,25 @@ b292A   LDA shouldWaitUntilReady
         RTS
 
 ;-------------------------------------------------------------------
-; MaybeFireBullets
+; MaybeFirePlayerBullets
 ;-------------------------------------------------------------------
-MaybeFireBullets
+MaybeFirePlayerBullets
         LDA fireButtonDebounce
         BMI b2954
         BEQ b2943
-referenceTo07   =*+$01
+BUTTON_DEBOUNCE   =*+$01
         LDA #$07
         STA buttonPressDebounce
         LDA firePressed
         BNE b2942
         STA fireButtonDebounce
-        JSR FireBullets
+        JSR FirePlayerBullets
 b2942   RTS
 
 b2943   LDA firePressed
         BEQ b294D
         INC fireButtonDebounce
-        JSR FireBullets
+        JSR FirePlayerBullets
         RTS
 
 b294D   LDA buttonPressDebounce
@@ -5136,34 +5158,39 @@ b2954   AND #$7F
         STA fireButtonDebounce
         RTS
 
+pixelYPositionOfPlayerBullet = a0F
 ;-------------------------------------------------------------------
-; FireBullets
+; FirePlayerBullets
 ;-------------------------------------------------------------------
-FireBullets
+FirePlayerBullets
         LDA fireButtonDebounce
         ORA #$80
         STA fireButtonDebounce
+
+        ; Fire the top bullet.
         LDX newSpriteValue
         LDA levelColorScheme + $01,X
         BEQ b2993
         CLC
-        ADC a33
+        ADC mantaCurrentYPos
         SEC
         SBC #$62
-        STA a0F
+        STA pixelYPositionOfPlayerBullet
         LDX #$00
         JSR GetFreeSlotForBullets
         BCS b2993
         STX dataIndex
         JSR UpdateBulletArrays
+
+        ; Fire the bottom bullet.
         LDX newSpriteValue
         LDA levelColorScheme + 47,X
         BEQ b2993
         CLC
-        ADC a33
+        ADC mantaCurrentYPos
         SEC
         SBC #$62
-        STA a0F
+        STA pixelYPositionOfPlayerBullet
         LDX dataIndex
         JSR GetFreeSlotForBullets
         BCS b2993
@@ -5174,7 +5201,7 @@ b2993   RTS
 ; GetFreeSlotForBullets
 ;-------------------------------------------------------------------
 GetFreeSlotForBullets
-        LDA fA460,X
+        LDA playerBulletSlotArray,X
         BEQ b299F
         INX
         CPX #$06
@@ -5191,259 +5218,299 @@ UpdateBulletArrays
         LDA #$09
         STA soundVariable1
         LDA #$02
-        LDY rightwardVelocity
+        LDY mantaDirectionAndSpeed
         BEQ b29DF
         BMI b29DF
+
+        ; Create a right-firing bullet.
         LDA #$FE
-        STA fA460,X
+        STA playerBulletSlotArray,X
         LDA a52
-        STA fA430,X
+        STA playerBulletRamLoPtrArray,X
         STA colorRamLoPtr
-        LDA a0F
+
+        LDA pixelYPositionOfPlayerBullet
         AND #$07
         CMP #$07
         BNE b29C3
         LDA #$06
-b29C3   STA fA470,X
-        LDA a0F
+b29C3   STA bulletOffsetsInCharsetDef,X
+        LDA pixelYPositionOfPlayerBullet
         LSR
         LSR
         AND #$FE
-        STA a0F
+        STA pixelYPositionOfPlayerBullet
         LDA a53
         AND #$01
         CLC
-        ADC a0F
+        ADC pixelYPositionOfPlayerBullet
         ADC #$82
-        STA fA440,X
+        STA playerBulletRamHiPtrArray,X
         STA colorRamHiPtr
-        JMP j2A0F
+        JMP FinishedUpdatingBullets
 
-b29DF   STA fA460,X
+        ; Create a left-firing bullet.
+b29DF   STA playerBulletSlotArray,X
         CLC
         ADC a52
-        STA fA430,X
+        STA playerBulletRamLoPtrArray,X
         STA colorRamLoPtr
         PHP
-        LDA a0F
+        LDA pixelYPositionOfPlayerBullet
         AND #$07
         CMP #$07
         BNE b29F5
         LDA #$06
-b29F5   STA fA470,X
-        LDA a0F
+b29F5   STA bulletOffsetsInCharsetDef,X
+        LDA pixelYPositionOfPlayerBullet
         LSR
         LSR
         AND #$FE
-        STA a0F
+        STA pixelYPositionOfPlayerBullet
         LDA a53
         AND #$01
         CLC
-        ADC a0F
+        ADC pixelYPositionOfPlayerBullet
         PLP
         ADC #$82
-        STA fA440,X
+        STA playerBulletRamHiPtrArray,X
         STA colorRamHiPtr
-j2A0F   LDY #$00
+
+FinishedUpdatingBullets
+        LDY #$00
         LDA (colorRamLoPtr),Y
-        STA fA450,X
+        STA charBehindPlayerBulletArray,X
         RTS
 
 ;-------------------------------------------------------------------
-; LooksLikeScrollingOfSomeSort
+; AnimatePlayerBullet
 ;-------------------------------------------------------------------
-LooksLikeScrollingOfSomeSort
+AnimatePlayerBullet
         LDY #$00
         LDX #$05
-b2A1B   LDA fA460,X
-        BEQ b2A2F
-        LDA fA430,X
+EraseBulletsLoop  
+        LDA playerBulletSlotArray,X
+        BEQ SkipB
+        LDA playerBulletRamLoPtrArray,X
         STA ramLoPtr
-        LDA fA440,X
+        LDA playerBulletRamHiPtrArray,X
         STA ramHiPtr
-        LDA fA450,X
+        LDA charBehindPlayerBulletArray,X
         STA (ramLoPtr),Y
-b2A2F   DEX
-        BPL b2A1B
+SkipB   DEX
+        BPL EraseBulletsLoop
 
-        INX
-b2A33   LDA fA460,X
-        BEQ b2AA3
-        JSR UpdateRamLoPtr
-        STA fA440,X
+        INX  ; Make X = 1.
+DrawPlayerBulletsLoop
+        LDA playerBulletSlotArray,X
+        BEQ GoToNextPlayerBullet
+
+        JSR UpdatePlayerBulletPosition
+        STA playerBulletRamHiPtrArray,X
         STA ramHiPtr
         ROR
+
+        ; Check whether the bullet has hit something.
         LDA ramLoPtr
         ROR
         CMP a50
-        BCC b2ABD
+        BCC SkipToNextBullet
         CMP a51
-        BCS b2ABD
+        BCS SkipToNextBullet
         LDA (ramLoPtr),Y
-        BPL b2A5E
+        BPL DrawPlayerBullet
         CMP #$90
-        BCC b2AB9
+        BCC PlayerBulletBlockedByStructure
         CMP #$A0
-        BCS b2A5E
-        JSR MaybeAddSurvivalScore
-        JMP b2ABD
+        BCS DrawPlayerBullet
+        JSR PlayerBulletDestroysStructure
+        JMP SkipToNextBullet
 
-b2A5E   STA fA450,X
-        STY someSurfaceDataHiPtr
+bulletCharDefLoPtr = someDataLoPtr
+bulletCharDefHiPtr = someDataHiPtr
+DrawPlayerBullet
+        STA charBehindPlayerBulletArray,X
+        STY bulletBackgroundCharSetDefHiPtr
         ASL
-        ROL someSurfaceDataHiPtr
+        ROL bulletBackgroundCharSetDefHiPtr
         ASL
-        ROL someSurfaceDataHiPtr
+        ROL bulletBackgroundCharSetDefHiPtr
         ASL
-        ROL someSurfaceDataHiPtr
-        STA someSurfaceDataLoPtr
-        LDA someSurfaceDataHiPtr
+        ROL bulletBackgroundCharSetDefHiPtr
+        STA bulletBackgroundCharSetDefLoPtr
+
+        LDA bulletBackgroundCharSetDefHiPtr
         ADC #>surfaceTextureCharacterSet
-        STA someSurfaceDataHiPtr
-        LDA currentLevelSurfaceDataCharSetLoPtrArray,X
-someScrollOffset   =*+$01
+        STA bulletBackgroundCharSetDefHiPtr
+
+        LDA offsetsForPlayerBullet,X
+maskForPlayerBullet   =*+$01
         ORA #$80
-        STA someDataLoPtr
+        STA bulletCharDefLoPtr
         LDA #>surfaceTextureCharacterSet
-        STA someDataHiPtr
+        STA bulletCharDefHiPtr
 
+        ; Copy the character set definition for the character underneath
+        ; the bullet to our character set definition for the bullet.
         LDY #$07
-someSurfaceDataLoPtr   =*+$01
-someSurfaceDataHiPtr   =*+$02
-b2A88   LDA surfaceTextureCharacterSet,Y
-        STA (someDataLoPtr),Y
+bulletBackgroundCharSetDefLoPtr   =*+$01
+bulletBackgroundCharSetDefHiPtr   =*+$02
+CharacterDefCopyLoop
+        LDA surfaceTextureCharacterSet,Y
+        STA (bulletCharDefLoPtr),Y
         DEY
-        BPL b2A88
+        BPL CharacterDefCopyLoop
 
-        LDY fA470,X
-        LDA #$00
-        STA (someDataLoPtr),Y
+        ; Draw the bullet by updating the character set definition we
+        ; copied above by drawing a line (AA) across it.
+        LDY bulletOffsetsInCharsetDef,X
+        LDA #$00   ; The upper white line of the bullet.
+        STA (bulletCharDefLoPtr),Y
         INY
-        LDA #$AA
-        STA (someDataLoPtr),Y
+        LDA #$AA   ; The lower black line of the bullet.
+        STA (bulletCharDefLoPtr),Y
+
+
+        ; Write the updated charset to the appropriate
+        ; position on screen.
         LDY #$00
         TXA
-a2AA0   =*+$01
+bulletSurfaceMask   =*+$01
         ORA #$10
         STA (ramLoPtr),Y
-b2AA3   INX
+
+GoToNextPlayerBullet
+        INX
         CPX #$06
-        BCC b2A33
-        LDA someScrollOffset
+        BCC DrawPlayerBulletsLoop
+
+        ; Reset the masks.
+        LDA maskForPlayerBullet
         EOR #$80
-        STA someScrollOffset
-        LDA a2AA0
+        STA maskForPlayerBullet
+        LDA bulletSurfaceMask
         EOR #$10
-        STA a2AA0
+        STA bulletSurfaceMask
         RTS
 
-b2AB9   LDA #$21
+PlayerBulletBlockedByStructure
+        LDA #$21
         STA soundVariable1
-b2ABD   LDA fA460,X
-        BEQ b2AA3
+SkipToNextBullet
+        LDA playerBulletSlotArray,X
+        BEQ GoToNextPlayerBullet
         LDA #$00
-        STA fA460,X
-        BEQ b2AA3
+        STA playerBulletSlotArray,X
+        BEQ GoToNextPlayerBullet
         ; Falls through
 
 ;-------------------------------------------------------------------
-; UpdateRamLoPtr
+; UpdatePlayerBulletPosition
 ;-------------------------------------------------------------------
-UpdateRamLoPtr
+UpdatePlayerBulletPosition
         BMI b2ADA
         CLC
-        ADC fA430,X
-        STA fA430,X
+        ADC playerBulletRamLoPtrArray,X
+        STA playerBulletRamLoPtrArray,X
         STA ramLoPtr
-        LDA fA440,X
+        LDA playerBulletRamHiPtrArray,X
         ADC #$00
         RTS
 
-b2ADA   CLC
-        ADC fA430,X
-        STA fA430,X
+b2ADA
+        CLC
+        ADC playerBulletRamLoPtrArray,X
+        STA playerBulletRamLoPtrArray,X
         STA ramLoPtr
-        LDA fA440,X
-        ADC #$FF
+        LDA playerBulletRamHiPtrArray,X
+        ADC #-1
         RTS
 
 ;-------------------------------------------------------------------
-; MaybeAddSurvivalScore
+; PlayerBulletDestroysStructure
 ;-------------------------------------------------------------------
-MaybeAddSurvivalScore
+PlayerBulletDestroysStructure
         TAY
-        LDA fA430,X
+        LDA playerBulletRamLoPtrArray,X
         SEC
         SBC f33C6,Y
         STA srcLoPtr
-        LDA fA440,X
+        LDA playerBulletRamHiPtrArray,X
         SBC f33D6,Y
         STA srcHiPtr
         LDA f33E6,Y
         STA stashedYValue
         STA initialValueOfY
-        LDA anotherIndexToScoresToAddArray,Y
+
+        LDA scoresForHittingStructuresArray,Y
         TAY
         STX dataIndex
         JSR AddScoresFromHittingStuff
+
         LDX dataIndex
         LDA #$1B
         STA soundVariable2
-j2B11   LDY stashedYValue
-b2B13   LDA (srcLoPtr),Y
+UpdateDestroyedSurfaceLoop
+        LDY stashedYValue
+DestroyStructure
+        LDA (srcLoPtr),Y
         CMP #$20
-        BCC b2B33
+        BCC SkipSpace
         CMP #$F0
-        BCS b2B22
+        BCS GoToNextCharacter
         SEC
         SBC #$20
         STA (srcLoPtr),Y
-b2B22   DEY
-        BPL b2B13
-        DEC initialValueOfY
-        BMI b2B30
-        INC srcHiPtr
-        INC srcHiPtr
-        JMP j2B11
+GoToNextCharacter
+        DEY
+        BPL DestroyStructure
 
-b2B30   LDY #$00
+        DEC initialValueOfY
+        BMI ExitDestroyLoopAndReturn
+        INC srcHiPtr
+        INC srcHiPtr
+        JMP UpdateDestroyedSurfaceLoop
+
+ExitDestroyLoopAndReturn
+        LDY #$00
         RTS
 
-b2B33   STX dataIndex
+SkipSpace
+        STX dataIndex
         TAX
         LDA #$00
-        STA fA460,X
+        STA playerBulletSlotArray,X
         LDX dataIndex
-        JMP b2B22
+        JMP GoToNextCharacter
 
 ;-------------------------------------------------------------------
 ; AdjustScrollingVelocityMaybe
 ;-------------------------------------------------------------------
 AdjustScrollingVelocityMaybe
-        LDA rightwardVelocity
+        LDA mantaDirectionAndSpeed
         BEQ b2B53
         BPL b2B5D
-        LDA a29
+        LDA scrollingVelocity
         SEC
-        SBC rightwardVelocity
-        STA a29
-        LDA a2A
+        SBC mantaDirectionAndSpeed
+        STA scrollingVelocity
+        LDA scrollingDirection
         SBC #$FF
-        STA a2A
+        STA scrollingDirection
 b2B53   LDA #$08
         SEC
-        SBC a29
+        SBC scrollingVelocity
         AND #$07
-        STA multiColorModeEnabled
+        STA pixelsToScroll
         RTS
 
-b2B5D   LDA a29
+b2B5D   LDA scrollingVelocity
         SEC
-        SBC rightwardVelocity
-        STA a29
-        LDA a2A
+        SBC mantaDirectionAndSpeed
+        STA scrollingVelocity
+        LDA scrollingDirection
         SBC #$00
-        STA a2A
+        STA scrollingDirection
         JMP b2B53
 
 ;-------------------------------------------------------------------
@@ -5472,7 +5539,7 @@ PauseLoop
         BEQ PauseLoop
 
         LDA someKindOfFrameRate
-        STA a2B
+        STA frameRateBeforePause
         LDA #$00
         STA someKindOfFrameRate
 
@@ -5524,7 +5591,7 @@ ExitPauseScreen
         BEQ ExitPauseScreen
         LDA firePressed
         BEQ ExitPauseScreen
-        LDA a2B
+        LDA frameRateBeforePause
         STA someKindOfFrameRate
         LDA #$12
         STA soundOrTitleSelector
@@ -5537,26 +5604,29 @@ ExitPauseScreen
 ; ScrollShipSurface
 ;-------------------------------------------------------------------
 ScrollShipSurface
-        LDA a29
+        LDA scrollingVelocity
         CLC
         ADC #$07
-        STA a31
-        LDA a2A
+        STA scrollPositionLoPtr
+
+        LDA scrollingDirection
         ADC #$00
         LSR
-        ROR a31
+        ROR scrollPositionLoPtr
         LSR
-        ROR a31
+        ROR scrollPositionLoPtr
         LSR
-        ROR a31
+        ROR scrollPositionLoPtr
         AND #$01
         STA a0F
+
         LDA #>surfaceDataForCurrentLevel
         ORA a0F
-        STA a30
+        STA scrollPositionHiPtr
         STA surfaceDataForCurrentLevelHiPtr
-        LDA a31
+        LDA scrollPositionLoPtr
         STA surfaceDataForCurrentLevelLoPtr
+
         LDA #>SCREEN_RAM_HIBANK + $00F0
         STA screenRAMToDrawHiPtr
         LDA #<SCREEN_RAM_HIBANK + $00F0
@@ -5564,14 +5634,18 @@ ScrollShipSurface
 
         LDX #$11
 DrawScrollingSurfaceRows   
+
         LDY #$26
+DrawRowOfScrollingSurface   
+
 surfaceDataForCurrentLevelLoPtr   =*+$01
 surfaceDataForCurrentLevelHiPtr   =*+$02
-DrawRowOfScrollingSurface   
         LDA surfaceDataForCurrentLevel,Y
+
 screenRAMToDrawLoPtr   =*+$01
 screenRAMToDrawHiPtr   =*+$02
         STA SCREEN_RAM_HIBANK + $00F0,Y
+
         DEY
         BPL DrawRowOfScrollingSurface
         DEX
@@ -5584,25 +5658,27 @@ screenRAMToDrawHiPtr   =*+$02
         STA screenRAMToDrawLoPtr
         BCC DrawScrollingSurfaceRows
         INC screenRAMToDrawHiPtr
+
         JMP DrawScrollingSurfaceRows
 
-FinishScrollingAndCleanUp   LDA a31
+FinishScrollingAndCleanUp
+        LDA scrollPositionLoPtr
         CLC
         ADC #$12
         STA a52
         PHP
-        LDA a33
+        LDA mantaCurrentYPos
         SEC
         SBC #$58
         AND #$F8
         LSR
         LSR
         PLP
-        ADC a30
+        ADC scrollPositionHiPtr
         STA a53
-        LDA a30
+        LDA scrollPositionHiPtr
         ROR
-        LDA a31
+        LDA scrollPositionLoPtr
         ROR
         STA a50
         CLC
@@ -5718,7 +5794,7 @@ DrawSurfaceSectionsLoop
         LDY #$00
         LDA (dreadnoughtDataLoPtr),Y
         ; If we've hit a '00' do a special read of the '01' structure before
-        ; moving on to the next section of the dreadnought data in ReadPlacedStructures.
+        ; moving on to the next section of the dreadnought data in DrawPlacedStructures.
         BEQ ReachedEndOfSurfaceSections
         TAX                           ; Make it an index into surfaceStructureDataLoPtrArray
         ; Get the object structure from textureData.
@@ -5752,7 +5828,7 @@ DrawSectionStrip
         INY                ; Move index to next position.
         AND #$1F           ; Cap length to 31.
         TAX                ; Store the run-length in X.
-ReadInStructure   
+ReadSectionBytes   
         LDA (srcLoPtr),Y   ; Get a charset value from the object.
         INY                ; Increment Y.
         STY stashedYValue  ; Stash Y.
@@ -5762,13 +5838,13 @@ ReadInStructure
         DEC ramHiPtr       ; Move up to the next position in the strip (i.e. 512 bytes) ..
         DEC ramHiPtr       ; .. by decrementing the high pointer twice.
         DEX
-        BNE ReadInStructure ; Loop until all data read.
+        BNE ReadSectionBytes ; Loop until all data read.
 
         ; Fill any remaining space with blank spaces.
 BlankSpacesLoop   
         LDA ramHiPtr
         CMP #>surfaceDataForCurrentLevel
-        BCC b2D40
+        BCC GoToNextSection
         STY stashedYValue
         LDY #$00
         LDA #SPACE
@@ -5779,7 +5855,8 @@ BlankSpacesLoop
         JMP BlankSpacesLoop
 
         ; Do the next strip.
-b2D40   CLC
+GoToNextSection
+        CLC
         LDA currentLevelSurfaceDataLoPtr
         ADC #$01
         STA currentLevelSurfaceDataLoPtr
@@ -5787,7 +5864,7 @@ b2D40   CLC
         INC currentLevelSurfaceDataHiPtr
 b2D4B   LDA currentLevelSurfaceDataHiPtr
         CMP #>surfaceStructureDataLoPtrArray
-        BCS ReadPlacedStructures
+        BCS DrawPlacedStructures
         DEC numberOfStrips
         BNE DrawSectionStrip
         BEQ DrawSurfaceSectionsLoop
@@ -5801,7 +5878,7 @@ ReachedEndOfSurfaceSections
         JMP ReadSurfaceSection
 
         ; Read in the structures that have a defined position.
-ReadPlacedStructures   
+DrawPlacedStructures   
         LDY #$00
         CLC
         LDA dreadnoughtDataLoPtr
@@ -5926,35 +6003,45 @@ SomeKindOfFixUpToTheSurfaceData
 b2E16   RTS
 
 ;-------------------------------------------------------------------
-; DoStuffWithTextureData
+; AddStarsToBackgroundBehindDreadnought
 ;-------------------------------------------------------------------
-DoStuffWithTextureData
+AddStarsToBackgroundBehindDreadnought
         LDY #$18
         LDA #$01
-b2E1B   STA fA518,Y
+b2E1B   STA seedPositionsOfStarsBehindDreadnought,Y
         DEY
         CPY #$14
         BCS b2E1B
+
         LDY #$0F
         LDA #$00
         STA dataIndex
-b2E29   LDX dataIndex
+AddStarsAndTextureLoop
+        ; Get a random number between 7 and 23 and
+        ; store it in X.
+        LDX dataIndex
         LDA randomDataStorage,X
         INC dataIndex
         AND #$0F
         CLC
         ADC #$07
         TAX
+
+        ; Use X to select a line on the screen for
+        ; the star.
         LDA surfaceStructureDataHiPtrArray,X
         BEQ b2E3E
         JSR UpdateInitialValueIndexToTextureSegment
 b2E3E   LDA screenLineHiPtrArray,X
-        STA someDataHiPtrArray,Y
+        STA starDataHiPtrArray,Y
         LDA screenLineLoPtrArray,X
-        STA someDataLoPtrArray,Y
+        STA starDataLoPtrArray,Y
         LDA colorLineHiPtrArray,X
-        STA hiPtrArrayForTextureDataMaybe,Y
+        STA currentColorLineHiPtrArray,Y
         INC surfaceStructureDataHiPtrArray,X
+
+        ; Get a random number between 4 and 31 and
+        ; store it in X.
         LDX dataIndex
         LDA randomDataStorage,X
         INC dataIndex
@@ -5963,31 +6050,39 @@ b2E3E   LDA screenLineHiPtrArray,X
         BCC b2E62
         ADC #$04
 b2E62   TAX
-        LDA fA518,X
+
+        ; Use X to select a position on the line for
+        ; the star.
+        LDA seedPositionsOfStarsBehindDreadnought,X
         BEQ b2E6B
         JSR UpdateInitialValueOfIndexToTextureSegment2
-b2E6B   INC fA518,X
+b2E6B   INC seedPositionsOfStarsBehindDreadnought,X
         TXA
         CLC
-        ADC someDataLoPtrArray,Y
-        STA someDataLoPtrArray,Y
+        ADC starDataLoPtrArray,Y
+        STA starDataLoPtrArray,Y
         PHP
-        LDA someDataHiPtrArray,Y
+        LDA starDataHiPtrArray,Y
         ADC #$00
-        STA someDataHiPtrArray,Y
+        STA starDataHiPtrArray,Y
         PLP
-        LDA hiPtrArrayForTextureDataMaybe,Y
+        LDA currentColorLineHiPtrArray,Y
         ADC #$00
-        STA hiPtrArrayForTextureDataMaybe,Y
+        STA currentColorLineHiPtrArray,Y
+
+        ; Choose randomly between a large or small star
+        ; to add behind the dreadnought.
         LDX dataIndex
         LDA randomDataStorage,X
         INC dataIndex
         AND #$01
         CLC
         ADC #$42
-        STA fA420,Y
+        STA starsBehindDreadnought,Y
+
         DEY
-        BPL b2E29
+        BPL AddStarsAndTextureLoop
+
         LDA #$00
         LDY #$40
 b2E9E   STA surfaceStructureDataHiPtrArray,Y
@@ -6030,50 +6125,52 @@ b2EC2   TXA
 b2ECC   TAX
         DEC initialValueOfindexToTextureSegment
         BEQ b2ED6
-        LDA fA518,X
+        LDA seedPositionsOfStarsBehindDreadnought,X
         BNE b2EC2
 b2ED6   RTS
 
 ;-------------------------------------------------------------------
-; GetSomeTexureData
+; AddStarsBehindDreadnought
 ;-------------------------------------------------------------------
-GetSomeTexureData
+AddStarsBehindDreadnought
         LDX indexToTextureSegment
-b2ED9   LDA someDataHiPtrArray,X
+AddStarsLoop
+        LDA starDataHiPtrArray,X
         STA someDataHiPtr
-        LDA someDataLoPtrArray,X
+        LDA starDataLoPtrArray,X
         STA someDataLoPtr
         LDY #$00
         LDA (someDataLoPtr),Y
         CMP #$20
         BNE b2F0B
-        LDA fA420,X
+        LDA starsBehindDreadnought,X
         STA (someDataLoPtr),Y
-        LDA hiPtrArrayForTextureDataMaybe,X
+        LDA currentColorLineHiPtrArray,X
         STA someDataHiPtr
         LDA updatedCharacterColor
 j2EF7   STA (someDataLoPtr),Y
         DEX
-        BPL b2ED9
+        BPL AddStarsLoop
 
-        LDX multiColorModeEnabled
-        LDA someArrayForTextureData,X
-        STA a7A15
-        STA a7A1A
-        STA a7A1B
+        LDX pixelsToScroll
+        LDA parallaxOffsetsForStars,X
+        STA smallStarXPosition
+        STA bigStarTopXPosition
+        STA bigStarBottomXPosition
         RTS
 
-b2F0B   LDA hiPtrArrayForTextureDataMaybe,X
+b2F0B   LDA currentColorLineHiPtrArray,X
         STA someDataHiPtr
         LDA loadedCharacterColor
         JMP j2EF7
 
 ;-------------------------------------------------------------------
-; WriteStuffToScreen
+; WriteStarsToScreen
 ;-------------------------------------------------------------------
-WriteStuffToScreen
+WriteStarsToScreen
         LDY #$26
-b2F17   LDX dataIndex
+WriteStarsLoop
+        LDX dataIndex
         LDA randomDataStorage,X
         INC dataIndex
         TAX
@@ -6086,7 +6183,7 @@ b2F17   LDX dataIndex
         ADC #$01
 b2F2D   STA (ramLoPtr),Y
         DEY
-        BPL b2F17
+        BPL WriteStarsLoop
         RTS
 
 ;-------------------------------------------------------------------
@@ -6201,7 +6298,7 @@ b2FE2   LDA $0200,X
         BCS b3001
         LDA $0210,X
         SEC
-        SBC a31
+        SBC scrollPositionLoPtr
         STA $0240,X
         BMI b3001
         TAY
@@ -6424,8 +6521,8 @@ IRQInterrupt3
 b3F3C   SBC #$01
         BNE b3F3C
 
-        ; Turn on charset multi-color mode if enabled
-        LDA multiColorModeEnabled
+        ; Number of pixels to scroll horizontally.
+        LDA pixelsToScroll
         AND #$07
         ORA #$D0
         STA $D016    ;VIC Control Register 2

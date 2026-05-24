@@ -21,7 +21,7 @@ miniGameUpdateRateForLevel
         .BYTE $00,$90,$98,$A0,$A8,$B0,$B8,$C0
         .BYTE $C4,$C8,$CC,$D0,$D4,$D8,$DC,$E0
         .BYTE $E4,$E8,$EC,$F0
-someArrayForTextureData
+parallaxOffsetsForStars
         .BYTE $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
 
 player1Text
@@ -219,7 +219,7 @@ f33D6   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
 f33E6   .BYTE $00,$0B
 f33E8   .BYTE $0D,$10,$11,$0E,$0D,$0B,$00,$0C
         .BYTE $0D,$10,$11,$0E,$0D,$0B
-anotherIndexToScoresToAddArray
+scoresForHittingStructuresArray
         .BYTE $00,$0C,$0D,$10,$11,$0F,$0D,$0C
         .BYTE $00,$0B,$0D,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -507,7 +507,7 @@ someMiniGameColors
 
 
 *=$3937
-currentLevelSurfaceDataCharSetLoPtrArray
+offsetsForPlayerBullet
         .BYTE $00,$08,$10,$18,$20,$28,$30,$38
         .BYTE $40,$48,$50,$58,$60,$68,$70,$78
 titleTuneData
@@ -879,25 +879,31 @@ fC190 = $C190
         .BYTE $19,$18,$17,$1A,$1B,$00,$6C,$84
         .BYTE $9C,$B4,$CC,$00,$08,$80,$09,$00
 
-someDataHiPtrArray   
+starDataHiPtrArray   
         .BYTE $02,$1C,$02,$1C,$00,$00,$9C,$9C
         .BYTE $9C,$9C,$00,$00,$06,$80,$0E,$00
-someDataLoPtrArray   
+starDataLoPtrArray   
         .BYTE $02,$02,$1C,$1C,$17,$00,$84,$84
         .BYTE $B4,$B4,$9C,$00,$07,$80,$0E,$00
-fA420   .BYTE $1D,$1E,$1F,$21,$20,$00,$6C,$84
+starsBehindDreadnought
+        .BYTE $1D,$1E,$1F,$21,$20,$00,$6C,$84
         .BYTE $9C,$B4,$CC,$00,$00,$00,$08,$00
-fA430   .BYTE $02,$1C,$02,$1C,$00,$00,$9C,$9C
+playerBulletRamLoPtrArray
+        .BYTE $02,$1C,$02,$1C,$00,$00,$9C,$9C
         .BYTE $9C,$9C,$00,$00,$06,$80,$00,$00
-fA440   .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
+playerBulletRamHiPtrArray
+        .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
         .BYTE $9C,$9C,$9C,$00,$07,$80,$02,$00
-fA450   .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
+charBehindPlayerBulletArray   
+        .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
         .BYTE $9C,$B4,$CC,$00,$06,$80,$0D,$00
-fA460   .BYTE $01,$22,$22,$23,$00,$00,$9C,$84
+playerBulletSlotArray
+        .BYTE $01,$22,$22,$23,$00,$00,$9C,$84
         .BYTE $B4,$9C,$00,$00,$00,$80,$01,$00
-fA470   .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
+bulletOffsetsInCharsetDef
+        .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
         .BYTE $9C,$9C,$9C,$00,$07,$80,$0C,$00
-hiPtrArrayForTextureDataMaybe
+currentColorLineHiPtrArray
         .BYTE $01,$22,$22,$23,$23,$00,$9C,$84
         .BYTE $B4,$6C,$CC,$00,$00,$80,$02,$00
 indexToFunctionPtrArray
@@ -913,7 +919,7 @@ fA4B8   .BYTE $9C,$B4,$CC,$00,$05,$80,$06,$00
 fA4C0   .BYTE $02,$1C,$17,$02,$1C,$00,$6C,$B4
 apparentDuplicateOfCurrentSpriteYPosArray
          .BYTE $9C,$84,$CC,$00,$07,$00,$06,$00
-fA4D0   .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
+        .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
         .BYTE $9C,$9C,$9C,$00,$06,$80,$07,$00
         .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84
 fA4E8   .BYTE $9C,$B4,$CC,$00,$07,$80,$0D,$00
@@ -922,10 +928,12 @@ fA4E8   .BYTE $9C,$B4,$CC,$00,$07,$80,$0D,$00
         .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
         .BYTE $9C,$B4,$CC,$00,$07,$80,$0B,$00
         .BYTE $01,$02,$01,$1C,$01,$00,$6C,$84
-fA518   .BYTE $9C,$B4,$CC,$00,$07,$80,$04,$00
+seedPositionsOfStarsBehindDreadnought
+        .BYTE $9C,$B4,$CC,$00,$07,$80,$04,$00
         .BYTE $0A,$0C,$08,$00,$00,$00,$84,$9C
         .BYTE $B4,$00,$00,$00,$00,$00,$05,$00
         .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
+
         .BYTE $9C,$B4,$CC,$00,$07,$80,$01,$00
         .BYTE $16,$16,$16,$16,$16,$00,$6C,$6C
         .BYTE $6C,$6C,$6C,$00,$05,$80,$08,$00
@@ -1063,14 +1071,16 @@ miniGameScreenData
         .BYTE $80,$0C,$82,$08,$80,$1E,$81,$02
         .BYTE $C0,$10,$82,$02,$10,$40,$FF,$00
 *=$B360
-screenLineHiPtrArray .BYTE $48,$48,$48,$48,$48,$48,$48,$49
-                     .BYTE $49,$49,$49,$49,$49,$4A,$4A,$4A
-                     .BYTE $4A,$4A,$4A,$4A,$4B,$4B,$4B,$4B
-                     .BYTE $4B
-screenLineLoPtrArray .BYTE $00,$28,$50,$78,$A0,$C8,$F0,$18
-                     .BYTE $40,$68,$90,$B8,$E0,$08,$30,$58
-                     .BYTE $80,$A8,$D0,$F8,$20,$48,$70,$98
-                     .BYTE $C0
+screenLineHiPtrArray
+        .BYTE $48,$48,$48,$48,$48,$48,$48,$49
+        .BYTE $49,$49,$49,$49,$49,$4A,$4A,$4A
+        .BYTE $4A,$4A,$4A,$4A,$4B,$4B,$4B,$4B
+        .BYTE $4B
+screenLineLoPtrArray
+        .BYTE $00,$28,$50,$78,$A0,$C8,$F0,$18
+        .BYTE $40,$68,$90,$B8,$E0,$08,$30,$58
+        .BYTE $80,$A8,$D0,$F8,$20,$48,$70,$98
+        .BYTE $C0
         .BYTE $02,$0C,$0A,$0B,$42,$18,$17
         .BYTE $30,$2A,$30,$00,$00,$00,$00,$30
         .BYTE $2E,$30,$00,$00,$FF,$FD,$FB,$DF

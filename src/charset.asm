@@ -2107,9 +2107,7 @@ f7900
                                                 ; 01010101    * * * *
 
 
-a7A15 =*+$05 
-a7A1A =*+$0A 
-a7A1B =*+$0B 
+smallStarXPosition =*+$05 
         .BYTE $FF,$FF,$FF,$FF,$FF,$3F,$FF,$FF   ;.BYTE $FF,$FF,$FF,$FF,$FF,$3F,$FF,$FF
                                                 ; CHARACTER $42
                                                 ; 11111111   ********
@@ -2120,6 +2118,8 @@ a7A1B =*+$0B
                                                 ; 00111111     ******
                                                 ; 11111111   ********
                                                 ; 11111111   ********
+bigStarTopXPosition =*+$02 
+bigStarBottomXPosition =*+$03 
         .BYTE $FF,$FF,$3F,$3F,$FF,$FF,$FF,$FF   ;.BYTE $FF,$FF,$3F,$3F,$FF,$FF,$FF,$FF
                                                 ; CHARACTER $43
                                                 ; 11111111   ********
