@@ -82,8 +82,8 @@ currentPlayerLivesLeft = $25
 indexToCurrentLevelTextureData = $26
 currentLevel = $27
 a28 = $28
-scrollingVelocity = $29
-scrollingDirection = $2A
+positionInsideScrollSegment = $29
+currentScrollSegment = $2A
 frameRateBeforePause = $2B
 pixelsToScroll = $2C
 a2D = $2D
@@ -121,14 +121,14 @@ backgroundColor1 = $4C
 loadedCharacterColor = $4D
 multiColor0 = $4E
 spriteColorForLevel = $4F
-a50 = $50
-a51 = $51
-a53 = $53
+mantaBottomCannonLoPtr = $50
+mantaBottomCannonHiPtr = $51
+mantaTopCannonHiPtr = $53
 someKindOfTextureColorVariable = $54
 currentColorValue = $55
 a56 = $56
 a57 = $57
-updatedCharacterColor = $58
+monochromeCharacterColor = $58
 loopCounter = $59
 pausedOrNotPaused = $5A
 a5B = $5B
@@ -220,7 +220,7 @@ aFC = $FC
 ;
 colorRamLoPtr = $12
 a1E = $1E
-a52 = $52
+mantaTopCannonLoPtr = $52
 loPtrToDataUsedForScoring = $6D
 dataLoPtr = $BE
 
@@ -982,7 +982,7 @@ MainGameLoop
         BNE MainGameLoop
 
         JSR AnimatePlayerBullet
-        JSR AdjustScrollingVelocityMaybe
+        JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
@@ -1972,7 +1972,7 @@ ProcessGameFrame
         LDA shouldWaitUntilReady
         BNE ProcessGameFrame
         JSR AnimatePlayerBullet
-        JSR AdjustScrollingVelocityMaybe
+        JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
@@ -1994,7 +1994,7 @@ ProcessGameFrameWithoutCheckingPause
         LDA shouldWaitUntilReady
         BNE ProcessGameFrameWithoutCheckingPause
         JSR AnimatePlayerBullet
-        JSR AdjustScrollingVelocityMaybe
+        JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
@@ -2200,7 +2200,7 @@ ShipDestructSequence
         JSR AnimateMantaShip
         JSR UpdatePlayerScore
 
-        LDA scrollingDirection
+        LDA currentScrollSegment
         CMP #$0E
         BCS b1582
 
@@ -2232,7 +2232,7 @@ b15A3   LDA $D41B    ; Random Number Generator
         TAY
         LDA #$1A
         STA soundVariable1,Y
-b15B2   LDA scrollingDirection
+b15B2   LDA currentScrollSegment
         CMP #$02
         BCS ShipDestructSequence
         ; Falls through
@@ -3894,11 +3894,11 @@ b20DE   LDA currentSpriteXPosArray,Y
 SetUpScreenForScrolling
         JSR LoadSurfaceStructureData
         LDA #$40
-        STA scrollingVelocity
+        STA positionInsideScrollSegment
         LDA #M_WHITE
         STA currentBackgroundColor
         LDA #$00
-        STA scrollingDirection
+        STA currentScrollSegment
         JSR CreateDreadnoughtForCurrentLevel
         JSR ClearSurfaceStructureDataPtrArray
         JSR UpdateScreenColors
@@ -3970,7 +3970,7 @@ ShowLargeScrollingCreditAndHiScore
         STA someKindOfFrameRate
 b2182   LDA shouldWaitUntilReady
         BNE b2182
-        JSR AdjustScrollingVelocityMaybe
+        JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
@@ -3983,10 +3983,10 @@ b2182   LDA shouldWaitUntilReady
         INC someKindOfFrameRate
         LDA firePressed
         BEQ b21B4
-        LDA scrollingDirection
+        LDA currentScrollSegment
         CMP #$0E
         BCC b2182
-        LDA scrollingVelocity
+        LDA positionInsideScrollSegment
         BPL b2182
 b21B4   RTS
 
@@ -4044,7 +4044,7 @@ DemoLoop
         LDA shouldWaitUntilReady
         BNE DemoLoop
         JSR AnimatePlayerBullet
-        JSR AdjustScrollingVelocityMaybe
+        JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
@@ -4714,10 +4714,6 @@ b2668   LDA rightPressed
         STA a2D
         LDA mantaDirectionAndSpeed
         ADC #$00
-
-;--------------------------------------------------------------------
-; j2679
-;--------------------------------------------------------------------
 j2679
         STA mantaDirectionAndSpeed
         STA a3E
@@ -4753,7 +4749,7 @@ b269D   STA mantaCurrentYPos
         STA mantaDirectionAndSpeed
 b26AB   LDA a45
         BMI b26EB
-        LDA scrollingDirection
+        LDA currentScrollSegment
         BNE b26BA
         LDA #$C8
         STA a3F
@@ -4761,14 +4757,14 @@ b26AB   LDA a45
 
 b26BA   CMP #$0E
         BCC b26EB
-        LDA scrollingVelocity
+        LDA positionInsideScrollSegment
         BPL b26EB
 b26C2   LDA a45
         ORA #$80
         STA a46
         JMP b26EB
 
-b26CB   LDA scrollingVelocity
+b26CB   LDA positionInsideScrollSegment
         BMI b26EB
         BPL b26C2
 b26D1   CMP a37
@@ -4777,7 +4773,7 @@ b26D1   CMP a37
         STA mantaDirectionAndSpeed
 b26D9   LDA a45
         BMI b26EB
-        LDA scrollingDirection
+        LDA currentScrollSegment
         BMI b26EB
         BEQ b26CB
         CMP #$0E
@@ -4938,7 +4934,7 @@ DoSomethingWithSprites
         STA a57
         TAY
         BNE b27FD
-        LDA (a52),Y
+        LDA (mantaTopCannonLoPtr),Y
         BPL b27EF
         CMP #$90
         BCS b27EF
@@ -4946,7 +4942,7 @@ a27EC   =*+$01
         LDA #$80
         STA hasShipBeenHit
 b27EF   LDY #$02
-        LDA (a52),Y
+        LDA (mantaTopCannonLoPtr),Y
         BPL b27FD
         CMP #$90
         BCS b27FD
@@ -4954,7 +4950,7 @@ a27FA   =*+$01
         LDA #$80
         STA hasShipBeenHit
 b27FD   LDY #$01
-        LDA (a52),Y
+        LDA (mantaTopCannonLoPtr),Y
         STA a86
         BPL b280D
         CMP #$90
@@ -4964,28 +4960,28 @@ a280A   =*+$01
         STA hasShipBeenHit
 b280D   LDA a56
         BPL b2838
-        DEC a53
-        DEC a53
-        LDA (a52),Y
+        DEC mantaTopCannonHiPtr
+        DEC mantaTopCannonHiPtr
+        LDA (mantaTopCannonLoPtr),Y
         BPL b2821
         CMP #$90
         BCS b2821
 a281E   =*+$01
         LDA #$80
         STA hasShipBeenHit
-b2821   LDA a53
+b2821   LDA mantaTopCannonHiPtr
         CLC
         ADC #$04
-        STA a53
-        LDA (a52),Y
+        STA mantaTopCannonHiPtr
+        LDA (mantaTopCannonLoPtr),Y
         BPL b2834
         CMP #$90
         BCS b2834
 a2831   =*+$01
         LDA #$80
         STA hasShipBeenHit
-b2834   DEC a53
-        DEC a53
+b2834   DEC mantaTopCannonHiPtr
+        DEC mantaTopCannonHiPtr
 b2838   RTS
 
 ;-------------------------------------------------------------------
@@ -5225,7 +5221,7 @@ UpdateBulletArrays
         ; Create a right-firing bullet.
         LDA #$FE
         STA playerBulletSlotArray,X
-        LDA a52
+        LDA mantaTopCannonLoPtr
         STA playerBulletRamLoPtrArray,X
         STA colorRamLoPtr
 
@@ -5240,7 +5236,7 @@ b29C3   STA bulletOffsetsInCharsetDef,X
         LSR
         AND #$FE
         STA pixelYPositionOfPlayerBullet
-        LDA a53
+        LDA mantaTopCannonHiPtr
         AND #$01
         CLC
         ADC pixelYPositionOfPlayerBullet
@@ -5252,7 +5248,7 @@ b29C3   STA bulletOffsetsInCharsetDef,X
         ; Create a left-firing bullet.
 b29DF   STA playerBulletSlotArray,X
         CLC
-        ADC a52
+        ADC mantaTopCannonLoPtr
         STA playerBulletRamLoPtrArray,X
         STA colorRamLoPtr
         PHP
@@ -5267,7 +5263,7 @@ b29F5   STA bulletOffsetsInCharsetDef,X
         LSR
         AND #$FE
         STA pixelYPositionOfPlayerBullet
-        LDA a53
+        LDA mantaTopCannonHiPtr
         AND #$01
         CLC
         ADC pixelYPositionOfPlayerBullet
@@ -5313,9 +5309,9 @@ DrawPlayerBulletsLoop
         ; Check whether the bullet has hit something.
         LDA ramLoPtr
         ROR
-        CMP a50
+        CMP mantaBottomCannonLoPtr
         BCC SkipToNextBullet
-        CMP a51
+        CMP mantaBottomCannonHiPtr
         BCS SkipToNextBullet
         LDA (ramLoPtr),Y
         BPL DrawPlayerBullet
@@ -5484,34 +5480,49 @@ SkipSpace
         JMP GoToNextCharacter
 
 ;-------------------------------------------------------------------
-; AdjustScrollingVelocityMaybe
+; UpdateScrollPositionUsingDirectionAndSpeed
 ;-------------------------------------------------------------------
-AdjustScrollingVelocityMaybe
+UpdateScrollPositionUsingDirectionAndSpeed
         LDA mantaDirectionAndSpeed
-        BEQ b2B53
-        BPL b2B5D
-        LDA scrollingVelocity
+        BEQ UpdatePixelsToScroll
+        BPL ScrollLeft
+
+        ; Set the scroll position with a precision at the character level.
+        LDA positionInsideScrollSegment
         SEC
         SBC mantaDirectionAndSpeed
-        STA scrollingVelocity
-        LDA scrollingDirection
+        STA positionInsideScrollSegment
+
+        ; Update the current scroll segment.
+        ; Will increment currentScrollSegment and move to next segment if carry bit is set.
+        ; Will stay on current segment if carry bit is not set.
+        LDA currentScrollSegment
         SBC #$FF
-        STA scrollingDirection
-b2B53   LDA #$08
+        STA currentScrollSegment
+
+        ; Set the scroll position with a precision of 8 bits within the character.
+UpdatePixelsToScroll
+        LDA #$08
         SEC
-        SBC scrollingVelocity
+        SBC positionInsideScrollSegment
         AND #$07
         STA pixelsToScroll
         RTS
 
-b2B5D   LDA scrollingVelocity
+ScrollLeft
+        ; Set the scroll position with a precision at the character level.
+        LDA positionInsideScrollSegment
         SEC
         SBC mantaDirectionAndSpeed
-        STA scrollingVelocity
-        LDA scrollingDirection
+        STA positionInsideScrollSegment
+
+        ; Update the current scroll segment.
+        ; Will decrement currentScrollSegment and move to previous segment if carry bit is not set.
+        ; Will stay on current segment if carry bit is set.
+        LDA currentScrollSegment
         SBC #$00
-        STA scrollingDirection
-        JMP b2B53
+        STA currentScrollSegment
+        JMP UpdatePixelsToScroll
 
 ;-------------------------------------------------------------------
 ; MaybeShowPauseScreen
@@ -5600,16 +5611,32 @@ ExitPauseScreen
         RTS
 
 
+secondHalfOfMap = a0F
 ;-------------------------------------------------------------------
 ; ScrollShipSurface
 ;-------------------------------------------------------------------
 ScrollShipSurface
-        LDA scrollingVelocity
+        LDA positionInsideScrollSegment
         CLC
         ADC #$07
         STA scrollPositionLoPtr
 
-        LDA scrollingDirection
+        ; Figure out which section of the dreadnought we're on.
+        ; currentScrollSegment tracks our position on the dreanought
+        ; in terms of 16 frames of 32 bytes each (the dreadnought is 512
+        ; bytes wide). The routine below performs the following mapping
+        ; for each value of currentScrollSegment:
+        ;
+        ; $X0 -> 8200, $X1 -> 8220, $X2 -> 8240, $X3 -> 8260
+        ; $X4 -> 8280, $X5 -> 82A0, $X6 -> 82C0, $X7 -> 82F0
+        ; $X8 -> 8300, $X9 -> 8320, $XA -> 8340, $XB -> 8360
+        ; $XC -> 8380, $XD -> 83A0, $XE -> 83C0, $XF -> 83F0
+        ;
+        ; Note that only the last 4 bits are actually used for the mapping,
+        ; the other 4 are ignored.
+        ; Remember that 8200 is the address of surfaceDataForCurrentLevel, 
+        ; so is the top left of the dreadnought map. 
+        LDA currentScrollSegment
         ADC #$00
         LSR
         ROR scrollPositionLoPtr
@@ -5618,10 +5645,10 @@ ScrollShipSurface
         LSR
         ROR scrollPositionLoPtr
         AND #$01
-        STA a0F
+        STA secondHalfOfMap
 
         LDA #>surfaceDataForCurrentLevel
-        ORA a0F
+        ORA secondHalfOfMap
         STA scrollPositionHiPtr
         STA surfaceDataForCurrentLevelHiPtr
         LDA scrollPositionLoPtr
@@ -5634,20 +5661,19 @@ ScrollShipSurface
 
         LDX #$11
 DrawScrollingSurfaceRows   
-
         LDY #$26
 DrawRowOfScrollingSurface   
 
 surfaceDataForCurrentLevelLoPtr   =*+$01
 surfaceDataForCurrentLevelHiPtr   =*+$02
         LDA surfaceDataForCurrentLevel,Y
-
 screenRAMToDrawLoPtr   =*+$01
 screenRAMToDrawHiPtr   =*+$02
         STA SCREEN_RAM_HIBANK + $00F0,Y
 
         DEY
         BPL DrawRowOfScrollingSurface
+
         DEX
         BEQ FinishScrollingAndCleanUp
         INC surfaceDataForCurrentLevelHiPtr
@@ -5662,10 +5688,12 @@ screenRAMToDrawHiPtr   =*+$02
         JMP DrawScrollingSurfaceRows
 
 FinishScrollingAndCleanUp
+        ; Update the stored positions of the player's cannon.
         LDA scrollPositionLoPtr
         CLC
         ADC #$12
-        STA a52
+        STA mantaTopCannonLoPtr
+
         PHP
         LDA mantaCurrentYPos
         SEC
@@ -5675,15 +5703,17 @@ FinishScrollingAndCleanUp
         LSR
         PLP
         ADC scrollPositionHiPtr
-        STA a53
+        STA mantaTopCannonHiPtr
+
         LDA scrollPositionHiPtr
         ROR
         LDA scrollPositionLoPtr
         ROR
-        STA a50
+        STA mantaBottomCannonLoPtr
+
         CLC
         ADC #$14
-        STA a51
+        STA mantaBottomCannonHiPtr
         RTS
 
 newValueofSrcLoPtr = $11
@@ -6147,7 +6177,7 @@ AddStarsLoop
         STA (someDataLoPtr),Y
         LDA currentColorLineHiPtrArray,X
         STA someDataHiPtr
-        LDA updatedCharacterColor
+        LDA monochromeCharacterColor
 j2EF7   STA (someDataLoPtr),Y
         DEX
         BPL AddStarsLoop
@@ -6234,7 +6264,7 @@ b2F5D
         STA $D026    ;Sprite Multi-Color Register 1
         LDA loadedCharacterColor
         AND #$F7
-        STA updatedCharacterColor
+        STA monochromeCharacterColor
 
         ; Write the color scheme to the screen.
         LDX #<COLOR_RAM + $00A0
@@ -6242,13 +6272,13 @@ b2F5D
         STX ramLoPtr
         STY ramHiPtr
         LDX #$02
-        LDA updatedCharacterColor
+        LDA monochromeCharacterColor
         JSR WriteToRam
         LDX #$11
         LDA loadedCharacterColor
         JSR WriteToRam
         LDX #$02
-        LDA updatedCharacterColor
+        LDA monochromeCharacterColor
         JSR WriteToRam
         RTS
 
@@ -6292,9 +6322,9 @@ b2FCC   LDY $0220,X
         LDA loadedCharacterColor
         STA (a1E),Y
 b2FE2   LDA $0200,X
-        CMP a50
+        CMP mantaBottomCannonLoPtr
         BCC b3001
-        CMP a51
+        CMP mantaBottomCannonHiPtr
         BCS b3001
         LDA $0210,X
         SEC
