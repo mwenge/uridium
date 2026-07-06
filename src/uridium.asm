@@ -164,8 +164,8 @@ landNowActivated = $85
 a86 = $86
 formationAnnihilationBonus = $87
 numberOfEnemiesSpawned = $88
-randomTextureDataLoPtr = $89
-randomTextureHiPtr = $8A
+destroyedEdgeLoPtr = $89
+destroyedEdgeHiPtr = $8A
 indexToTextureSegment = $8D
 fakeFirePressed = $8E
 initialValueOfY = $8F
@@ -387,7 +387,7 @@ EXPLOSION_MAJOR11       = $3A
 surfaceDataForCurrentLevel = $8200
 startOfSurfaceDataForCurrentLevel = $A240
 
-randomTextureDataMaybe = $83E0
+endOfCurrentSurfaceData = $83E0
 surfaceStructureDataLoPtrArray = $A400
 surfaceStructureDataHiPtrArray = $A500
 
@@ -2144,7 +2144,7 @@ ReloadGameAfterMiniGame
         LDA #$FF
         STA someKindOfTextureColorVariable
         JSR FetchCurrentSurfaceData
-        JSR DoSomethingToTheDreadnoughtData
+        JSR CreateJaggedEdgeOfDestructSequence
         JSR GenerateStarfield
         JSR UpdateScreenColors
         JSR SetInterrupToIRQInterrupt2
@@ -2200,15 +2200,18 @@ ShipDestructSequence
         JSR AnimateMantaShip
         JSR UpdatePlayerScore
 
+        ; We only star destructing the dreadnought from segment
+        ; 14 onwards
         LDA currentScrollSegment
-        CMP #$0E
+        CMP #14
         BCS b1582
 
         JSR DisintegrateDreadnought
 
         ; Figure out a movement for the manta as it travels
         ; along the self-destructing dreadnought.
-b1582   LDA $D41B    ; Random Number Generator
+b1582
+        LDA $D41B    ; Random Number Generator
         AND #$3F
         BNE b1593
         LDA a45
@@ -2417,100 +2420,111 @@ b16BC   LDA someKindOfFrameRate
         STA soundVariable1
         RTS
 
-BOTTOM_OF_DREADNOUGHT_NEAR_END = $A4D0
+jaggedEdgePositions = $A4D0
 
+surfaceToDestroyLoPtr = colorRamLoPtr
+surfaceToDestroyHiPtr = colorRamHiPtr
 ;-------------------------------------------------------------------
 ; DisintegrateDreadnought
 ;-------------------------------------------------------------------
 DisintegrateDreadnought
-        LDA randomTextureDataLoPtr
-        STA colorRamLoPtr
-        LDA randomTextureHiPtr
-        STA colorRamHiPtr
+        LDA destroyedEdgeLoPtr
+        STA surfaceToDestroyLoPtr
+        LDA destroyedEdgeHiPtr
+        STA surfaceToDestroyHiPtr
         CMP #$82
         BNE b16E4
-        LDA randomTextureDataLoPtr
+        LDA destroyedEdgeLoPtr
         CMP #SPACE
         BCC b173A
 
 b16E4   LDX #$11
-b16E6   LDY BOTTOM_OF_DREADNOUGHT_NEAR_END,X
-        LDA (colorRamLoPtr),Y
+DestroyEdge
+        LDY jaggedEdgePositions,X
+        LDA (surfaceToDestroyLoPtr),Y
         CMP #SPACE
         BEQ b16F9
         LDA $D41B    ; Random Number Generator
         AND #$01
         CLC
         ADC #$F9
-        STA (colorRamLoPtr),Y
+        STA (surfaceToDestroyLoPtr),Y
+
 b16F9   INY
-        LDA (colorRamLoPtr),Y
+        LDA (surfaceToDestroyLoPtr),Y
         CMP #SPACE
         BEQ b170A
         LDA $D41B    ; Random Number Generator
         AND #$01
         CLC
         ADC #$FB
-        STA (colorRamLoPtr),Y
+        STA (surfaceToDestroyLoPtr),Y
+
 b170A   INY
-        LDA (colorRamLoPtr),Y
+        LDA (surfaceToDestroyLoPtr),Y
         CMP #SPACE
         BEQ b171B
         LDA $D41B    ; Random Number Generator
         AND #$01
         CLC
         ADC #$FD
-        STA (colorRamLoPtr),Y
+        STA (surfaceToDestroyLoPtr),Y
+
 b171B   INY
         LDA #SPACE
-        STA (colorRamLoPtr),Y
+        STA (surfaceToDestroyLoPtr),Y
         INY
-        STA (colorRamLoPtr),Y
+        STA (surfaceToDestroyLoPtr),Y
         INY
-        STA (colorRamLoPtr),Y
-        INC colorRamHiPtr
-        INC colorRamHiPtr
-        DEX
-        BNE b16E6
+        STA (surfaceToDestroyLoPtr),Y
 
-        LDA randomTextureDataLoPtr
+        INC surfaceToDestroyHiPtr
+        INC surfaceToDestroyHiPtr
+        DEX
+        BNE DestroyEdge
+
+        LDA destroyedEdgeLoPtr
         SEC
         SBC #$01
-        STA randomTextureDataLoPtr
-        LDA randomTextureHiPtr
+        STA destroyedEdgeLoPtr
+        LDA destroyedEdgeHiPtr
         SBC #$00
-        STA randomTextureHiPtr
+        STA destroyedEdgeHiPtr
 b173A   RTS
 
+edgePosition = a0F
 ;-------------------------------------------------------------------
-; DoSomethingToTheDreadnoughtData
+; CreateJaggedEdgeOfDestructSequence
 ;-------------------------------------------------------------------
-DoSomethingToTheDreadnoughtData
-        LDX #<randomTextureDataMaybe
-        LDY #>randomTextureDataMaybe
-        STX randomTextureDataLoPtr
-        STY randomTextureHiPtr
+CreateJaggedEdgeOfDestructSequence
+        LDX #<endOfCurrentSurfaceData
+        LDY #>endOfCurrentSurfaceData
+        STX destroyedEdgeLoPtr
+        STY destroyedEdgeHiPtr
+
         LDX #$11
         LDA #$08
-        STA a0F
-b1749   LDA $D41B    ; Random Number Generator
+        STA edgePosition
+GenerateJaggedEdges
+        LDA $D41B    ; Random Number Generator
         CMP #$55
-        BCC b1765
+        BCC StoreEdgePosition
         CMP #MANTA_HORIZONTAL_POSITION
         BCC b175D
-        LDA a0F
-        BEQ b1765
-        DEC a0F
-        JMP b1765
+        LDA edgePosition
+        BEQ StoreEdgePosition
+        DEC edgePosition
+        JMP StoreEdgePosition
 
-b175D   LDA a0F
+b175D   LDA edgePosition
         CMP #$10
-        BCS b1765
-        INC a0F
-b1765   LDA a0F
-        STA BOTTOM_OF_DREADNOUGHT_NEAR_END,X
+        BCS StoreEdgePosition
+        INC edgePosition
+StoreEdgePosition
+        LDA edgePosition
+        STA jaggedEdgePositions,X
         DEX
-        BNE b1749
+        BNE GenerateJaggedEdges
         RTS
 
 ;-------------------------------------------------------------------
