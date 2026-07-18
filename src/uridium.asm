@@ -23,8 +23,9 @@ fCAC0 = $CAC0
 finalLocationOfSomeLevelDataAndGameData = $C000
 
 playerScore = $20
-a70 = $70
-a71 = $71
+indexCurrentEnemyFormation = $24
+enemyMovementStrategyLoPtr = $70
+enemyMovementStrategyHiPtr = $71
 a9C = $9C
 aA4 = $A4
 aC0 = $C0
@@ -81,7 +82,7 @@ a1F = $1F
 currentPlayerLivesLeft = $25
 indexToCurrentLevelTextureData = $26
 currentLevel = $27
-a28 = $28
+selectForBulletsOrMines = $28
 positionInsideScrollSegment = $29
 currentScrollSegment = $2A
 frameRateBeforePause = $2B
@@ -139,27 +140,28 @@ fakeRightPressed = $5F
 pausePressed = $60
 monochromEnabled = $61
 someKindOfFrameRate = $62
-a63 = $63
-a64 = $64
+enemyXPosBackwardVelocity = $63
+enemyXPosBackwardIncrement = $64
 enemyBulletXPosAnimationRate = $65
-a66 = $66
-a67 = $67
-a68 = $68
-a69 = $69
+enemyXPosForwardVelocity = $66
+enemyXPosForwardIncrement = $67
+whetherScoreAwardedForHittingEnemy = $68
+whetherToFireEnemyBulletOrMine = $69
 bulletSpriteCurrentLevel = $6A
-a6B = $6B
+enemyBulletXPosIncrement = $6B
 usedToCheckIfWeShouldLaunchMine = $6C
-HiPtrToDataUsedForScoring = $6E
-a6F = $6F
-a7C = $7C
-a7D = $7D
-a7E = $7E
+loPtrToEnemyFormationOrder = $6D
+hiPtrToEnemyFormationOrder = $6E
+currentEnemyMovementStrategy = $6F
+durationOfStrategyForFormation = $7C
+durationOfStrategyForNextEnemyInFormation = $7D
+currentEnemySpriteValue = $7E
 scoreToAddForHittingEnemy = $7F
-a80 = $80
-a81 = $81
-a82 = $82
-a83 = $83
-a84 = $84
+enemyYPosUpwardVelocity = $80
+enemyYPosUpwardIncrement = $81
+enemyYPosDownwardVelocity = $82
+enemyYPosDownwardIncrement = $83
+initialEnemyXPos = $84
 landNowActivated = $85
 a86 = $86
 formationAnnihilationBonus = $87
@@ -221,7 +223,6 @@ aFC = $FC
 colorRamLoPtr = $12
 a1E = $1E
 mantaTopCannonLoPtr = $52
-loPtrToDataUsedForScoring = $6D
 dataLoPtr = $BE
 
 COLOR_RAM = $D800
@@ -625,7 +626,7 @@ TitleScreenLoop
         LDA #$00
         STA $D015    ;Sprite display Enable
         STA pausedOrNotPaused
-        STA a28
+        STA selectForBulletsOrMines
 
         LDA #$11
         STA soundOrTitleSelector
@@ -986,7 +987,7 @@ MainGameLoop
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
-        JSR UpdateSpriteAndRunFunctionPerSprite
+        JSR UpdateEnemies
         INC someKindOfFrameRate
         JSR GetJoystickInput
 
@@ -994,9 +995,9 @@ MainGameLoop
         LDA someKindOfFrameRate
         AND #$07
         TAY
-        LDA screenWriteJumpTableHiPtr,Y
+        LDA mainLoopJumpTableHiPtr,Y
         STA mainGameLoopHiPtr
-        LDA screenWriteJumpTableLoPtr,Y
+        LDA mainLoopJumpTableLoPtr,Y
         STA mainGameLoopLoPtr
 mainGameLoopLoPtr   =*+$01
 mainGameLoopHiPtr   =*+$02
@@ -1028,26 +1029,28 @@ MaybeStartNewLevel
         LDA #$01
         STA currentLevel
         STA indexToCurrentLevelTextureData
-        LDA a28
+
+        LDA selectForBulletsOrMines
         CLC
         ADC #$10
         CMP #$40
         BCS b0D62
-        STA a28
+        STA selectForBulletsOrMines
+
 b0D62   LDA #$00
-        STA playerScore + $04
+        STA indexCurrentEnemyFormation
         JMP EnterNewLevel
         ; Doesn't return here, enters main game loop.
 
 CheckIfGameIsOver
         JSR ShipHasBeenHit
 
-        LDA playerScore + $04
+        LDA indexCurrentEnemyFormation
         SEC
         SBC #$04
         BPL b0D75
         LDA #$00
-b0D75   STA playerScore + $04
+b0D75   STA indexCurrentEnemyFormation
         SED
         SEC
 
@@ -1631,6 +1634,7 @@ f1147   .BYTE $0E,$1D,$2C
 f114A   .BYTE $08,$00,$00,$00
 
 storageForMiniGameData = $D200
+miniGameScreenData = $A6A0
 ;-------------------------------------------------------------------
 ; DestructSequenceMiniGame
 ;-------------------------------------------------------------------
@@ -1699,7 +1703,7 @@ b11A4   LDA shouldWaitUntilReady
         STA aA9
         LDA #<SCREEN_RAM + $0209
         STA aA8
-        LDA a28
+        LDA selectForBulletsOrMines
         LSR
         LSR
         LSR
@@ -2005,7 +2009,7 @@ ProcessGameFrameWithoutCheckingPause
         INC someKindOfFrameRate
         JSR MaybeMoveLeft
         JSR MaybeMoveRight
-        JSR DoSomethingWithSprites
+        JSR UpdateCannonsInSomeWay
         RTS
 
 ;-------------------------------------------------------------------
@@ -2025,7 +2029,7 @@ LandOnShipAndMaybeRunMiniGame
 LandingLoop   
         JSR ProcessGameFrame
         JSR AnimateMantaShip
-        JSR UpdateSpriteAndRunFunctionPerSprite
+        JSR UpdateEnemies
         LDA BUTTON_DEBOUNCE
         STA buttonPressDebounce
         LDA mantaDirectionAndSpeed
@@ -2368,16 +2372,16 @@ MaybeDisplayLandNowWarning
         BEQ b1683
 b1675   RTS
 
-        ; Looks like the score is used to determine if the land now
-        ; should be activated?
-b1676   LDY playerScore + $04
-        LDA (loPtrToDataUsedForScoring),Y
+        ; The level is finished if we have destroyed all enemy formations.
+b1676   LDY indexCurrentEnemyFormation
+        LDA (loPtrToEnemyFormationOrder),Y
         CMP #$FF
         BNE b1675
         LDA #$01
         STA landNowActivated
         RTS
 
+        ; Display the Land Now warning.
 b1683   LDA a86
         CMP #$6F
         BNE b16BC
@@ -2390,10 +2394,10 @@ b1683   LDA a86
         STA buttonPressDebounce
 
         LDY #$05
-b169A   LDA indexToFunctionPtrArray,Y
+b169A   LDA indexToEnemyUpdatePtrArray,Y
         BEQ b16A9
-        LDA #$06
-        STA indexToFunctionPtrArray,Y
+        LDA #$06 ; RemoveEnemy
+        STA indexToEnemyUpdatePtrArray,Y
         LDA #$14
         STA sprite0Ptr,Y
 b16A9   DEY
@@ -2939,15 +2943,16 @@ b1A36   CLD
 UpdatePointersAndFetchSurfaceData
         LDY indexToCurrentLevelTextureData
         LDA scoringStrategyForLevelLoPtrArray,Y
-        STA loPtrToDataUsedForScoring
+        STA loPtrToEnemyFormationOrder
         LDA scoringStrategyForLevelHiPtrArray,Y
-        STA HiPtrToDataUsedForScoring
+        STA hiPtrToEnemyFormationOrder
+
         LDA #$00
         STA formationAnnihilationBonus
         STA landNowActivated
         LDA #$80
         STA usedToCheckIfWeShouldLaunchMine
-        STA a68
+        STA whetherScoreAwardedForHittingEnemy
         JSR FetchCurrentSurfaceData
         RTS
 
@@ -2973,255 +2978,336 @@ FetchCurrentSurfaceData
         CLI
         RTS
 
+enemyFormationDataLoPtr = srcLoPtr
+enemyFormationDataHiPtr = srcHiPtr
+enemiesToUpdate = stashedYValue
 ;-------------------------------------------------------------------
-; UpdateAndDisplaySomeSprites
+; MaybeCreateNewEnemyFormation
 ;-------------------------------------------------------------------
-UpdateAndDisplaySomeSprites
+MaybeCreateNewEnemyFormation
         LDA someKindOfFrameRate
         AND #$3F
         CMP #$21
-        BNE b1A97
+        BNE DontCreateNewFormation
+
         LDA usedToCheckIfWeShouldLaunchMine
-        BEQ b1A98
+        BEQ SelectAFormation
+
         CMP #$80
-        BNE b1A97
+        BNE DontCreateNewFormation
+
         LDA #$00
         STA usedToCheckIfWeShouldLaunchMine
         LDA numberOfEnemiesSpawned
         BNE b1A93
-        LDA a68
-        BNE b1A93
-        INC formationAnnihilationBonus
-b1A93   LDA #$00
-        STA numberOfEnemiesSpawned
-b1A97   RTS
 
-b1A98   LDA #$00
-        STA srcHiPtr
+        LDA whetherScoreAwardedForHittingEnemy
+        BNE b1A93
+
+        INC formationAnnihilationBonus
+b1A93
+        LDA #$00
+        STA numberOfEnemiesSpawned
+DontCreateNewFormation
+        RTS
+
+        ; Select a formation from enemyFormationData using
+        ; the *EnemyFormationOrder arrays, e.g. level1EnemyFormationOrder. 
+        ; If we've used up the array, select a random formation.
+SelectAFormation   
+        LDA #$00
+        STA enemyFormationDataHiPtr
         LDA #$80
         STA usedToCheckIfWeShouldLaunchMine
         LDA #$AE
         STA soundVariable2
-        LDY playerScore + $04
-        LDA (loPtrToDataUsedForScoring),Y
+
+        LDY indexCurrentEnemyFormation
+        LDA (loPtrToEnemyFormationOrder),Y
         CMP #$FF
         BNE b1AB9
+
+        ; If we've used up the array, select a random formation.
         LDA $D41B    ; Random Number Generator
         AND #$03
         CLC
         ADC #$12
-        STA a68
+        STA whetherScoreAwardedForHittingEnemy
         JMP j1ABF
 
-b1AB9   INC playerScore + $04
+b1AB9   INC indexCurrentEnemyFormation
         LDX #$00
-        STX a68
+        STX whetherScoreAwardedForHittingEnemy
+
 j1ABF   ASL
-        ROL srcHiPtr
+        ROL enemyFormationDataHiPtr
         ASL
-        ROL srcHiPtr
+        ROL enemyFormationDataHiPtr
         ASL
-        ROL srcHiPtr
+        ROL enemyFormationDataHiPtr
         ASL
-        ROL srcHiPtr
-        STA srcLoPtr
-        LDA srcHiPtr
-        ADC #$C2
-        STA srcHiPtr
+        ROL enemyFormationDataHiPtr
+        STA enemyFormationDataLoPtr
+
+        LDA enemyFormationDataHiPtr
+        ADC #>enemyFormationData
+        STA enemyFormationDataHiPtr
+
         LDA #$FF
         STA currentSpriteDisplayEnable
         STA currentSpriteMultiColorMode
         STA currentSpriteMSBXPosOffset
         LDA spriteColorForLevel
         STA currentSpriteColor
+
+        ; Get the sprite for this formation.
         LDY #$0E
-        LDA (srcLoPtr),Y
-        STA a7E
+        LDA (enemyFormationDataLoPtr),Y
+        STA currentEnemySpriteValue
+
         TAX
-        LDA f36F3,X
-        STA a66
+        LDA enemyHorizontalVelocityArray,X
+        STA enemyXPosForwardVelocity
         EOR #$FF
         CLC
         ADC #$01
-        STA a63
+        STA enemyXPosBackwardVelocity
+
         LDA #$00
-        STA a6B
-        STA a67
-        STA a83
-        LDA #$FF
-        STA a64
-        STA a81
-        LDA f3703,X
-        STA a82
+        STA enemyBulletXPosIncrement
+        STA enemyXPosForwardIncrement
+        STA enemyYPosDownwardIncrement
+
+        LDA #-1
+        STA enemyXPosBackwardIncrement
+        STA enemyYPosUpwardIncrement
+
+        LDA enemyVerticalVelocityArray,X
+        STA enemyYPosDownwardVelocity
         EOR #$FF
         CLC
         ADC #$01
-        STA a80
+        STA enemyYPosUpwardVelocity
+
         LDA currentPlayerLivesLeft
         LSR
         CLC
         ADC indexToCurrentLevelTextureData
-        ADC a28
-        ADC f3713,X
-        STA a69
+        ADC selectForBulletsOrMines
+        ADC fireBulletOrMineArray,X
+        STA whetherToFireEnemyBulletOrMine
+
         LDA bulletSpriteArray,X
         STA bulletSpriteCurrentLevel
+
         LDA indexToScoresToAddArray,X
         STA scoreToAddForHittingEnemy
+
         LDA enemeyBulletSpeedForLevel,X
         STA enemyBulletXPosAnimationRate
-        DEY
-        LDA (srcLoPtr),Y
+
+        ; Get initial X Position of formation.
+        ; 00 - means enter from the right
+        ; FF - means enter from the left
+        ; 80 - means ?
+        DEY                              ; Point to 14th byte in enemyFormationData.
+        LDA (enemyFormationDataLoPtr),Y
         BEQ b1B45
         CMP #$FF
         BEQ b1B36
         LDA $D41B    ; Random Number Generator
         BPL b1B45
+
+        ; Entering from the left.
 b1B36   LDA mantaDirectionAndSpeed
         EOR #$FF
         CLC
         ADC #$01
-        STA a84
+        STA initialEnemyXPos
+
         LDA mantaDirectionAndSpeed
         BMI b1B4D
         BPL b1B5B
+
+        ; Entering from the right.
 b1B45   LDA #$00
-        STA a84
+        STA initialEnemyXPos
+
+        ; Choose the direction of the enemy sprite based on the
+        ; the direction the manta is travelling.
         LDA mantaDirectionAndSpeed
         BMI b1B5B
+
+        ; Manta is travelling to the left, so choose right-facing sprite
 b1B4D   LDA #$A4
         STA currentSpriteXPos
-        LDA a7E
+        LDA currentEnemySpriteValue
         CLC
-        ADC #$A0
+        ADC #$A0               ; Add A0 to point to the right-facing sprite.
         STA currentSpriteValue
-        JMP j1B83
+        JMP GetMovementStrategyDuration
 
+        ; Manta is travelling to the right, so choose left-facing sprite.
 b1B5B   LDA #$A2
         STA currentSpriteXPos
-        LDA a7E
+        LDA currentEnemySpriteValue
         CLC
-        ADC #$B0
+        ADC #$B0               ; Add B0 to point to the right-facing sprite.
         STA currentSpriteValue
-        LDA a63
-        LDX a66
-        STX a63
-        STA a66
-        LDA a64
-        LDX a67
-        STX a64
-        STA a67
+
+        ; Reverse the increment values for left-facing sprites.
+        LDA enemyXPosBackwardVelocity
+        LDX enemyXPosForwardVelocity
+        STX enemyXPosBackwardVelocity
+        STA enemyXPosForwardVelocity
+
+        LDA enemyXPosBackwardIncrement
+        LDX enemyXPosForwardIncrement
+        STX enemyXPosBackwardIncrement
+        STA enemyXPosForwardIncrement
+
+        ; Reverse the bullet animation direction for left facing sprites.
         LDA enemyBulletXPosAnimationRate
         EOR #$FF
         CLC
         ADC #$01
         STA enemyBulletXPosAnimationRate
-        LDA #$FF
-        STA a6B
-j1B83   LDY #$0C
-        LDA (srcLoPtr),Y
-        STA a7C
+        LDA #-1
+        STA enemyBulletXPosIncrement
+
+        ; Get the rate at which we tick through the items in the movement
+        ; strategy.
+GetMovementStrategyDuration
+        LDY #$0C
+        LDA (enemyFormationDataLoPtr),Y
+        STA durationOfStrategyForFormation
         LDA #$00
-        STA a7D
-        LDY #>SCREEN_RAM + $010A
-        STY stashedYValue
-        LDX #<SCREEN_RAM + $010A
+        STA durationOfStrategyForNextEnemyInFormation
+
+        ; Get the movement strategy and initial Y position for all enemies
+        ; in the formation.
+        LDY #$05
+        STY enemiesToUpdate
+        LDX #$0A
         STX dataIndex
-b1B95   LDY stashedYValue
+InitializeEnemyLoop   
+        LDY enemiesToUpdate
         STY spriteIndex
-        LDA (srcLoPtr),Y
-        BEQ b1BC0
+
+        ; Get the movement strategy to be used by the
+        ; formation.
+        LDA (enemyFormationDataLoPtr),Y
+        BEQ SetYPositionsOfEnemies
+
+        ; Select the movement strategy in enemyMovementStrategyLoPtrArray.
         LDX dataIndex
         TAY
-        LDA fC120,Y
-        STA a70,X
+        LDA enemyMovementStrategyLoPtrArray,Y
+        STA enemyMovementStrategyLoPtr,X
         INX
-        LDA fC190,Y
-        STA a70,X
-        LDY stashedYValue
-        LDA #$02
-        STA indexToFunctionPtrArray,Y
+        LDA enemyMovementStrategyHiPtrArray,Y
+        STA enemyMovementStrategyLoPtr,X
+
+        ; Make sure the next thing the enemy does is update its position.
+        LDY enemiesToUpdate
+        LDA #$02 ; UpdateEnemyPositions
+        STA indexToEnemyUpdatePtrArray,Y
+
         INC usedToCheckIfWeShouldLaunchMine
         INC numberOfEnemiesSpawned
-        LDA a7D
-        STA fA4B0,Y
+
+        LDA durationOfStrategyForNextEnemyInFormation
+        STA durationOfMovementStrategyForEnemy,Y
         CLC
-        ADC a7C
-        STA a7D
-b1BC0   TYA
+        ADC durationOfStrategyForFormation
+        STA durationOfStrategyForNextEnemyInFormation
+
+        ; Get the Y positions to be used for each of the enemy
+        ; ships in the formation.
+SetYPositionsOfEnemies
+        TYA
         CLC
         ADC #$06
         TAY
-        LDA (srcLoPtr),Y
+        LDA (enemyFormationDataLoPtr),Y
         BNE b1BCB
+        ; If no Y pos set, use the player's Y pos.
         LDA mantaCurrentYPos
 b1BCB   STA currentSpriteYPos
         JSR ApplySpriteVariablesAndDisplay
-        LDY stashedYValue
-        LDA a6B
-        STA fA4E8,Y
+
+        LDY enemiesToUpdate
+        LDA enemyBulletXPosIncrement
+        STA enemyFiringStrategy,Y
+
         LDA #$00
-        STA fA4B8,Y
-        STA currentSpriteMSBXPosOffsetArray,Y
-        STA fA4C0,Y
-        STA currentSpriteYPosArray,Y
-        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        LDA a84
-        STA currentSpriteXPosArray,Y
+        STA enemyMovementStrategies,Y
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
+        STA enemyXPosVelocityLimitArray,Y
+        STA enemyYPosCurrentVelocityArray,Y
+        STA enemyYPosVelocityLimitArray,Y
+
+        LDA initialEnemyXPos
+        STA enemyXPosCurrentVelocityArray,Y
         BPL b1BF4
+
         LDA #$FF
-        STA currentSpriteMSBXPosOffsetArray,Y
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
+
 b1BF4   DEC dataIndex
         DEC dataIndex
-        DEC stashedYValue
-        BPL b1B95
+        DEC enemiesToUpdate
+        BPL InitializeEnemyLoop
         RTS
 
-numberOfSpritesToDo = stashedYValue
+numberOfEnemiesToUpdate = stashedYValue
 ;-------------------------------------------------------------------
-; UpdateSpriteAndRunFunctionPerSprite
+; UpdateEnemies
 ;-------------------------------------------------------------------
-UpdateSpriteAndRunFunctionPerSprite
+UpdateEnemies
         LDA #$0A
         STA dataIndex
         LSR
-        ; Store $08 in numberOfSpritesToDo
-        STA numberOfSpritesToDo
+        ; Store $08 in numberOfEnemiesToUpdate
+        STA numberOfEnemiesToUpdate
         LDA #$FF
         STA currentSpriteMultiColorMode
         STA currentSpriteDisplayEnable
         LDA #$00
         STA currentSpriteBackgroundDisplayPriority
 
-b1C0E   LDY numberOfSpritesToDo
+EnemyUpdateLoop   
+        LDY numberOfEnemiesToUpdate
         STY spriteIndex
-        LDA indexToFunctionPtrArray,Y
+        LDA indexToEnemyUpdatePtrArray,Y
         AND #$0E
-        BEQ b1C2E
+        BEQ SkipEnemyUpdate
 
         ; Run a function for the sprite.
         TAX
-        LDA functionPtrArray,X
+        LDA enemyUpdatePtrArray,X
         STA functionHiPtr
-        LDA functionPtrArray + $01,X
+        LDA enemyUpdatePtrArray + $01,X
         STA functionLoPtr
+
         JSR GetCurrentSprite
-        LDY numberOfSpritesToDo
+        LDY numberOfEnemiesToUpdate
 functionHiPtr   =*+$01
 functionLoPtr   =*+$02
-        JSR PerformDetailedUpdateForSprite
+        JSR UpdateEnemyPositions
 
-b1C2E   DEC dataIndex
+SkipEnemyUpdate
         DEC dataIndex
-        DEC numberOfSpritesToDo
-        BPL b1C0E
+        DEC dataIndex
+        DEC numberOfEnemiesToUpdate
+        BPL EnemyUpdateLoop
         RTS
 
 ;--------------------------------------------------------------------
-; UpdateSpritePositionValueAndFunctionPtrIndex
+; RemoveEnemy
 ;--------------------------------------------------------------------
-UpdateSpritePositionValueAndFunctionPtrIndex
-        JSR IncrementSpriteXPos
+RemoveEnemy
+        JSR IncrementSpriteXPosToFollowManta
         LDA someKindOfFrameRate
         AND #$01
         BNE b1C57
@@ -3231,8 +3317,8 @@ UpdateSpritePositionValueAndFunctionPtrIndex
         BCC b1C57
         LDA #$00
         STA currentSpriteDisplayEnable
-        LDY stashedYValue
-        STA indexToFunctionPtrArray,Y
+        LDY numberOfEnemiesToUpdate
+        STA indexToEnemyUpdatePtrArray,Y ; DoNothing
         DEC usedToCheckIfWeShouldLaunchMine
         JSR DisplayCurrentSprite
         RTS
@@ -3240,19 +3326,20 @@ UpdateSpritePositionValueAndFunctionPtrIndex
 b1C57   JMP DetectSpriteLeavingScreen
 
 ;-------------------------------------------------------------------
-; IncrementSpriteXPos
+; IncrementSpriteXPosToFollowManta
 ;-------------------------------------------------------------------
-IncrementSpriteXPos
+IncrementSpriteXPosToFollowManta
         CLC
         LDA mantaDirectionAndSpeed
-        BMI b1C68
+        BMI MantaGoingLeft
         ADC currentSpriteXPos
         STA currentSpriteXPos
         BCC b1C67
         INC currentSpriteMSBXPosOffset
 b1C67   RTS
 
-b1C68   ADC currentSpriteXPos
+MantaGoingLeft
+        ADC currentSpriteXPos
         STA currentSpriteXPos
         LDA currentSpriteMSBXPosOffset
         ADC #$FF
@@ -3260,165 +3347,286 @@ b1C68   ADC currentSpriteXPos
         RTS
 
 ;-------------------------------------------------------------------
-; PerformDetailedUpdateForSprite
+; UpdateEnemyPositions
 ;-------------------------------------------------------------------
-PerformDetailedUpdateForSprite
-        JSR IncrementSpriteXPos
-        JSR CalculateSpriteXYPos
-        LDA fA4B0,Y
-        BNE b1CA7
+UpdateEnemyPositions
+        JSR IncrementSpriteXPosToFollowManta
+        JSR UpdateEnemySpriteXYPos
+
+        LDA durationOfMovementStrategyForEnemy,Y
+        BNE AnalyseMovementStrategy
+
+        ; Get the new movement strategy.
         LDX dataIndex
-        LDA (a70,X)
+        LDA (enemyMovementStrategyLoPtr,X)
         CMP #$FF
-        BEQ b1CA7
-        INC a70,X
+        BEQ AnalyseMovementStrategy
+        INC enemyMovementStrategyLoPtr,X
         BNE b1C8C
-        INC a71,X
-b1C8C   PHA
+        INC enemyMovementStrategyHiPtr,X
+
+b1C8C
+        PHA
         AND #$7F
-        STA fA4B8,Y
+        STA enemyMovementStrategies,Y
         PLA
         BMI b1C9C
         LDA #$01
-        STA fA4B0,Y
-        BNE b1CA7
-b1C9C   LDA (a70,X)
-        STA fA4B0,Y
-        INC a70,X
-        BNE b1CA7
-        INC a71,X
-b1CA7   LDA fA4B0,Y
+        STA durationOfMovementStrategyForEnemy,Y
+        BNE AnalyseMovementStrategy
+
+        ; Get the duration of the new movement strategy.
+b1C9C   LDA (enemyMovementStrategyLoPtr,X)
+        STA durationOfMovementStrategyForEnemy,Y
+        INC enemyMovementStrategyLoPtr,X
+        BNE AnalyseMovementStrategy
+        INC enemyMovementStrategyHiPtr,X
+
+AnalyseMovementStrategy
+        ; Deduct a single tick from the duration of time
+        ; that we will perform this strategy.
+        LDA durationOfMovementStrategyForEnemy,Y
         SEC
         SBC #$01
-        STA fA4B0,Y
-        LDA fA4B8,Y
-        STA a6F
-        BNE b1CBA
-        JMP j1DB0
+        STA durationOfMovementStrategyForEnemy,Y
 
-b1CBA   AND #$0F
-        BEQ b1D31
+        ; Inspect our movement strategy and decide what
+        ; movement to perform.
+        LDA enemyMovementStrategies,Y
+        STA currentEnemyMovementStrategy
+        BNE CheckIfContainsMovements
+        JMP FireBulletInstead
+
+        ; Check the last 4 bits of the movement strategy
+        ; for movement instructions. Note that 'movement' here
+        ; means changing the direction of acceleration. So if
+        ; the enemy is already moving forward, "moving backward"
+        ; will at first slow them down before eventually moving
+        ; them backward.
+        ; Bit 1 ($01) - Move backwards.
+        ; Bit 2 ($02) - Move forwards.
+        ; Bit 3 ($04) - move downwards.
+        ; Bit 3 ($08) - move upwards
+CheckIfContainsMovements
+        AND #$0F
+        BEQ CheckAttackStrategy
+
+        ; Bit 1 ($01) - Move backwards.
+        ; Check if the strategy has a backward movement.
+CheckForBackwardXMovementInStrategy
         AND #$01
-        BEQ b1CDE
-        LDA fA4C0,Y
-        CLC
-        ADC a63
-        STA fA4C0,Y
-        LDA currentSpriteXPosArray,Y
-        ADC a64
-        STA currentSpriteXPosArray,Y
-        LDA currentSpriteMSBXPosOffsetArray,Y
-        ADC a64
-        STA currentSpriteMSBXPosOffsetArray,Y
-        JMP j1CFD
+        BEQ CheckForForwardMovementInStrategy
 
-b1CDE   LDA a6F
+        ; Move the enemy backward
+        ; We add the velocity for this enemy to itself until
+        ; it rolls over to zero again and the carry bit is set.
+        ; We advance the enemy every time the carry bit is set.
+        LDA enemyXPosVelocityLimitArray,Y
+        CLC
+        ADC enemyXPosBackwardVelocity
+        STA enemyXPosVelocityLimitArray,Y
+
+        ; If the carry bit has been set above, this will advance the enemy
+        ; by one pixel.
+        LDA enemyXPosCurrentVelocityArray,Y
+        ADC enemyXPosBackwardIncrement
+        STA enemyXPosCurrentVelocityArray,Y
+
+        ; As above, we will only increment the top bit of our X pos if the
+        ; carry bit has been set when adding the increment.
+        LDA enemyXPosCurrentVelocityMSBOffsetArray,Y
+        ADC enemyXPosBackwardIncrement
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
+
+        JMP CheckForDownwardMovementInStrategy
+
+        ; Bit 2 ($02) - Move forwards.
+        ; Check if the strategy has a forward movement.
+CheckForForwardMovementInStrategy
+        LDA currentEnemyMovementStrategy
         AND #$02
-        BEQ j1CFD
-        LDA fA4C0,Y
+        BEQ CheckForDownwardMovementInStrategy
+
+        ; Move the enemy forward
+        ; We add the velocity for this enemy to itself until
+        ; it rolls over to zero again and the carry bit is set.
+        ; We advance the enemy every time the carry bit is set.
+        LDA enemyXPosVelocityLimitArray,Y
         CLC
-        ADC a66
-        STA fA4C0,Y
-        LDA currentSpriteXPosArray,Y
-        ADC a67
-        STA currentSpriteXPosArray,Y
-        LDA currentSpriteMSBXPosOffsetArray,Y
-        ADC a67
-        STA currentSpriteMSBXPosOffsetArray,Y
-j1CFD   LDA a6F
+        ADC enemyXPosForwardVelocity
+        STA enemyXPosVelocityLimitArray,Y
+
+        ; If the carry bit has been set above, this will advance the enemy
+        ; by one pixel.
+        LDA enemyXPosCurrentVelocityArray,Y
+        ADC enemyXPosForwardIncrement
+        STA enemyXPosCurrentVelocityArray,Y
+
+        ; As above, we will only increment the top bit of our X pos if the
+        ; carry bit has been set when adding the increment.
+        LDA enemyXPosCurrentVelocityMSBOffsetArray,Y
+        ADC enemyXPosForwardIncrement
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
+
+        ; Bit 3 ($04) - move downwards.
+        ; Check for downward movement.
+CheckForDownwardMovementInStrategy
+        LDA currentEnemyMovementStrategy
         AND #$04
-        BEQ b1D17
-        LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        CLC
-        ADC a82
-        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        LDA currentSpriteYPosArray,Y
-        ADC a83
-        STA currentSpriteYPosArray,Y
-        JMP j1DB0
+        BEQ CheckForUpwardMovementInStrategy
 
-b1D17   LDA a6F
+        ; We add the velocity for this enemy to itself until
+        ; it rolls over to zero again and the carry bit is set.
+        ; We advance the enemy every time the carry bit is set.
+        LDA enemyYPosVelocityLimitArray,Y
+        CLC
+        ADC enemyYPosDownwardVelocity
+        STA enemyYPosVelocityLimitArray,Y
+
+        ; If the carry bit has been set above, this will advance the enemy
+        ; by one pixel.
+        LDA enemyYPosCurrentVelocityArray,Y
+        ADC enemyYPosDownwardIncrement
+        STA enemyYPosCurrentVelocityArray,Y
+        JMP FireBulletInstead
+
+        ; Bit 3 ($08) - move upwards
+        ; Check for upward movement.
+CheckForUpwardMovementInStrategy
+        LDA currentEnemyMovementStrategy
         AND #$08
-        BEQ b1D2E
-        LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        CLC
-        ADC a80
-        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        LDA currentSpriteYPosArray,Y
-        ADC a81
-        STA currentSpriteYPosArray,Y
-b1D2E   JMP j1DB0
+        BEQ JustFireBullet
 
-b1D31   LDA a6F
+        ; We add the velocity for this enemy to itself until
+        ; it rolls over to zero again and the carry bit is set.
+        ; We advance the enemy every time the carry bit is set.
+        LDA enemyYPosVelocityLimitArray,Y
+        CLC
+        ADC enemyYPosUpwardVelocity
+        STA enemyYPosVelocityLimitArray,Y
+
+        ; If the carry bit has been set above, this will advance the enemy
+        ; by one pixel.
+        LDA enemyYPosCurrentVelocityArray,Y
+        ADC enemyYPosUpwardIncrement
+        STA enemyYPosCurrentVelocityArray,Y
+
+JustFireBullet
+        JMP FireBulletInstead
+
+        ; Check the first 4 bits of the strategy for our attack strategy.
+        ; Bit 1 ($10) - check whether we can fire a bullet.
+        ; Bit 2 ($20) - looks like slow the enemy down to crawl?
+        ; Bit 3 ($40) - move towards the manta.
+        ; Otherwise check if we should launch a mine?
+CheckAttackStrategy
+      
+        ; First check if we should fire a bullet.
+CheckFiringStrategy
+        LDA currentEnemyMovementStrategy
         AND #$10
-        BEQ b1D44
-        LDA fA4E8,Y
+        BEQ SlowDownToACrawl
+
+        LDA enemyFiringStrategy,Y
         CMP #$80
         BNE b1D41
         JSR MaybeFireEnemyShipBullet
-b1D41   JMP j1DCB
+b1D41   JMP MaybeAnimateEnemyMovememnt
 
-b1D44   LDA a6F
+       ; Check if we should slow down to a crawl.
+SlowDownToACrawl
+        LDA currentEnemyMovementStrategy
         AND #$20
-        BEQ b1D5E
-        LDA #$00
-        STA fA4C0,Y
-        STA currentSpriteXPosArray,Y
-        STA currentSpriteMSBXPosOffsetArray,Y
-        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        STA currentSpriteYPosArray,Y
-        JMP j1DCB
+        BEQ CheckWhetherToMoveEnemyTowardsManta
 
-b1D5E   LDA a6F
+        ; Erase the enemy.
+        LDA #$00
+        STA enemyXPosVelocityLimitArray,Y
+        STA enemyXPosCurrentVelocityArray,Y
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
+        STA enemyYPosVelocityLimitArray,Y
+        STA enemyYPosCurrentVelocityArray,Y
+        JMP MaybeAnimateEnemyMovememnt
+
+        ; Check whether we should move towards the manta.
+CheckWhetherToMoveEnemyTowardsManta
+        LDA currentEnemyMovementStrategy
         AND #$40
-        BEQ j1DB0
+        BEQ FireBulletInstead
+
+        ; Check the enemy's position relatve to the manta.
+        ; - Fire if level with the manta.
+        ; - Move down if higher than the manta.
+        ; - Mote up if below the manta.
         LDA currentSpriteYPos
         CMP mantaCurrentYPos
-        BEQ b1DA8
-        BCC b1D8B
-        LDA currentSpriteYPosArray,Y
-        BEQ b1D77
-        BPL b1DA8
+        BEQ GoAheadAndFireBullet
+        BCC MoveEnemyDownTowardsManta
+        LDA enemyYPosCurrentVelocityArray,Y
+        BEQ MoveEnemyUpTowardsManta
+        BPL GoAheadAndFireBullet
         CMP #$FC
-        BCC j1DB0
-b1D77   LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        CLC
-        ADC a80
-        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        LDA currentSpriteYPosArray,Y
-        ADC a81
-        STA currentSpriteYPosArray,Y
-        JMP j1DB0
+        BCC FireBulletInstead
 
-b1D8B   LDA currentSpriteYPosArray,Y
-        BMI b1DA8
+MoveEnemyUpTowardsManta
+        ; We add the velocity for this enemy to itself until
+        ; it rolls over to zero again and the carry bit is set.
+        ; We advance the enemy every time the carry bit is set.
+        LDA enemyYPosVelocityLimitArray,Y
+        CLC
+        ADC enemyYPosUpwardVelocity
+        STA enemyYPosVelocityLimitArray,Y
+
+        ; If the carry bit has been set above, this will advance the enemy
+        ; by one pixel.
+        LDA enemyYPosCurrentVelocityArray,Y
+        ADC enemyYPosUpwardIncrement
+        STA enemyYPosCurrentVelocityArray,Y
+
+        JMP FireBulletInstead
+
+MoveEnemyDownTowardsManta
+        LDA enemyYPosCurrentVelocityArray,Y
+        BMI GoAheadAndFireBullet
         CMP #$05
-        BCS j1DB0
-        LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        CLC
-        ADC a82
-        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        LDA currentSpriteYPosArray,Y
-        ADC a83
-        STA currentSpriteYPosArray,Y
-        JMP j1DB0
+        BCS FireBulletInstead
 
-b1DA8   LDA #$00
-        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
-        STA currentSpriteYPosArray,Y
-j1DB0   LDA someKindOfFrameRate
+        ; We add the velocity for this enemy to itself until
+        ; it rolls over to zero again and the carry bit is set.
+        ; We advance the enemy every time the carry bit is set.
+        LDA enemyYPosVelocityLimitArray,Y
+        CLC
+        ADC enemyYPosDownwardVelocity
+        STA enemyYPosVelocityLimitArray,Y
+
+        ; If the carry bit has been set above, this will advance the enemy
+        ; by one pixel.
+        LDA enemyYPosCurrentVelocityArray,Y
+        ADC enemyYPosDownwardIncrement
+        STA enemyYPosCurrentVelocityArray,Y
+        JMP FireBulletInstead
+
+GoAheadAndFireBullet
+        LDA #$00
+        STA enemyYPosVelocityLimitArray,Y
+        STA enemyYPosCurrentVelocityArray,Y
+
+FireBulletInstead
+        LDA someKindOfFrameRate
         AND #$07
         CMP spriteIndex
-        BNE j1DCB
-        LDA fA4E8,Y
+        BNE MaybeAnimateEnemyMovememnt
+        LDA enemyFiringStrategy,Y
         CMP #$80
-        BNE j1DCB
-        LDA a69
-        BEQ j1DCB
+        BNE MaybeAnimateEnemyMovememnt
+        LDA whetherToFireEnemyBulletOrMine
+        BEQ MaybeAnimateEnemyMovememnt
         CMP $D41B    ; Random Number Generator
-        BCC j1DCB
+        BCC MaybeAnimateEnemyMovememnt
         JSR MaybeFireEnemyShipBullet
-j1DCB   LDA currentSpriteMSBXPosOffset
+
+MaybeAnimateEnemyMovememnt
+        LDA currentSpriteMSBXPosOffset
         ROR
         LDA currentSpriteXPos
         ROR
@@ -3427,12 +3635,13 @@ j1DCB   LDA currentSpriteMSBXPosOffset
         SEC
         SBC #$02
         CMP #$27
-        BCC b1DDD
+        BCC CheckIfBulletHitEnemyShip
         JMP AnimateEnemyShips
 
-b1DDD   STA a0F
+CheckIfBulletHitEnemyShip
+        STA a0F
         LDA #$80
-        STA fA4E8,Y
+        STA enemyFiringStrategy,Y
         LDA currentSpriteYPos  ; Get the enemy's Y position.
         LSR                    ; Divide by 8 to get a character position.
         LSR
@@ -3441,11 +3650,11 @@ b1DDD   STA a0F
         SBC #$05
         CMP #$17               ; If it's too low to be hit by a bullet, return.
         BCC b1DF3
-        JMP UpdateSPriteContentAndPositionAndReturn
+        JMP UpdateEnemyContentAndPositionAndReturn
 
 b1DF3   CMP #$06               ; If it's too high to be hit by a bullet, return.
         BCS b1DFA
-        JMP UpdateSPriteContentAndPositionAndReturn
+        JMP UpdateEnemyContentAndPositionAndReturn
 
         ; Check the characters underneath the enemy sprite to see if
         ; any one of them is a bullet.
@@ -3477,7 +3686,7 @@ b1E0C   LDY #$00
         LDA (srcLoPtr),Y
         CMP #$20
         BCC EnemyShipWasHit
-        JMP UpdateSPriteContentAndPositionAndReturn
+        JMP UpdateEnemyContentAndPositionAndReturn
 
         ; A bullet has hit the enemy sprite, so kill it and award a score.
 EnemyShipWasHit
@@ -3494,19 +3703,19 @@ EnemyShipWasHit
         STA (ramLoPtr),Y
         LDA #$00
         STA playerBulletSlotArray,X
-b1E4B   LDA a68
+b1E4B   LDA whetherScoreAwardedForHittingEnemy
         BNE b1E54
         LDY scoreToAddForHittingEnemy
         JSR AddScoresFromHittingStuff
 b1E54   LDA #$26
         STA soundVariable2
         LDY stashedYValue
-        LDA #$06
-        STA indexToFunctionPtrArray,Y
+        LDA #$06         ; RemoveEnemy
+        STA indexToEnemyUpdatePtrArray,Y
         LDA #$14
         STA currentSpriteValue
         DEC numberOfEnemiesSpawned
-        JMP UpdateSPriteContentAndPositionAndReturn
+        JMP UpdateEnemyContentAndPositionAndReturn
 
 ;--------------------------------------------------------------------
 ; AnimateEnemyShips
@@ -3514,33 +3723,33 @@ b1E54   LDA #$26
 AnimateEnemyShips
         LDA currentSpriteMSBXPosOffset
         AND #$01
-        BEQ UpdateSPriteContentAndPositionAndReturn
-        LDA fA4E8,Y
+        BEQ UpdateEnemyContentAndPositionAndReturn
+        LDA enemyFiringStrategy,Y
         CMP #$80
         BNE b1E87
         LDA currentSpriteXPos
         BMI b1E80
         LDA #$FF
-        STA fA4E8,Y
-        BNE UpdateSPriteContentAndPositionAndReturn
+        STA enemyFiringStrategy,Y
+        BNE UpdateEnemyContentAndPositionAndReturn
 b1E80   LDA #$00
-        STA fA4E8,Y
-        BEQ UpdateSPriteContentAndPositionAndReturn
+        STA enemyFiringStrategy,Y
+        BEQ UpdateEnemyContentAndPositionAndReturn
 b1E87   CMP #$FF
         BNE b1E93
         LDA currentSpriteXPos
         CMP #$E8
-        BCC UpdateSPriteContentAndPositionAndReturn
+        BCC UpdateEnemyContentAndPositionAndReturn
         BCS b1E99
 b1E93   LDA currentSpriteXPos
         CMP #$78
-        BCS UpdateSPriteContentAndPositionAndReturn
+        BCS UpdateEnemyContentAndPositionAndReturn
 b1E99   LDA #$00
         STA currentSpriteDisplayEnable
-        STA indexToFunctionPtrArray,Y
+        STA indexToEnemyUpdatePtrArray,Y   ; DoNothing
         DEC usedToCheckIfWeShouldLaunchMine
 
-UpdateSPriteContentAndPositionAndReturn
+UpdateEnemyContentAndPositionAndReturn
         JSR DisplayCurrentSprite
         RTS
 
@@ -3558,7 +3767,7 @@ DetectSpriteLeavingScreen
         BCS b1EBF
         LDA #$00
         STA currentSpriteDisplayEnable
-        STA indexToFunctionPtrArray,Y
+        STA indexToEnemyUpdatePtrArray,Y   ; DoNothing
         DEC usedToCheckIfWeShouldLaunchMine
 b1EBF   JSR DisplayCurrentSprite
         RTS
@@ -3567,12 +3776,12 @@ b1EBF   JSR DisplayCurrentSprite
 ; MaybeAnimateEnemyBullet
 ;--------------------------------------------------------------------
 MaybeAnimateEnemyBullet
-        JSR IncrementSpriteXPos
-        JSR CalculateSpriteXYPos
-        LDA fA4B0,Y
+        JSR IncrementSpriteXPosToFollowManta
+        JSR UpdateEnemySpriteXYPos
+        LDA durationOfMovementStrategyForEnemy,Y
         SEC
         SBC #$01
-        STA fA4B0,Y
+        STA durationOfMovementStrategyForEnemy,Y
         BEQ EnemyBulletIsOffScreen
         JSR AnimateEnemyBullet
         BCC b1EE1
@@ -3589,29 +3798,32 @@ b1EE1   JMP DetectSpriteLeavingScreen
 EnemyBulletIsOffScreen
         LDA #$14
         STA currentSpriteValue
-        LDA #$06
-        STA indexToFunctionPtrArray,Y
+        LDA #$06    ; RemoveEnemy
+        STA indexToEnemyUpdatePtrArray,Y
         LDA #$0A
         STA soundVariable2
         JMP DetectSpriteLeavingScreen
         ; Returns
 
 ;-------------------------------------------------------------------
-; CalculateSpriteXYPos
+; UpdateEnemySpriteXYPos
 ;-------------------------------------------------------------------
-CalculateSpriteXYPos
-        LDA currentSpriteXPosArray,Y
+UpdateEnemySpriteXYPos
+        LDA enemyXPosCurrentVelocityArray,Y
         CLC
         ADC currentSpriteXPos
         STA currentSpriteXPos
-        LDA currentSpriteMSBXPosOffsetArray,Y
+
+        LDA enemyXPosCurrentVelocityMSBOffsetArray,Y
         ADC currentSpriteMSBXPosOffset
         STA currentSpriteMSBXPosOffset
-        LDA apparentDuplicateOfCurrentSpriteYPosArray,Y
+
+        LDA enemyYPosVelocityLimitArray,Y
         ASL
-        LDA currentSpriteYPosArray,Y
+        LDA enemyYPosCurrentVelocityArray,Y
         ADC currentSpriteYPos
         STA currentSpriteYPos
+
         RTS
 
 ;-------------------------------------------------------------------
@@ -3626,7 +3838,7 @@ MaybeFireEnemyShipBullet
         ; Check each of the five ships in the formation, if it should
         ; fire a bullet.
         LDY #$05
-b1F11   LDA indexToFunctionPtrArray,Y
+b1F11   LDA indexToEnemyUpdatePtrArray,Y
         BEQ FireBulletFromEnemyShip
         DEY
         BPL b1F11
@@ -3646,22 +3858,22 @@ FireBulletFromEnemyShip
         STA currentSpriteValue
         JSR DisplayCurrentSprite
         LDY stashedYValue
-        LDA currentSpriteXPosArray,Y
-        LDX currentSpriteMSBXPosOffsetArray,Y
+        LDA enemyXPosCurrentVelocityArray,Y
+        LDX enemyXPosCurrentVelocityMSBOffsetArray,Y
         LDY spriteIndex
         CLC
         ADC enemyBulletXPosAnimationRate
-        STA currentSpriteXPosArray,Y
+        STA enemyXPosCurrentVelocityArray,Y
         TXA
-        ADC a6B
-        STA currentSpriteMSBXPosOffsetArray,Y
+        ADC enemyBulletXPosIncrement
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
         LDA #$00
-        STA currentSpriteYPosArray,Y
-        STA apparentDuplicateOfCurrentSpriteYPosArray,Y
+        STA enemyYPosCurrentVelocityArray,Y
+        STA enemyYPosVelocityLimitArray,Y
         LDA #$04 ; MaybeAnimateEnemyBullet
-        STA indexToFunctionPtrArray,Y
+        STA indexToEnemyUpdatePtrArray,Y
         LDA #$A0
-        STA fA4B0,Y
+        STA durationOfMovementStrategyForEnemy,Y
         PLA
         STA currentSpriteValue
         INC usedToCheckIfWeShouldLaunchMine
@@ -3675,7 +3887,7 @@ FireBulletFromEnemyShip
 ; MaybeAnimateMineCreation
 ;--------------------------------------------------------------------
 MaybeAnimateMineCreation
-        JSR IncrementSpriteXPos
+        JSR IncrementSpriteXPosToFollowManta
         LDA someKindOfFrameRate
         AND #$03
         BNE b1F7C
@@ -3683,8 +3895,8 @@ MaybeAnimateMineCreation
         LDA currentSpriteValue
         CMP #$14
         BCS b1F7C
-        LDA #$0A
-        STA indexToFunctionPtrArray,Y
+        LDA #$0A  ; MaybeMineExplodes
+        STA indexToEnemyUpdatePtrArray,Y
         LDA #$11
         STA currentSpriteValue
 b1F7C   JMP DetectSpriteLeavingScreen
@@ -3695,7 +3907,7 @@ b1F7C   JMP DetectSpriteLeavingScreen
 MaybeLaunchMine
         LDA usedToCheckIfWeShouldLaunchMine
         BPL b1F9A
-        LDA a69
+        LDA whetherToFireEnemyBulletOrMine
         BEQ b1F9A
         LSR
         LSR
@@ -3714,7 +3926,7 @@ b1F9A   RTS
 ;--------------------------------------------------------------------
 LaunchMine
         LDY #$05
-b1F9D   LDA indexToFunctionPtrArray,Y
+b1F9D   LDA indexToEnemyUpdatePtrArray,Y
         BEQ b1FA6
         DEY
         BPL b1F9D
@@ -3727,18 +3939,18 @@ b1FA6   STY spriteIndex
         STA currentSpriteValue
         LDA #$0D
         STA soundVariable2
-        LDA #$08
-        STA indexToFunctionPtrArray,Y
+        LDA #$08 ; MaybeAnimateMineCreation
+        STA indexToEnemyUpdatePtrArray,Y
         LDA indexToCurrentLevelTextureData
         ASL
         ASL
-        ADC a28
+        ADC selectForBulletsOrMines
         ORA #$80
-        STA fA4B0,Y
+        STA durationOfMovementStrategyForEnemy,Y
         LDA #$00
-        STA currentSpriteXPosArray,Y
-        STA currentSpriteMSBXPosOffsetArray,Y
-        STA currentSpriteYPosArray,Y
+        STA enemyXPosCurrentVelocityArray,Y
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
+        STA enemyYPosCurrentVelocityArray,Y
         LDA $0220,X
         ASL
         ASL
@@ -3802,14 +4014,15 @@ ClearCarry
 ; MaybeMineExplodes
 ;--------------------------------------------------------------------
 MaybeMineExplodes
-        JSR IncrementSpriteXPos
-        JSR CalculateSpriteXYPos
+        JSR IncrementSpriteXPosToFollowManta
+        JSR UpdateEnemySpriteXYPos
         JSR AnimateMineMovememnt
-        LDA fA4B0,Y
+        LDA durationOfMovementStrategyForEnemy,Y
         SEC
         SBC #$01
-        STA fA4B0,Y
-        BEQ b204F
+        STA durationOfMovementStrategyForEnemy,Y
+        BEQ MineOffScreen
+
         AND #$0F
         CMP spriteIndex
         BNE b203F
@@ -3823,10 +4036,11 @@ b203F   JSR AnimateEnemyBullet
 a204A   INC hasShipBeenHit
 b204C   JMP DetectSpriteLeavingScreen
 
-b204F   LDA #$14
+MineOffScreen
+        LDA #$14
         STA currentSpriteValue
-        LDA #$06
-        STA indexToFunctionPtrArray,Y
+        LDA #$06 ; RemoveEnemy
+        STA indexToEnemyUpdatePtrArray,Y
         LDA #$0A
         STA soundVariable1
         JMP DetectSpriteLeavingScreen
@@ -3841,15 +4055,15 @@ AnimateMineMovememnt
         LDA currentSpriteYPos
         CMP mantaCurrentYPos
         BCC b2074
-        LDA currentSpriteYPosArray,Y
+        LDA enemyYPosCurrentVelocityArray,Y
         SEC
         SBC #$01
         JMP j207A
 
-b2074   LDA currentSpriteYPosArray,Y
+b2074   LDA enemyYPosCurrentVelocityArray,Y
         CLC
         ADC #$01
-j207A   STA currentSpriteYPosArray,Y
+j207A   STA enemyYPosCurrentVelocityArray,Y
         LDA currentSpriteMSBXPosOffset
         AND #$01
         BNE b208B
@@ -3860,46 +4074,46 @@ j207A   STA currentSpriteYPosArray,Y
 b208B   LDA currentSpriteXPos
         CMP #$A0
         BCC b20A5
-b2091   LDA currentSpriteXPosArray,Y
+b2091   LDA enemyXPosCurrentVelocityArray,Y
         CLC
         ADC #$01
-        STA currentSpriteXPosArray,Y
-        LDA currentSpriteMSBXPosOffsetArray,Y
+        STA enemyXPosCurrentVelocityArray,Y
+        LDA enemyXPosCurrentVelocityMSBOffsetArray,Y
         ADC #$00
-        STA currentSpriteMSBXPosOffsetArray,Y
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
         JMP j20B6
 
-b20A5   LDA currentSpriteXPosArray,Y
+b20A5   LDA enemyXPosCurrentVelocityArray,Y
         CLC
         ADC #$FF
-        STA currentSpriteXPosArray,Y
-        LDA currentSpriteMSBXPosOffsetArray,Y
+        STA enemyXPosCurrentVelocityArray,Y
+        LDA enemyXPosCurrentVelocityMSBOffsetArray,Y
         ADC #$FF
-        STA currentSpriteMSBXPosOffsetArray,Y
+        STA enemyXPosCurrentVelocityMSBOffsetArray,Y
 j20B6   BPL b20DE
-        LDA currentSpriteXPosArray,Y
+        LDA enemyXPosCurrentVelocityArray,Y
         CMP #$FA
         BCS b20C4
         LDA #$FA
-        STA currentSpriteXPosArray,Y
-b20C4   LDA currentSpriteYPosArray,Y
+        STA enemyXPosCurrentVelocityArray,Y
+b20C4   LDA enemyYPosCurrentVelocityArray,Y
         BPL b20D3
         CMP #$FC
         BCS b20D2
         LDA #$FC
-        STA currentSpriteYPosArray,Y
+        STA enemyYPosCurrentVelocityArray,Y
 b20D2   RTS
 
 b20D3   CMP #$04
         BCC b20D2
         LDA #$04
-        STA currentSpriteYPosArray,Y
+        STA enemyYPosCurrentVelocityArray,Y
         BNE b20D2
-b20DE   LDA currentSpriteXPosArray,Y
+b20DE   LDA enemyXPosCurrentVelocityArray,Y
         CMP #$06
         BCC b20C4
         LDA #$06
-        STA currentSpriteXPosArray,Y
+        STA enemyXPosCurrentVelocityArray,Y
         BNE b20C4
 
 ;-------------------------------------------------------------------
@@ -4017,7 +4231,7 @@ EnterDemoModeUntilDeadOrPlayerPressesFire
         STA playerScore + $01
         STA playerScore + $02
         STA playerScore + $03
-        STA playerScore + $04
+        STA indexCurrentEnemyFormation
         LDA #$07
         STA indexToTextureSegment
         LDA #$10
@@ -4062,8 +4276,8 @@ DemoLoop
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
         JSR UpdateColorsOnScreen
-        JSR UpdateSpriteAndRunFunctionPerSprite
-        JSR UpdateAndDisplaySomeSprites
+        JSR UpdateEnemies
+        JSR MaybeCreateNewEnemyFormation
         JSR GetJoystickInput
         JSR CheckForKeyboardCommands
         JSR UpdateVolumeSetting
@@ -4938,9 +5152,9 @@ DrawMantaAnimationFrame
         ; Falls through
 
 ;-------------------------------------------------------------------
-; DoSomethingWithSprites
+; UpdateCannonsInSomeWay
 ;-------------------------------------------------------------------
-DoSomethingWithSprites
+UpdateCannonsInSomeWay
         LDY newSpriteValue
         LDA f33E8,Y
         STA a56
@@ -5545,7 +5759,7 @@ MaybeShowPauseScreen
         JSR CheckIfPauseOrFireHasBeenPressed
         LDA pausePressed
         AND #$80
-        BNE ReturnEarly
+        BNE DoNothing
         LDX #<pauseText
         LDY #>pauseText
         JSR WriteToScreen
@@ -5589,9 +5803,9 @@ SecondPauseLoop
         JMP SecondPauseLoop
 
 ;--------------------------------------------------------------------
-; ReturnEarly
+; DoNothing
 ;--------------------------------------------------------------------
-ReturnEarly
+DoNothing
         RTS
 
 ;--------------------------------------------------------------------

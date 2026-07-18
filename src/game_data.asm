@@ -17,6 +17,26 @@
         .cdef "xz", $21
         .cdef "09", $00
 
+starDataHiPtrArray = $A400
+starDataLoPtrArray = $A410
+starsBehindDreadnought = $A420
+playerBulletRamLoPtrArray = $A430
+playerBulletRamHiPtrArray = $A440
+charBehindPlayerBulletArray    = $A450
+playerBulletSlotArray = $A460
+bulletOffsetsInCharsetDef = $A470
+currentColorLineHiPtrArray = $A480
+indexToEnemyUpdatePtrArray = $A490
+enemyXPosCurrentVelocityArray = $A498
+enemyYPosCurrentVelocityArray = $A4A0
+enemyXPosCurrentVelocityMSBOffsetArray = $A4A8
+durationOfMovementStrategyForEnemy = $A4B0
+enemyMovementStrategies = $A4B8
+enemyXPosVelocityLimitArray = $A4C0
+enemyYPosVelocityLimitArray = $A4C8
+enemyFiringStrategy = $A4E8
+seedPositionsOfStarsBehindDreadnought = $A518
+
 miniGameUpdateRateForLevel
         .BYTE $00,$90,$98,$A0,$A8,$B0,$B8,$C0
         .BYTE $C4,$C8,$CC,$D0,$D4,$D8,$DC,$E0
@@ -354,12 +374,12 @@ currentColorValueArray
         .BYTE M_LTBLUE,M_GRAY2,M_GRAY1,M_LTGREEN,M_GRAY3,M_LTGREEN,M_GRAY1,M_GRAY2
 
 
-screenWriteJumpTableLoPtr
-        .BYTE <MaybeChangeTitleDecal,<UpdateAndDisplaySomeSprites,<UpdatePlayerScore,<MaybeShowPauseScreen
-        .BYTE <ReturnEarly,<MaybeLaunchMine,<UpdateCurrentColorValue,<MaybeShowPauseScreen
-screenWriteJumpTableHiPtr
-        .BYTE >MaybeChangeTitleDecal,>UpdateAndDisplaySomeSprites,>UpdatePlayerScore,>MaybeShowPauseScreen
-        .BYTE >ReturnEarly,>MaybeLaunchMine,>UpdateCurrentColorValue,>MaybeShowPauseScreen
+mainLoopJumpTableLoPtr
+        .BYTE <MaybeChangeTitleDecal,<MaybeCreateNewEnemyFormation,<UpdatePlayerScore,<MaybeShowPauseScreen
+        .BYTE <DoNothing,<MaybeLaunchMine,<UpdateCurrentColorValue,<MaybeShowPauseScreen
+mainLoopJumpTableHiPtr
+        .BYTE >MaybeChangeTitleDecal,>MaybeCreateNewEnemyFormation,>UpdatePlayerScore,>MaybeShowPauseScreen
+        .BYTE >DoNothing,>MaybeLaunchMine,>UpdateCurrentColorValue,>MaybeShowPauseScreen
 
 
 DemoModeLoPtrFuncArray
@@ -367,17 +387,23 @@ DemoModeLoPtrFuncArray
 DemoModeHiPtrFuncArray
         .BYTE >MaybeChangeTitleDecal,>MaybeLaunchMine,>MaybeUpdateColorScheme,>UpdatePlayerAndJoystickDisplay
 
-functionPtrArray
-        .BYTE <ReturnEarly,>ReturnEarly,<PerformDetailedUpdateForSprite,>PerformDetailedUpdateForSprite
+
+enemyUpdatePtrArray
+        .BYTE <DoNothing,>DoNothing
+        .BYTE <UpdateEnemyPositions,>UpdateEnemyPositions
         .BYTE <MaybeAnimateEnemyBullet,>MaybeAnimateEnemyBullet
-        .BYTE <UpdateSpritePositionValueAndFunctionPtrIndex,>UpdateSpritePositionValueAndFunctionPtrIndex
-        .BYTE <MaybeAnimateMineCreation,>MaybeAnimateMineCreation,<MaybeMineExplodes,>MaybeMineExplodes
-        .BYTE <ReturnEarly,>ReturnEarly
-f36F3   .BYTE $A0,$80,$80,$60,$A0,$A0,$C0,$B0
+        .BYTE <RemoveEnemy, >RemoveEnemy
+        .BYTE <MaybeAnimateMineCreation,>MaybeAnimateMineCreation
+        .BYTE <MaybeMineExplodes,>MaybeMineExplodes
+        .BYTE <DoNothing,>DoNothing
+
+enemyHorizontalVelocityArray
+        .BYTE $A0,$80,$80,$60,$A0,$A0,$C0,$B0
         .BYTE $A0,$40,$70,$60,$80,$90,$70,$80
-f3703   .BYTE $61,$61,$81,$71,$81,$91,$81,$91
+enemyVerticalVelocityArray
+        .BYTE $61,$61,$81,$71,$81,$91,$81,$91
         .BYTE $B1,$21,$61,$51,$41,$71,$61,$41
-f3713   .BYTE $10,$10,$14,$18,$1C,$0C,$18,$1C
+fireBulletOrMineArray   .BYTE $10,$10,$14,$18,$1C,$0C,$18,$1C
         .BYTE $0C,$0A,$18,$10,$0C,$14,$0E,$18
 bulletSpriteArray
         .BYTE BULLET_NARROW,BULLET_5,BULLET_NARROW,BULLET_WIDE,BULLET_5,BULLET_NARROW,BULLET_VERYNARROW,BULLET_NARROW
@@ -772,22 +798,28 @@ initialPositionOfMiniGameScreenData
 
 *=$A100                                        
 scoringStrategyForLevelLoPtrArray = $C100
-        .BYTE <a0000,<level1ScoringStrategy,<level2ScoringStrategy,<level3ScoringStrategy
-        .BYTE <level4ScoringStrategy,<level5ScoringStrategy,<level6ScoringStrategy,<level7ScoringStrategy
-        .BYTE <level8ScoringStrategy,<level9ScoringStrategy,<level10ScoringStrategy,<level11ScoringStrategy
-        .BYTE <level12ScoringStrategy,<level13ScoringStrategy,<level14ScoringStrategy,<level15ScoringStrategy
+        .BYTE <a0000,<level1EnemyFormationOrder,<level2EnemyFormationOrder,<level3EnemyFormationOrder
+        .BYTE <level4EnemyFormationOrder,<level5EnemyFormationOrder,<level6EnemyFormationOrder,<level7EnemyFormationOrder
+        .BYTE <level8EnemyFormationOrder,<level9EnemyFormationOrder,<level10EnemyFormationOrder,<level11EnemyFormationOrder
+        .BYTE <level12EnemyFormationOrder,<level13EnemyFormationOrder,<level14EnemyFormationOrder,<level15EnemyFormationOrder
 scoringStrategyForLevelHiPtrArray = $C110
-        .BYTE >a0000,>level1ScoringStrategy,>level2ScoringStrategy,>level3ScoringStrategy
-        .BYTE >level4ScoringStrategy,>level5ScoringStrategy,>level6ScoringStrategy,>level7ScoringStrategy
-        .BYTE >level8ScoringStrategy,>level9ScoringStrategy,>level10ScoringStrategy,>level11ScoringStrategy
-        .BYTE >level12ScoringStrategy,>level13ScoringStrategy,>level14ScoringStrategy,>level15ScoringStrategy
-fC120 = $C120
-        .BYTE $00,$48,$4C,$5E,$6A,$76,$82,$8E
-        .BYTE $9C,$AA,$B8,$C6,$DE,$EC,$04,$18
-        .BYTE $2C,$40,$54,$74,$78,$88,$9A,$BA
-        .BYTE $C2,$D8,$EE,$04,$1A,$2C,$38,$44
-        .BYTE $4C,$58,$64,$6A,$70,$76,$7C,$8E
-        .BYTE $A0,$00,$00,$00,$00,$00,$00,$00
+        .BYTE >a0000,>level1EnemyFormationOrder,>level2EnemyFormationOrder,>level3EnemyFormationOrder
+        .BYTE >level4EnemyFormationOrder,>level5EnemyFormationOrder,>level6EnemyFormationOrder,>level7EnemyFormationOrder
+        .BYTE >level8EnemyFormationOrder,>level9EnemyFormationOrder,>level10EnemyFormationOrder,>level11EnemyFormationOrder
+        .BYTE >level12EnemyFormationOrder,>level13EnemyFormationOrder,>level14EnemyFormationOrder,>level15EnemyFormationOrder
+
+enemyMovementStrategyLoPtrArray = $C120
+        .BYTE $00,<movementStrategy1,<movementStrategy2,<movementStrategy3,<movementStrategy4
+        .BYTE <movementStrategy5,<movementStrategy6,<movementStrategy7
+        .BYTE <movementStrategy8,<movementStrategy9,<movementStrategy10,<movementStrategy11
+        .BYTE <movementStrategy12,<movementStrategy13,<movementStrategy14,<movementStrategy15
+        .BYTE <movementStrategy16,<movementStrategy17,<movementStrategy18,<movementStrategy19a
+        .BYTE <movementStrategy19,<movementStrategy20,<movementStrategy21,<movementStrategy22
+        .BYTE <movementStrategy23,<movementStrategy24,<movementStrategy25,<movementStrategy26
+        .BYTE <movementStrategy27,<movementStrategy28,<movementStrategy29,<movementStrategy30
+        .BYTE <movementStrategy30a,<movementStrategy31,<movementStrategy32,<movementStrategy33
+        .BYTE <movementStrategy34,<movementStrategy35,<movementStrategy36,<movementStrategy37
+        .BYTE <movementStrategy38,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -796,13 +828,19 @@ fC120 = $C120
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-fC190 = $C190
-        .BYTE $00,$C6,$C6,$C6,$C6,$C6,$C6,$C6
-        .BYTE $C6,$C6,$C6,$C6,$C6,$C6,$C7,$C7
-        .BYTE $C7,$C7,$C7,$C7,$C7,$C7,$C7,$C7
-        .BYTE $C7,$C7,$C7,$C8,$C8,$C8,$C8,$C8
-        .BYTE $C8,$C8,$C8,$C8,$C8,$C8,$C8,$C8
-        .BYTE $C8,$00,$00,$00,$00,$00,$00,$00
+enemyMovementStrategyHiPtrArray = $C190
+        .BYTE $00,>movementStrategy1,>movementStrategy2,>movementStrategy3,>movementStrategy4
+        .BYTE >movementStrategy5,>movementStrategy6,>movementStrategy7
+        .BYTE >movementStrategy8,>movementStrategy9,>movementStrategy10,>movementStrategy11
+        .BYTE >movementStrategy12,>movementStrategy13,>movementStrategy14,>movementStrategy15
+        .BYTE >movementStrategy16,>movementStrategy17,>movementStrategy18,>movementStrategy19a
+        .BYTE >movementStrategy19,>movementStrategy20,>movementStrategy21,>movementStrategy22
+        .BYTE >movementStrategy23,>movementStrategy24,>movementStrategy25,>movementStrategy26
+        .BYTE >movementStrategy27,>movementStrategy28,>movementStrategy29,>movementStrategy30
+        .BYTE >movementStrategy30a,>movementStrategy31,>movementStrategy32,>movementStrategy33
+        .BYTE >movementStrategy34,>movementStrategy35,>movementStrategy36,>movementStrategy37
+        .BYTE >movementStrategy38,$00,$00,$00,$00,$00,$00,$00
+
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -813,263 +851,1185 @@ fC190 = $C190
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         ; End of the Surface Data for Current Level
 
-        .BYTE $01,$01,$01,$01,$01,$00,$9C,$6C
-        .BYTE $B4,$84,$CC,$00,$05,$00,$09,$00
-        .BYTE $02,$02,$02,$00,$00,$00,$9C,$9C
-        .BYTE $9C,$00,$00,$00,$09,$80,$0E,$00
-        .BYTE $0B,$0B,$0B,$00,$00,$00,$CC,$CC
-        .BYTE $CC,$00,$00,$00,$06,$FF,$08,$00
-        .BYTE $03,$01,$05,$00,$00,$00,$84,$9C
-        .BYTE $B4,$00,$00,$00,$00,$00,$03,$00
+enemyFormationData = $C200
+enemyFormationData1 = $C200
+        ; The first six bytes select the movement strategy
+        ; for the formation from enemyMovementStrategyLoPtrArray.
+        .BYTE $01 ; Movement Strategy: Enemy 1
+        .BYTE $01 ; Movement Strategy: Enemy 2
+        .BYTE $01 ; Movement Strategy: Enemy 3
+        .BYTE $01 ; Movement Strategy: Enemy 4
+        .BYTE $01 ; Movement Strategy: Enemy 5
+        .BYTE $00 ; Movement Strategy: Enemy 6
+        ; The next six bytes select the inital Y position for
+        ; each enemy.
+        .BYTE $9C ; Initial Y Position : Enemy 1
+        .BYTE $6C ; Initial Y Position : Enemy 2
+        .BYTE $B4 ; Initial Y Position : Enemy 3
+        .BYTE $84 ; Initial Y Position : Enemy 4
+        .BYTE $CC ; Initial Y Position : Enemy 5
+        .BYTE $00 ; Initial Y Position : Enemy 6
+        ; THe delay before adding the next enemy, think of it as
+        ; the spacing between enemies as they enter the screen.
+        .BYTE $05 ; Delay between spawning enemies.
+        .BYTE $00 ; Initial X Position of Enemy 1
+        ; The last byte is the sprite to be used for the enemies.
+        .BYTE $09 ; Sprite Value for Enemies
+        .BYTE $00 ; End Sentinel
+enemyFormationData2 = $C210
+        .BYTE $02  ; Movement Strategy: Enemy 1
+        .BYTE $02  ; Movement Strategy: Enemy 2
+        .BYTE $02  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $09  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0E  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData3 = $C220
+        .BYTE $0B  ; Movement Strategy: Enemy 1
+        .BYTE $0B  ; Movement Strategy: Enemy 2
+        .BYTE $0B  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $CC  ; Initial Y Position : Enemy 1
+        .BYTE $CC  ; Initial Y Position : Enemy 2
+        .BYTE $CC  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $06  ; Delay between spawning enemies.
+        .BYTE $FF  ; Initial X Position of Enemy 1
+        .BYTE $08  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData4 = $C230
+        .BYTE $03  ; Movement Strategy: Enemy 1
+        .BYTE $01  ; Movement Strategy: Enemy 2
+        .BYTE $05  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $00  ; Initial X Position of Enemy 1
+        .BYTE $03  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData5 = $C240
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $04  ; Movement Strategy: Enemy 2
+        .BYTE $06  ; Movement Strategy: Enemy 3
+        .BYTE $03  ; Movement Strategy: Enemy 4
+        .BYTE $05  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $06  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $01  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData6 = $C250
+        .BYTE $05  ; Movement Strategy: Enemy 1
+        .BYTE $06  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $04  ; Movement Strategy: Enemy 4
+        .BYTE $03  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $05  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $04  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData7 = $C260
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $01  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $01  ; Movement Strategy: Enemy 4
+        .BYTE $01  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $B4  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $CC  ; Initial Y Position : Enemy 4
+        .BYTE $84  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $05  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $00  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData8 = $C270
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $04  ; Movement Strategy: Enemy 2
+        .BYTE $06  ; Movement Strategy: Enemy 3
+        .BYTE $03  ; Movement Strategy: Enemy 4
+        .BYTE $05  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $06  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0D  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData9 = $C280
+        .BYTE $0C  ; Movement Strategy: Enemy 1
+        .BYTE $08  ; Movement Strategy: Enemy 2
+        .BYTE $0A  ; Movement Strategy: Enemy 3
+        .BYTE $07  ; Movement Strategy: Enemy 4
+        .BYTE $09  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $00  ; Initial X Position of Enemy 1
+        .BYTE $05  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData10 = $C290
+        .BYTE $0D  ; Movement Strategy: Enemy 1
+        .BYTE $0D  ; Movement Strategy: Enemy 2
+        .BYTE $0D  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $06  ; Delay between spawning enemies.
+        .BYTE $00  ; Initial X Position of Enemy 1
+        .BYTE $08  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData11 = $C2A0
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $0F  ; Movement Strategy: Enemy 2
+        .BYTE $11  ; Movement Strategy: Enemy 3
+        .BYTE $0E  ; Movement Strategy: Enemy 4
+        .BYTE $10  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $03  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData12 = $C2B0
+        .BYTE $10  ; Movement Strategy: Enemy 1
+        .BYTE $11  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $0F  ; Movement Strategy: Enemy 4
+        .BYTE $0E  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0B  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData13 = $C2C0
+        .BYTE $05  ; Movement Strategy: Enemy 1
+        .BYTE $06  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $04  ; Movement Strategy: Enemy 4
+        .BYTE $03  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0C  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData14 = $C2D0
+        .BYTE $0F  ; Movement Strategy: Enemy 1
+        .BYTE $11  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $B4  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $FF  ; Initial X Position of Enemy 1
+        .BYTE $0A  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData15 = $C2E0
+        .BYTE $13  ; Movement Strategy: Enemy 1
+        .BYTE $00  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $00  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $FF  ; Initial X Position of Enemy 1
+        .BYTE $07  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData16 = $C2F0
+        .BYTE $12  ; Movement Strategy: Enemy 1
+        .BYTE $12  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $B4  ; Initial Y Position : Enemy 1
+        .BYTE $CC  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $08  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData17 = $C300
+        .BYTE $13  ; Movement Strategy: Enemy 1
+        .BYTE $13  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $B4  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $09  ; Delay between spawning enemies.
+        .BYTE $FF  ; Initial X Position of Enemy 1
+        .BYTE $06  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData18 = $C310
+        .BYTE $11  ; Movement Strategy: Enemy 1
+        .BYTE $11  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $0F  ; Movement Strategy: Enemy 4
+        .BYTE $0F  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $0C  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0A  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData19 = $C320
+        .BYTE $26  ; Movement Strategy: Enemy 1
+        .BYTE $27  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $00  ; Initial Y Position : Enemy 1
+        .BYTE $B4  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0A  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData20 = $C330
+        .BYTE $26  ; Movement Strategy: Enemy 1
+        .BYTE $27  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $00  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $FF  ; Initial X Position of Enemy 1
+        .BYTE $06  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData21 = $C340
+        .BYTE $26  ; Movement Strategy: Enemy 1
+        .BYTE $27  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $00  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $07  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData22 = $C350
+        .BYTE $26  ; Movement Strategy: Enemy 1
+        .BYTE $27  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $00  ; Initial Y Position : Enemy 1
+        .BYTE $00  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $FF  ; Initial X Position of Enemy 1
+        .BYTE $04  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData23 = $C360
+        .BYTE $14  ; Movement Strategy: Enemy 1
+        .BYTE $00  ; Movement Strategy: Enemy 2
+        .BYTE $00  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $00  ; Initial Y Position : Enemy 2
+        .BYTE $00  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $FF  ; Initial X Position of Enemy 1
+        .BYTE $0F  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData24 = $C370
+        .BYTE $11  ; Movement Strategy: Enemy 1
+        .BYTE $11  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $0F  ; Movement Strategy: Enemy 4
+        .BYTE $0F  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $0A  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0F  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData25 = $C380
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $0F  ; Movement Strategy: Enemy 2
+        .BYTE $11  ; Movement Strategy: Enemy 3
+        .BYTE $0E  ; Movement Strategy: Enemy 4
+        .BYTE $10  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $02  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData26 = $C390
+        .BYTE $12  ; Movement Strategy: Enemy 1
+        .BYTE $12  ; Movement Strategy: Enemy 2
+        .BYTE $12  ; Movement Strategy: Enemy 3
+        .BYTE $12  ; Movement Strategy: Enemy 4
+        .BYTE $12  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $CC  ; Initial Y Position : Enemy 1
+        .BYTE $CC  ; Initial Y Position : Enemy 2
+        .BYTE $CC  ; Initial Y Position : Enemy 3
+        .BYTE $CC  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $05  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $08  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData27 = $C3A0
+        .BYTE $15  ; Movement Strategy: Enemy 1
+        .BYTE $15  ; Movement Strategy: Enemy 2
+        .BYTE $15  ; Movement Strategy: Enemy 3
+        .BYTE $15  ; Movement Strategy: Enemy 4
+        .BYTE $15  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $6C  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $84  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $0C  ; Delay between spawning enemies.
+        .BYTE $00  ; Initial X Position of Enemy 1
+        .BYTE $09  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData28 = $C3B0
+        .BYTE $16  ; Movement Strategy: Enemy 1
+        .BYTE $12  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $CC  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $08  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData29 = $C3C0
+        .BYTE $16  ; Movement Strategy: Enemy 1
+        .BYTE $12  ; Movement Strategy: Enemy 2
+        .BYTE $16  ; Movement Strategy: Enemy 3
+        .BYTE $12  ; Movement Strategy: Enemy 4
+        .BYTE $16  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $B4  ; Initial Y Position : Enemy 2
+        .BYTE $84  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $84  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $08  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData30 = $C3D0
+        .BYTE $09  ; Movement Strategy: Enemy 1
+        .BYTE $0A  ; Movement Strategy: Enemy 2
+        .BYTE $0C  ; Movement Strategy: Enemy 3
+        .BYTE $08  ; Movement Strategy: Enemy 4
+        .BYTE $07  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $00  ; Initial X Position of Enemy 1
+        .BYTE $05  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData31 = $C3E0
+        .BYTE $17  ; Movement Strategy: Enemy 1
+        .BYTE $19  ; Movement Strategy: Enemy 2
+        .BYTE $17  ; Movement Strategy: Enemy 3
+        .BYTE $1B  ; Movement Strategy: Enemy 4
+        .BYTE $17  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0B  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData32 = $C3F0
+        .BYTE $19  ; Movement Strategy: Enemy 1
+        .BYTE $18  ; Movement Strategy: Enemy 2
+        .BYTE $17  ; Movement Strategy: Enemy 3
+        .BYTE $1A  ; Movement Strategy: Enemy 4
+        .BYTE $1B  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $08  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $09  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData33 = $C400
+        .BYTE $02  ; Movement Strategy: Enemy 1
+        .BYTE $1C  ; Movement Strategy: Enemy 2
+        .BYTE $02  ; Movement Strategy: Enemy 3
+        .BYTE $1C  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $06  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0E  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData34 = $C410
+        .BYTE $02  ; Movement Strategy: Enemy 1
+        .BYTE $02  ; Movement Strategy: Enemy 2
+        .BYTE $1C  ; Movement Strategy: Enemy 3
+        .BYTE $1C  ; Movement Strategy: Enemy 4
+        .BYTE $17  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0E  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData35 = $C420
+        .BYTE $1D  ; Movement Strategy: Enemy 1
+        .BYTE $1E  ; Movement Strategy: Enemy 2
+        .BYTE $1F  ; Movement Strategy: Enemy 3
+        .BYTE $21  ; Movement Strategy: Enemy 4
+        .BYTE $20  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $00  ; Initial X Position of Enemy 1
+        .BYTE $08  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData36 = $C430
+        .BYTE $02  ; Movement Strategy: Enemy 1
+        .BYTE $1C  ; Movement Strategy: Enemy 2
+        .BYTE $02  ; Movement Strategy: Enemy 3
+        .BYTE $1C  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $06  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $00  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData37 = $C440
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $04  ; Movement Strategy: Enemy 2
+        .BYTE $06  ; Movement Strategy: Enemy 3
+        .BYTE $03  ; Movement Strategy: Enemy 4
+        .BYTE $05  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $02  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData38 = $C450
+        .BYTE $05  ; Movement Strategy: Enemy 1
+        .BYTE $06  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $04  ; Movement Strategy: Enemy 4
+        .BYTE $03  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $06  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0D  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData39 = $C460
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $22  ; Movement Strategy: Enemy 2
+        .BYTE $22  ; Movement Strategy: Enemy 3
+        .BYTE $23  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $01  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData40 = $C470
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $04  ; Movement Strategy: Enemy 2
+        .BYTE $06  ; Movement Strategy: Enemy 3
+        .BYTE $03  ; Movement Strategy: Enemy 4
+        .BYTE $05  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0C  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData41 = $C480
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $22  ; Movement Strategy: Enemy 2
+        .BYTE $22  ; Movement Strategy: Enemy 3
+        .BYTE $23  ; Movement Strategy: Enemy 4
+        .BYTE $23  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $6C  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $02  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData42 = $C490
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $01  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $22  ; Movement Strategy: Enemy 4
+        .BYTE $23  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $00  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData43 = $C4A0
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $01  ; Movement Strategy: Enemy 2
+        .BYTE $22  ; Movement Strategy: Enemy 3
+        .BYTE $23  ; Movement Strategy: Enemy 4
+        .BYTE $23  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $B4  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $84  ; Initial Y Position : Enemy 4
+        .BYTE $B4  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0C  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData44 = $C4B0
+        .BYTE $10  ; Movement Strategy: Enemy 1
+        .BYTE $11  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $0F  ; Movement Strategy: Enemy 4
+        .BYTE $0E  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $05  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $06  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData45 = $C4C0
+        .BYTE $02  ; Movement Strategy: Enemy 1
+        .BYTE $1C  ; Movement Strategy: Enemy 2
+        .BYTE $17  ; Movement Strategy: Enemy 3
+        .BYTE $02  ; Movement Strategy: Enemy 4
+        .BYTE $1C  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $B4  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $84  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $00  ; Initial X Position of Enemy 1
+        .BYTE $06  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData46 = $C4D0
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $04  ; Movement Strategy: Enemy 2
+        .BYTE $06  ; Movement Strategy: Enemy 3
+        .BYTE $03  ; Movement Strategy: Enemy 4
+        .BYTE $05  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $9C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $06  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $07  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData47 = $C4E0
+        .BYTE $10  ; Movement Strategy: Enemy 1
+        .BYTE $11  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $0F  ; Movement Strategy: Enemy 4
+        .BYTE $0E  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0D  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData48 = $C4F0
+        .BYTE $03  ; Movement Strategy: Enemy 1
+        .BYTE $01  ; Movement Strategy: Enemy 2
+        .BYTE $05  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0F  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData49 = $C500
+        .BYTE $05  ; Movement Strategy: Enemy 1
+        .BYTE $06  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $04  ; Movement Strategy: Enemy 4
+        .BYTE $03  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $0B  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData50 = $C510
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $02  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $1C  ; Movement Strategy: Enemy 4
+        .BYTE $01  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $04  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData51 = $C520
+        .BYTE $0A  ; Movement Strategy: Enemy 1
+        .BYTE $0C  ; Movement Strategy: Enemy 2
+        .BYTE $08  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $00  ; Initial X Position of Enemy 1
+        .BYTE $05  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData52 = $C530
+        .BYTE $05  ; Movement Strategy: Enemy 1
+        .BYTE $06  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $04  ; Movement Strategy: Enemy 4
+        .BYTE $03  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $01  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData53 = $C540
+        .BYTE $16  ; Movement Strategy: Enemy 1
+        .BYTE $16  ; Movement Strategy: Enemy 2
+        .BYTE $16  ; Movement Strategy: Enemy 3
+        .BYTE $16  ; Movement Strategy: Enemy 4
+        .BYTE $16  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $6C  ; Initial Y Position : Enemy 2
+        .BYTE $6C  ; Initial Y Position : Enemy 3
+        .BYTE $6C  ; Initial Y Position : Enemy 4
+        .BYTE $6C  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $05  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $08  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData54 = $C550
+        .BYTE $06  ; Movement Strategy: Enemy 1
+        .BYTE $01  ; Movement Strategy: Enemy 2
+        .BYTE $04  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $07  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData55 = $C560
+        .BYTE $06  ; Movement Strategy: Enemy 1
+        .BYTE $01  ; Movement Strategy: Enemy 2
+        .BYTE $04  ; Movement Strategy: Enemy 3
+        .BYTE $00  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $84  ; Initial Y Position : Enemy 1
+        .BYTE $9C  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $00  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $06  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData56 = $C570
+        .BYTE $10  ; Movement Strategy: Enemy 1
+        .BYTE $11  ; Movement Strategy: Enemy 2
+        .BYTE $01  ; Movement Strategy: Enemy 3
+        .BYTE $0F  ; Movement Strategy: Enemy 4
+        .BYTE $0E  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $6C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $9C  ; Initial Y Position : Enemy 3
+        .BYTE $B4  ; Initial Y Position : Enemy 4
+        .BYTE $CC  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $07  ; Delay between spawning enemies.
+        .BYTE $80  ; Initial X Position of Enemy 1
+        .BYTE $03  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
+enemyFormationData57 = $C580
+        .BYTE $01  ; Movement Strategy: Enemy 1
+        .BYTE $22  ; Movement Strategy: Enemy 2
+        .BYTE $22  ; Movement Strategy: Enemy 3
+        .BYTE $28  ; Movement Strategy: Enemy 4
+        .BYTE $00  ; Movement Strategy: Enemy 5
+        .BYTE $00  ; Movement Strategy: Enemy 6
+        .BYTE $9C  ; Initial Y Position : Enemy 1
+        .BYTE $84  ; Initial Y Position : Enemy 2
+        .BYTE $B4  ; Initial Y Position : Enemy 3
+        .BYTE $9C  ; Initial Y Position : Enemy 4
+        .BYTE $00  ; Initial Y Position : Enemy 5
+        .BYTE $00  ; Initial Y Position : Enemy 6
+        .BYTE $00  ; Delay between spawning enemies.
+        .BYTE $FF  ; Initial X Position of Enemy 1
+        .BYTE $0A  ; Sprite Value for Enemies
+        .BYTE $00  ; End Sentinel
 
-        .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
-        .BYTE $9C,$9C,$9C,$00,$06,$80,$01,$00
-        .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$05,$80,$04,$00
-        .BYTE $01,$01,$01,$01,$01,$00,$6C,$B4
-        .BYTE $9C,$CC,$84,$00,$05,$80,$00,$00
-        .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
-        .BYTE $9C,$9C,$9C,$00,$06,$80,$0D,$00
-        .BYTE $0C,$08,$0A,$07,$09,$00,$9C,$9C
-        .BYTE $9C,$9C,$9C,$00,$08,$00,$05,$00
-        .BYTE $0D,$0D,$0D,$00,$00,$00,$6C,$84
-        .BYTE $9C,$00,$00,$00,$06,$00,$08,$00
-        .BYTE $01,$0F,$11,$0E,$10,$00,$9C,$9C
-        .BYTE $9C,$9C,$9C,$00,$08,$80,$03,$00
-        .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$07,$80,$0B,$00
-        .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$08,$80,$0C,$00
-        .BYTE $0F,$11,$00,$00,$00,$00,$B4,$84
-        .BYTE $00,$00,$00,$00,$08,$FF,$0A,$00
-        .BYTE $13,$00,$00,$00,$00,$00,$6C,$00
-        .BYTE $00,$00,$00,$00,$00,$FF,$07,$00
-        .BYTE $12,$12,$00,$00,$00,$00,$B4,$CC
-        .BYTE $00,$00,$00,$00,$07,$80,$08,$00
-        .BYTE $13,$13,$00,$00,$00,$00,$84,$B4
-        .BYTE $00,$00,$00,$00,$09,$FF,$06,$00
-        .BYTE $11,$11,$01,$0F,$0F,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$0C,$80,$0A,$00
-        .BYTE $26,$27,$00,$00,$00,$00,$00,$B4
-        .BYTE $00,$00,$00,$00,$08,$80,$0A,$00
-        .BYTE $26,$27,$00,$00,$00,$00,$84,$00
-        .BYTE $00,$00,$00,$00,$08,$FF,$06,$00
-        .BYTE $26,$27,$00,$00,$00,$00,$9C,$00
-        .BYTE $00,$00,$00,$00,$08,$80,$07,$00
-        .BYTE $26,$27,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$08,$FF,$04,$00
-        .BYTE $14,$00,$00,$00,$00,$00,$9C,$00
-        .BYTE $00,$00,$00,$00,$00,$FF,$0F,$00
-        .BYTE $11,$11,$01,$0F,$0F,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$0A,$80,$0F,$00
-        .BYTE $01,$0F,$11,$0E,$10,$00,$9C,$9C
-        .BYTE $9C,$9C,$9C,$00,$08,$80,$02,$00
-        .BYTE $12,$12,$12,$12,$12,$00,$CC,$CC
-        .BYTE $CC,$CC,$CC,$00,$05,$80,$08,$00
-        .BYTE $15,$15,$15,$15,$15,$00,$9C,$6C
-        .BYTE $B4,$84,$CC,$00,$0C,$00,$09,$00
-        .BYTE $16,$12,$01,$00,$00,$00,$6C,$CC
-        .BYTE $9C,$00,$00,$00,$00,$80,$08,$00
-        .BYTE $16,$12,$16,$12,$16,$00,$84,$B4
-        .BYTE $84,$B4,$84,$00,$08,$80,$08,$00
-        .BYTE $09,$0A,$0C,$08,$07,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$08,$00,$05,$00
-        .BYTE $17,$19,$17,$1B,$17,$00,$6C,$9C
-        .BYTE $9C,$9C,$CC,$00,$08,$80,$0B,$00
-        .BYTE $19,$18,$17,$1A,$1B,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$08,$80,$09,$00
-
-starDataHiPtrArray   
-        .BYTE $02,$1C,$02,$1C,$00,$00,$9C,$9C
-        .BYTE $9C,$9C,$00,$00,$06,$80,$0E,$00
-starDataLoPtrArray   
-        .BYTE $02,$02,$1C,$1C,$17,$00,$84,$84
-        .BYTE $B4,$B4,$9C,$00,$07,$80,$0E,$00
-starsBehindDreadnought
-        .BYTE $1D,$1E,$1F,$21,$20,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$00,$00,$08,$00
-playerBulletRamLoPtrArray
-        .BYTE $02,$1C,$02,$1C,$00,$00,$9C,$9C
-        .BYTE $9C,$9C,$00,$00,$06,$80,$00,$00
-playerBulletRamHiPtrArray
-        .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
-        .BYTE $9C,$9C,$9C,$00,$07,$80,$02,$00
-charBehindPlayerBulletArray   
-        .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$06,$80,$0D,$00
-playerBulletSlotArray
-        .BYTE $01,$22,$22,$23,$00,$00,$9C,$84
-        .BYTE $B4,$9C,$00,$00,$00,$80,$01,$00
-bulletOffsetsInCharsetDef
-        .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
-        .BYTE $9C,$9C,$9C,$00,$07,$80,$0C,$00
-currentColorLineHiPtrArray
-        .BYTE $01,$22,$22,$23,$23,$00,$9C,$84
-        .BYTE $B4,$6C,$CC,$00,$00,$80,$02,$00
-indexToFunctionPtrArray
-        .BYTE $01,$01,$01,$22,$23,$00,$84,$9C
-currentSpriteXPosArray
-        .BYTE $B4,$9C,$9C,$00,$00,$80,$00,$00
-currentSpriteYPosArray
-        .BYTE $01,$01,$22,$23,$23,$00,$84,$B4
-currentSpriteMSBXPosOffsetArray
-        .BYTE $9C,$84,$B4,$00,$00,$80,$0C,$00
-fA4B0   .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84
-fA4B8   .BYTE $9C,$B4,$CC,$00,$05,$80,$06,$00
-fA4C0   .BYTE $02,$1C,$17,$02,$1C,$00,$6C,$B4
-apparentDuplicateOfCurrentSpriteYPosArray
-         .BYTE $9C,$84,$CC,$00,$07,$00,$06,$00
-        .BYTE $01,$04,$06,$03,$05,$00,$9C,$9C
-        .BYTE $9C,$9C,$9C,$00,$06,$80,$07,$00
-        .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84
-fA4E8   .BYTE $9C,$B4,$CC,$00,$07,$80,$0D,$00
-        .BYTE $03,$01,$05,$00,$00,$00,$84,$9C
-        .BYTE $B4,$00,$00,$00,$00,$80,$0F,$00
-        .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$07,$80,$0B,$00
-        .BYTE $01,$02,$01,$1C,$01,$00,$6C,$84
-seedPositionsOfStarsBehindDreadnought
-        .BYTE $9C,$B4,$CC,$00,$07,$80,$04,$00
-        .BYTE $0A,$0C,$08,$00,$00,$00,$84,$9C
-        .BYTE $B4,$00,$00,$00,$00,$00,$05,$00
-        .BYTE $05,$06,$01,$04,$03,$00,$6C,$84
-
-        .BYTE $9C,$B4,$CC,$00,$07,$80,$01,$00
-        .BYTE $16,$16,$16,$16,$16,$00,$6C,$6C
-        .BYTE $6C,$6C,$6C,$00,$05,$80,$08,$00
-        .BYTE $06,$01,$04,$00,$00,$00,$84,$9C
-        .BYTE $B4,$00,$00,$00,$00,$80,$07,$00
-        .BYTE $06,$01,$04,$00,$00,$00,$84,$9C
-        .BYTE $B4,$00,$00,$00,$00,$80,$06,$00
-        .BYTE $10,$11,$01,$0F,$0E,$00,$6C,$84
-        .BYTE $9C,$B4,$CC,$00,$07,$80,$03,$00
-        .BYTE $01,$22,$22,$28,$00,$00,$9C,$84
-        .BYTE $B4,$9C,$00,$00,$00,$FF,$0A,$00
-
-level1ScoringStrategy = $C590
+level1EnemyFormationOrder = $C590
         .BYTE $00,$19,$04,$0C,$01,$29,$02,$00
         .BYTE $FF
-level2ScoringStrategy = $C599
+level2EnemyFormationOrder = $C599
         .BYTE $0C,$2F,$22,$08,$1E,$20,$02,$0C
         .BYTE $FF
-level3ScoringStrategy = $C5A2
+level3EnemyFormationOrder = $C5A2
         .BYTE $21,$06,$1F,$1C,$25,$0F,$31,$26
         .BYTE $21,$FF
-level4ScoringStrategy = $C5AC
+level4EnemyFormationOrder = $C5AC
         .BYTE $1D,$07,$1A,$0A,$34,$0B,$0D,$31
         .BYTE $1D,$FF
-level5ScoringStrategy = $C5B6
+level5EnemyFormationOrder = $C5B6
         .BYTE $04,$0E,$2A,$1C,$37,$32,$23,$17
         .BYTE $2E,$04,$FF
-level6ScoringStrategy = $C5C1
+level6EnemyFormationOrder = $C5C1
         .BYTE $29,$1E,$0D,$2C,$0F,$1F,$2D,$2F
         .BYTE $0A,$29,$FF
-level7ScoringStrategy = $C5CC
+level7EnemyFormationOrder = $C5CC
         .BYTE $0B,$05,$1C,$0C,$16,$2E,$36,$11
         .BYTE $02,$0A,$0B,$FF
-level8ScoringStrategy = $C5D8
+level8EnemyFormationOrder = $C5D8
         .BYTE $07,$19,$03,$17,$24,$1D,$02,$21
         .BYTE $0E,$0D,$07,$FF
-level9ScoringStrategy = $C5E4
+level9EnemyFormationOrder = $C5E4
         .BYTE $18,$09,$11,$30,$0A,$35,$0D,$26
         .BYTE $2B,$23,$17,$18,$FF
-level10ScoringStrategy = $C5F1
+level10EnemyFormationOrder = $C5F1
         .BYTE $2F,$1B,$11,$25,$2A,$33,$31
         .BYTE $08,$1C,$10,$06,$2F,$FF
-level11ScoringStrategy = $C5FE
+level11EnemyFormationOrder = $C5FE
         .BYTE $05,$16,$35,$27,$0D,$22,$0A,$00
         .BYTE $36,$1D,$2F,$19,$05,$FF
-level12ScoringStrategy = $C60C
+level12EnemyFormationOrder = $C60C
         .BYTE $37,$1C,$08,$1E,$2F,$2C,$28,$20
         .BYTE $34,$16,$2D,$1F,$37,$FF
-level13ScoringStrategy = $C61A
+level13EnemyFormationOrder = $C61A
         .BYTE $35,$18,$33,$09,$0B,$2A,$00,$0E
         .BYTE $31,$16,$2C,$29,$37,$35,$FF
-level14ScoringStrategy = $C629
+level14EnemyFormationOrder = $C629
         .BYTE $36,$2E,$0D,$16,$1B,$1A,$1D,$04
         .BYTE $20,$28,$30,$27,$03,$36,$FF
-level15ScoringStrategy = $C638
+level15EnemyFormationOrder = $C638
         .BYTE $38,$19,$34,$31,$20,$06,$18,$32
         .BYTE $30,$16,$16,$1F,$0C,$35,$38,$FF
 
-        .BYTE $82,$08,$00,$FF,$82,$08,$80,$10
-        .BYTE $84,$08,$80,$10,$88,$10,$80,$10
-        .BYTE $84,$08,$82,$08,$00,$FF,$82,$08
-        .BYTE $80,$10,$88,$06,$80,$08,$84,$06
-        .BYTE $00,$FF,$82,$08,$80,$10,$88,$06
-        .BYTE $80,$0C,$84,$06,$00,$FF,$82,$08
-        .BYTE $80,$10,$84,$06,$80,$08,$88,$06
-        .BYTE $00,$FF,$82,$08,$80,$10,$84,$06
-        .BYTE $80,$0C,$88,$06,$00,$FF,$82,$08
-        .BYTE $80,$10,$20,$89,$06,$80,$06,$20
-        .BYTE $82,$08,$00,$FF,$82,$08,$80,$10
-miniGameScreenData
-        .BYTE $20,$89,$08,$80,$06,$20,$82,$08
-        .BYTE $00,$FF,$82,$08,$80,$10,$20,$85
+; Each movement strategy consists of units made up
+; of two bytes. The first byte contains information
+; about the movement to perform. The second byte dictates
+; how many times the movement should be performed before moving
+; to the next unit. Each movement strategy is terminated by a 
+; byte pair  made up of a $00 and $FF.
+movementStrategy1 = $C648
+        .BYTE $82 ; Movement Strategy: Move forward.
+        .BYTE $08 ; Perform for 8 ticks.
+        .BYTE $00, $FF ; Terminal Sentinel
+movementStrategy2 = $C64C
+        .BYTE $82 ; Move forward.
+        .BYTE $08 ; Repeat for 8 ticks.
+        .BYTE $80 ; Fire bullet.
+        .BYTE $10 ; Repeat for 16 ticks.
+        .BYTE $84 ; Move down 
+        .BYTE $08 ; 8 ticks.
+        .BYTE $80 ; Fire bullet.
+        .BYTE $10 ; 16 ticks.
+        .BYTE $88 ; Move up
+        .BYTE $10 ; 16 ticks.
+        .BYTE $80 ; Fire bullet.
+        .BYTE $10 ; 16 ticks.
+        .BYTE $84 ; Move down
+        .BYTE $08 ; 8 ticks.
+        .BYTE $82 ; Move forward.
+        .BYTE $08 ; 8 ticks.
+        .BYTE $00,$FF ; Terminal sentinel.
+movementStrategy3 = $C65E
+        .BYTE $82,$08,$80,$10,$88,$06,$80,$08
+        .BYTE $84,$06,$00,$FF
+movementStrategy4 = $C66A
+        .BYTE $82,$08,$80,$10,$88,$06
+        .BYTE $80,$0C,$84,$06,$00,$FF
+movementStrategy5 = $C676
+        .BYTE $82,$08,$80,$10,$84,$06,$80,$08
+        .BYTE $88,$06,$00,$FF
+movementStrategy6 = $C682
+        .BYTE $82,$08,$80,$10,$84,$06,$80,$0C
+        .BYTE $88,$06,$00,$FF
+movementStrategy7 = $C68E
+        .BYTE $82,$08,$80,$10,$20,$89,$06,$80
+        .BYTE $06,$20,$82,$08,$00,$FF
+movementStrategy8 = $C69C
+        .BYTE $82,$08,$80,$10,$20,$89,$08,$80
+        .BYTE $06,$20,$82,$08,$00,$FF
+movementStrategy9 = $C6AA
+        .BYTE $82,$08,$80,$10,$20,$85
         .BYTE $06,$80,$06,$20,$82,$08,$00,$FF
+movementStrategy10 = $C6B8
         .BYTE $82,$08,$80,$10,$20,$85,$08,$80
-        .BYTE $06,$20,$82,$08,$00,$FF,$82,$08
-        .BYTE $80,$28,$89,$0A,$85,$0A,$86,$0A
-        .BYTE $8A,$0A,$80,$28,$89,$0A,$85,$0A
-        .BYTE $86,$0A,$8A,$0A,$00,$FF,$82,$08
-        .BYTE $80,$10,$20,$81,$07,$80,$08,$20
-        .BYTE $82,$08,$00,$FF,$82,$08,$80,$28
-        .BYTE $85,$0A,$89,$0A,$8A,$0A,$86,$0A
-        .BYTE $80,$28,$85,$0A,$89,$0A,$8A,$0A
-        .BYTE $86,$0A,$00,$FF,$82,$08,$80,$10
-        .BYTE $88,$06,$80,$08,$84,$06,$80,$40
-        .BYTE $84,$06,$80,$03,$88,$06,$00,$FF
+        .BYTE $06,$20,$82,$08,$00,$FF
+movementStrategy11 = $C6C6
+        .BYTE $82,$08,$80,$28,$89,$0A,$85,$0A
+        .BYTE $86,$0A,$8A,$0A,$80,$28,$89,$0A
+        .BYTE $85,$0A,$86,$0A,$8A,$0A,$00,$FF
+movementStrategy12 = $C6DE
+        .BYTE $82,$08,$80,$10,$20,$81,$07,$80
+        .BYTE $08,$20,$82,$08,$00,$FF
+movementStrategy13 = $C6EC
+        .BYTE $82,$08,$80,$28,$85,$0A,$89,$0A
+        .BYTE $8A,$0A,$86,$0A,$80,$28,$85,$0A
+        .BYTE $89,$0A,$8A,$0A,$86,$0A,$00,$FF
+movementStrategy14 = $C704
+        .BYTE $82,$08,$80,$10,$88,$06,$80,$08
+        .BYTE $84,$06,$80,$40,$84,$06,$80,$03
+        .BYTE $88,$06,$00,$FF
+movementStrategy15 = $C718
         .BYTE $82,$08,$80,$10,$88,$06,$80,$0C
         .BYTE $84,$06,$80,$40,$84,$06,$80,$06
-        .BYTE $88,$06,$00,$FF,$82,$08,$80,$10
-        .BYTE $84,$06,$80,$08,$88,$06,$80,$40
-        .BYTE $88,$06,$80,$03,$84,$06,$00,$FF
+        .BYTE $88,$06,$00,$FF
+movementStrategy16 = $C72C
+        .BYTE $82,$08,$80,$10,$84,$06,$80,$08
+        .BYTE $88,$06,$80,$40,$88,$06,$80,$03
+        .BYTE $84,$06,$00,$FF
+movementStrategy17 = $C740
         .BYTE $82,$08,$80,$10,$84,$06,$80,$0C
         .BYTE $88,$06,$80,$40,$88,$06,$80,$06
-        .BYTE $84,$06,$00,$FF,$82,$08,$80,$28
-        .BYTE $89,$0A,$85,$0A,$86,$0A,$8A,$0A
-        .BYTE $80,$14,$88,$06,$80,$0C,$84,$06
-        .BYTE $80,$14,$85,$0A,$89,$0A,$8A,$0A
-        .BYTE $86,$0A,$00,$FF,$82,$06,$40,$FF
+        .BYTE $84,$06,$00,$FF
+movementStrategy18 = $C754
+        .BYTE $82,$08,$80,$28,$89,$0A,$85,$0A
+        .BYTE $86,$0A,$8A,$0A,$80,$14,$88,$06
+        .BYTE $80,$0C,$84,$06,$80,$14,$85,$0A
+        .BYTE $89,$0A,$8A,$0A,$86,$0A,$00,$FF
+movementStrategy19a = $C774
+        .BYTE $82,$06,$40,$FF
+movementStrategy19 = $C778
         .BYTE $82,$06,$C0,$28,$81,$06,$20,$80
         .BYTE $28,$10,$80,$14,$82,$06,$40,$FF
+movementStrategy20 = $C788
         .BYTE $82,$08,$80,$14,$81,$08,$20,$80
         .BYTE $3C,$10,$82,$08,$80,$28,$82,$06
-        .BYTE $00,$FF,$82,$08,$80,$28,$85,$0A
-        .BYTE $89,$0A,$8A,$0A,$86,$0A,$80,$14
-        .BYTE $84,$06,$80,$0C,$88,$06,$80,$14
-        .BYTE $89,$0A,$85,$0A,$86,$0A,$8A,$0A
-        .BYTE $00,$FF,$82,$08,$80,$50,$82,$04
-        .BYTE $00,$FF,$82,$08,$80,$14,$88,$08
-        .BYTE $80,$08,$84,$08,$80,$24,$86,$04
-        .BYTE $84,$08,$80,$10,$88,$0C,$00,$FF
+        .BYTE $00,$FF
+movementStrategy21 = $C79A
+        .BYTE $82,$08,$80,$28,$85,$0A,$89,$0A
+        .BYTE $8A,$0A,$86,$0A,$80,$14,$84,$06
+        .BYTE $80,$0C,$88,$06,$80,$14,$89,$0A
+        .BYTE $85,$0A,$86,$0A,$8A,$0A,$00,$FF
+movementStrategy22 = $C7BA
+        .BYTE $82,$08,$80,$50,$82,$04,$00,$FF
+movementStrategy23 = $C7C2
+        .BYTE $82,$08,$80,$14,$88,$08,$80,$08
+        .BYTE $84,$08,$80,$24,$86,$04,$84,$08
+        .BYTE $80,$10,$88,$0C,$00,$FF
+movementStrategy24 = $C7D8
         .BYTE $82,$08,$80,$14,$88,$0A,$80,$0A
         .BYTE $84,$0A,$80,$1E,$86,$04,$84,$06
-        .BYTE $80,$0A,$88,$0A,$00,$FF,$82,$08
-        .BYTE $80,$14,$84,$08,$80,$08,$88,$08
-        .BYTE $80,$24,$8A,$04,$88,$08,$80,$10
-        .BYTE $84,$0C,$00,$FF,$82,$08,$80,$14
-        .BYTE $84,$0A,$80,$0A,$88,$0A,$80,$1E
-        .BYTE $8A,$04,$88,$06,$80,$0A,$84,$0A
-        .BYTE $00,$FF,$82,$08,$80,$10,$88,$08
-        .BYTE $80,$10,$84,$10,$80,$10,$88,$08
-        .BYTE $82,$08,$00,$FF,$82,$08,$80,$1E
-        .BYTE $85,$08,$80,$08,$89,$08,$00,$FF
+        .BYTE $80,$0A,$88,$0A,$00,$FF
+movementStrategy25 = $C7EE
+        .BYTE $82,$08,$80,$14,$84,$08,$80,$08
+        .BYTE $88,$08,$80,$24,$8A,$04,$88,$08
+        .BYTE $80,$10,$84,$0C,$00,$FF
+movementStrategy26 = $C804
+        .BYTE $82,$08,$80,$14,$84,$0A,$80,$0A
+        .BYTE $88,$0A,$80,$1E,$8A,$04,$88,$06
+        .BYTE $80,$0A,$84,$0A,$00,$FF
+movementStrategy27 = $C81A
+        .BYTE $82,$08,$80,$10,$88,$08,$80,$10
+        .BYTE $84,$10,$80,$10,$88,$08,$82,$08
+        .BYTE $00,$FF
+movementStrategy28 = $C82C
+        .BYTE $82,$08,$80,$1E,$85,$08,$80,$08
+        .BYTE $89,$08,$00,$FF
+movementStrategy29 = $C838
         .BYTE $82,$08,$80,$24,$85,$08,$80,$02
-        .BYTE $89,$08,$00,$FF,$82,$08,$80,$26
-        .BYTE $81,$10,$00,$FF,$82,$08,$80,$1E
-        .BYTE $89,$08,$80,$08,$85,$08,$00,$FF
+        .BYTE $89,$08,$00,$FF
+movementStrategy30 = $C844
+        .BYTE $82,$08,$80,$26,$81,$10,$00,$FF
+movementStrategy30a = $C84C
+        .BYTE $82,$08,$80,$1E,$89,$08,$80,$08
+        .BYTE $85,$08,$00,$FF
+movementStrategy31 = $C858
         .BYTE $82,$08,$80,$24,$89,$08,$80,$02
-        .BYTE $85,$08,$00,$FF,$80,$06,$82,$08
-        .BYTE $00,$FF,$80,$0C,$82,$08,$00,$FF
-        .BYTE $80,$12,$82,$08,$00,$FF,$82,$08
-        .BYTE $80,$50,$40,$FF,$82,$08,$C0,$1E
-        .BYTE $10,$C0,$1E,$10,$C0,$14,$10,$81
-        .BYTE $08,$20,$82,$0A,$00,$FF,$82,$08
-        .BYTE $C0,$1E,$10,$81,$08,$20,$80,$1E
-        .BYTE $10,$82,$08,$C0,$28,$10,$40,$FF
+        .BYTE $85,$08,$00,$FF
+movementStrategy32 = $C864
+        .BYTE $80,$06,$82,$08,$00,$FF
+movementStrategy33 = $C86A
+        .BYTE $80,$0C,$82,$08,$00,$FF
+movementStrategy34 = $C870
+        .BYTE $80,$12,$82,$08,$00,$FF
+movementStrategy35 = $C876
+        .BYTE $82,$08,$80,$50,$40,$FF
+movementStrategy36 = $C87C
+        .BYTE $82,$08,$C0,$1E,$10,$C0,$1E,$10
+        .BYTE $C0,$14,$10,$81,$08,$20,$82,$0A
+        .BYTE $00,$FF
+movementStrategy37 = $C88E
+        .BYTE $82,$08,$C0,$1E,$10,$81,$08,$20
+        .BYTE $80,$1E,$10,$82,$08,$C0,$28,$10
+        .BYTE $40,$FF
+movementStrategy38 = $C8A0
         .BYTE $80,$0C,$82,$08,$80,$1E,$81,$02
-        .BYTE $C0,$10,$82,$02,$10,$40,$FF,$00
+        .BYTE $C0,$10,$82,$02,$10,$40,$FF
+        .BYTE $00
+
 *=$B360
 screenLineHiPtrArray
         .BYTE $48,$48,$48,$48,$48,$48,$48,$49
