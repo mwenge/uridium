@@ -14,383 +14,385 @@
 ;    May you share freely, never taking more than you give.
 ;
 
-;
-; **** ZP FIELDS ****
-;
-fCA00 = $CA00
-fCAAC = $CAAC
-fCAC0 = $CAC0
-finalLocationOfSomeLevelDataAndGameData = $C000
+; Sound system Variables
+a9C                                            = $9C
+aA4                                            = $A4
+aC0                                            = $C0
+aC1                                            = $C1
+aC2                                            = $C2
+aC3                                            = $C3
+aC4                                            = $C4
+aC5                                            = $C5
+aC6                                            = $C6
+aC7                                            = $C7
+aC8                                            = $C8
+aC9                                            = $C9
+aCA                                            = $CA
+aCB                                            = $CB
+aCC                                            = $CC
+aCD                                            = $CD
+aCE                                            = $CE
+aF3                                            = $F3
+aF6                                            = $F6
+aF9                                            = $F9
 
-playerScore = $20
-indexCurrentEnemyFormation = $24
-enemyMovementStrategyLoPtr = $70
-enemyMovementStrategyHiPtr = $71
-a9C = $9C
-aA4 = $A4
-aC0 = $C0
-aC1 = $C1
-aC2 = $C2
-aC3 = $C3
-aC4 = $C4
-aC5 = $C5
-aC6 = $C6
-aC7 = $C7
-aC8 = $C8
-aC9 = $C9
-aCA = $CA
-aCB = $CB
-aCC = $CC
-aCD = $CD
-aCE = $CE
-aF3 = $F3
-aF6 = $F6
-aF9 = $F9
-;
-; **** ZP ABSOLUTE ADRESSES ****
-;
-SPACE = $20
-RAM_ACCESS_MODE = $01
-currentSpriteMSB = $02
-spriteMixerValue = $03
-spriteIndex = $04
-currentSpriteXPos = $05
-currentSpriteMSBXPosOffset = $06
-currentSpriteYPos = $07
-currentSpriteDisplayEnable = $08
-currentSpriteExpandVertical = $09
-currentSpriteBackgroundDisplayPriority = $0A
-currentSpriteMultiColorMode = $0B
-currentSpriteExpandHorizontal = $0C
-currentSpriteColor = $0D
-currentSpriteValue = $0E
-a0F = $0F
-dataIndex = $10
-stashedYValue = $11
-colorRamHiPtr = $13
-someDataLoPtr = $14
-someDataHiPtr = $15
-leftPressed = $16
-rightPressed = $17
-firePressed = $18
-bitMapForPlayerVolumeAndColor = $19
-srcLoPtr = $1A
-srcHiPtr = $1B
-ramLoPtr = $1C
-ramHiPtr = $1D
-a1F = $1F
-currentPlayerLivesLeft = $25
-indexToCurrentLevelTextureData = $26
-currentLevel = $27
-selectForBulletsOrMines = $28
-positionInsideScrollSegment = $29
-currentScrollSegment = $2A
-frameRateBeforePause = $2B
-pixelsToScroll = $2C
-a2D = $2D
-mantaDirectionAndSpeed = $2E
-shouldWaitUntilReady = $2F
-scrollPositionHiPtr = $30
-scrollPositionLoPtr = $31
-hasShipBeenHit = $32
-mantaCurrentYPos = $33
-a34 = $34
-a35 = $35
-a36 = $36
-a37 = $37
-a38 = $38
-a39 = $39
-a3A = $3A
-a3B = $3B
-a3C = $3C
-mantaShadowOffset = $3D
-a3E = $3E
-a3F = $3F
-newSpriteValue = $40
-mantaShadowSpriteValue = $41
-mantaAnimationLoPtr = $42
-mantaAnimationHiPtr = $43
-framesInAnimation = $44
-a45 = $45
-a46 = $46
-a47 = $47
-fireButtonDebounce = $48
-buttonPressDebounce = $49
-currentBackgroundColor = $4A
-backgroundColor2 = $4B
-backgroundColor1 = $4C
-loadedCharacterColor = $4D
-multiColor0 = $4E
-spriteColorForLevel = $4F
-mantaBottomCannonLoPtr = $50
-mantaBottomCannonHiPtr = $51
-mantaTopCannonHiPtr = $53
-someKindOfTextureColorVariable = $54
-currentColorValue = $55
-a56 = $56
-a57 = $57
-monochromeCharacterColor = $58
-loopCounter = $59
-pausedOrNotPaused = $5A
-a5B = $5B
-playerAndJoystickMode = $5C
-currentPlayer = $5D
-fakeLeftPressed = $5E
-fakeRightPressed = $5F
-pausePressed = $60
-monochromEnabled = $61
-someKindOfFrameRate = $62
-enemyXPosBackwardVelocity = $63
-enemyXPosBackwardIncrement = $64
-enemyBulletXPosAnimationRate = $65
-enemyXPosForwardVelocity = $66
-enemyXPosForwardIncrement = $67
-whetherScoreAwardedForHittingEnemy = $68
-whetherToFireEnemyBulletOrMine = $69
-bulletSpriteCurrentLevel = $6A
-enemyBulletXPosIncrement = $6B
-usedToCheckIfWeShouldLaunchMine = $6C
-loPtrToEnemyFormationOrder = $6D
-hiPtrToEnemyFormationOrder = $6E
-currentEnemyMovementStrategy = $6F
-durationOfStrategyForFormation = $7C
-durationOfStrategyForNextEnemyInFormation = $7D
-currentEnemySpriteValue = $7E
-scoreToAddForHittingEnemy = $7F
-enemyYPosUpwardVelocity = $80
-enemyYPosUpwardIncrement = $81
-enemyYPosDownwardVelocity = $82
-enemyYPosDownwardIncrement = $83
-initialEnemyXPos = $84
-landNowActivated = $85
-a86 = $86
-formationAnnihilationBonus = $87
-numberOfEnemiesSpawned = $88
-destroyedEdgeLoPtr = $89
-destroyedEdgeHiPtr = $8A
-indexToTextureSegment = $8D
-fakeFirePressed = $8E
-initialValueOfY = $8F
-soundOrTitleSelector = $90
-soundVariable1 = $91
-soundVariable2 = $92
-soundVariable3 = $93
-a94 = $94
-a95 = $95
-a96 = $96
-a97 = $97
-a98 = $98
-a99 = $99
-a9D = $9D
-a9F = $9F
-aA0 = $A0
-soundPtr = $A1
-aA2 = $A2
-aA3 = $A3
-aA7 = $A7
-aA8 = $A8
-aA9 = $A9
-aAA = $AA
-MANTA_HORIZONTAL_POSITION = $AA
-anotherRandomNumberBetween0and1 = $AB
-randomNumberBetween0and1 = $AC
-shipDestructBonus = $AD
-miniGameUpdateRate = $AE
-tempLoPtrCopyTo = $B0
-tempHiPtrCopyTo = $B1
-tempLoPtrCopyFrom = $B2
-tempHiPtrCopyFrom = $B3
-currentCharYPos = $B4
-currentCharXPos = $B5
-charToWrite = $B6
-aB7 = $B7
-aB8 = $B8
-aBA = $BA
-aBB = $BB
-aBC = $BC
-dataHiPtr = $BF
-aEF = $EF
-aF0 = $F0
-aF1 = $F1
-aF2 = $F2
-aFB = $FB
-aFC = $FC
+; Game Variables
+playerScore                                    = $20
+indexCurrentEnemyFormation                     = $24
+enemyMovementStrategyLoPtr                     = $70
+enemyMovementStrategyHiPtr                     = $71
+SPACE                                          = $20
+RAM_ACCESS_MODE                                = $01
+currentSpriteMSB                               = $02
+spriteMixerValue                               = $03
+spriteIndex                                    = $04
+currentSpriteXPos                              = $05
+currentSpriteMSBXPosOffset                     = $06
+currentSpriteYPos                              = $07
+currentSpriteDisplayEnable                     = $08
+currentSpriteExpandVertical                    = $09
+currentSpriteBackgroundDisplayPriority         = $0A
+currentSpriteMultiColorMode                    = $0B
+currentSpriteExpandHorizontal                  = $0C
+currentSpriteColor                             = $0D
+currentSpriteValue                             = $0E
+mantaAnimationSelectorTopBits                  = $0F
+dataIndex                                      = $10
+stashedYValue                                  = $11
+colorRamHiPtr                                  = $13
+someDataLoPtr                                  = $14
+someDataHiPtr                                  = $15
+mantaVerticalMovementUpdate                    = $16
+mantaHorizontalMovementUpdate                  = $17
+firePressed                                    = $18
+bitMapForPlayerVolumeAndColor                  = $19
+srcLoPtr                                       = $1A
+srcHiPtr                                       = $1B
+ramLoPtr                                       = $1C
+ramHiPtr                                       = $1D
+colorLineHiPtr                                 = $1F
+currentPlayerLivesLeft                         = $25
+indexToCurrentLevelTextureData                 = $26
+currentLevel                                   = $27
+selectForBulletsOrMines                        = $28
+positionInsideScrollSegment                    = $29
+currentScrollSegment                           = $2A
+frameRateBeforePause                           = $2B
+pixelsToScroll                                 = $2C
+playerVelocityLimiter                          = $2D
+mantaHorizontalMovementVelocity                = $2E
+shouldWaitUntilReady                           = $2F
+scrollPositionHiPtr                            = $30
+scrollPositionLoPtr                            = $31
+hasShipBeenHit                                 = $32
+mantaCurrentYPos                               = $33
+mantaVerticalMovementVelocity                  = $34
+
+mantaMinimumVerticalVelocity                   = $35
+mantaMaximumVerticalVelocity                   = $36
+mantaMinimumHorizontalVelocity                 = $37
+mantaMaximumHorizontalVelocity                 = $38
+playerVelocityIncrementFacingLeftAccelerating  = $39
+playerVelocityIncrementFacingLeftDecelerating  = $3A
+playerVelocityIncrementFacingRightAccelerating = $3B
+playerVelocityIncrementFacingRightDecelerating = $3C
+
+mantaShadowOffset                              = $3D
+mantaTurnActivated                             = $3E
+inputDebounceDuringAnimation                   = $3F
+newSpriteValue                                 = $40
+mantaShadowSpriteValue                         = $41
+mantaAnimationLoPtr                            = $42
+mantaAnimationHiPtr                            = $43
+framesInAnimation                              = $44
+mantaOrientation                               = $45
+mantaAnimationActive                           = $46
+shadowDepthDuringMantaAnimation                = $47
+fireButtonDebounce                             = $48
+buttonPressDebounce                            = $49
+currentBackgroundColor                         = $4A
+backgroundColor2                               = $4B
+backgroundColor1                               = $4C
+loadedCharacterColor                           = $4D
+multiColor0                                    = $4E
+spriteColorForLevel                            = $4F
+mantaBottomCannonLoPtr                         = $50
+mantaBottomCannonHiPtr                         = $51
+mantaTopCannonHiPtr                            = $53
+someKindOfTextureColorVariable                 = $54
+currentColorValue                              = $55
+currentGapBetweenCannons                       = $56
+unusedOffsetForCannonPtrs                      = $57
+monochromeCharacterColor                       = $58
+loopCounter                                    = $59
+pausedOrNotPaused                              = $5A
+currentBannerState                             = $5B
+playerAndJoystickMode                          = $5C
+currentPlayer                                  = $5D
+fakeMantaVerticalMovementUpdate                = $5E
+fakeMantaHorizontalMovementUpdate              = $5F
+pausePressed                                   = $60
+monochromeEnabled                              = $61
+someKindOfFrameRate                            = $62
+enemyXPosBackwardVelocity                      = $63
+enemyXPosBackwardIncrement                     = $64
+enemyBulletXPosAnimationRate                   = $65
+enemyXPosForwardVelocity                       = $66
+enemyXPosForwardIncrement                      = $67
+whetherScoreAwardedForHittingEnemy             = $68
+whetherToFireEnemyBulletOrMine                 = $69
+bulletSpriteCurrentLevel                       = $6A
+enemyBulletXPosIncrement                       = $6B
+usedToCheckIfWeShouldLaunchMine                = $6C
+loPtrToEnemyFormationOrder                     = $6D
+hiPtrToEnemyFormationOrder                     = $6E
+currentEnemyMovementStrategy                   = $6F
+durationOfStrategyForFormation                 = $7C
+durationOfStrategyForNextEnemyInFormation      = $7D
+currentEnemySpriteValue                        = $7E
+scoreToAddForHittingEnemy                      = $7F
+enemyYPosUpwardVelocity                        = $80
+enemyYPosUpwardIncrement                       = $81
+enemyYPosDownwardVelocity                      = $82
+enemyYPosDownwardIncrement                     = $83
+initialEnemyXPos                               = $84
+landNowActivated                               = $85
+characterUnderMantasTopCannon                  = $86
+formationAnnihilationBonus                     = $87
+numberOfEnemiesSpawned                         = $88
+destroyedEdgeLoPtr                             = $89
+destroyedEdgeHiPtr                             = $8A
+indexToTextureSegment                          = $8D
+fakeFirePressed                                = $8E
+initialValueOfY                                = $8F
+soundOrTitleSelector                           = $90
+soundVariable1                                 = $91
+soundVariable2                                 = $92
+soundVariable3                                 = $93
+screenRAMLoPtr                                 = $94
+volumeBuffer                                   = $95
+a96                                            = $96
+a97                                            = $97
+a98                                            = $98
+a99                                            = $99
+a9D                                            = $9D
+a9F                                            = $9F
+aA0                                            = $A0
+soundPtr                                       = $A1
+aA2                                            = $A2
+aA3                                            = $A3
+aA7                                            = $A7
+miniGameBonusCounter                           = $A8
+miniGameTimer                                  = $A9
+newShipDestructBonus                           = $AA
+MANTA_HORIZONTAL_POSITION                      = $AA
+anotherRandomNumberBetween0and1                = $AB
+randomNumberBetween0and1                       = $AC
+shipDestructBonus                              = $AD
+miniGameUpdateRate                             = $AE
+tempLoPtrCopyTo                                = $B0
+tempHiPtrCopyTo                                = $B1
+tempLoPtrCopyFrom                              = $B2
+tempHiPtrCopyFrom                              = $B3
+currentCharYPos                                = $B4
+currentCharXPos                                = $B5
+charToWrite                                    = $B6
+dataIndexLoPtr                                 = $B7
+dataIndexHiPtr                                 = $B8
+writeCharsIndex                                = $BA
+unusedDataHiPtr                                = $BB
+unusedDataLoPtr                                = $BC
+dataHiPtr                                      = $BF
+previousVolumeBuffer                           = $EF
+aF0                                            = $F0
+aF1                                            = $F1
+titleTuneTimeControl                           = $F2
+hiScoreSaverHiPtr                              = $FB
+hiScoreSaverLoPtr                              = $FC
+colorRamLoPtr                                  = $12
+colorLineLoPtr                                 = $1E
+mantaTopCannonLoPtr                            = $52
+dataLoPtr                                      = $BE
 
 
-;
-; **** ZP POINTERS ****
-;
-colorRamLoPtr = $12
-a1E = $1E
-mantaTopCannonLoPtr = $52
-dataLoPtr = $BE
+; Color Constants
+BLACK                                          = $00
+WHITE                                          = $01
+RED                                            = $02
+CYAN                                           = $03
+PURPLE                                         = $04
+GREEN                                          = $05
+BLUE                                           = $06
+YELLOW                                         = $07
+ORANGE                                         = $08
+BROWN                                          = $09
+LTRED                                          = $0A
+GRAY1                                          = $0B
+GRAY2                                          = $0C
+LTGREEN                                        = $0D
+LTBLUE                                         = $0E
+GRAY3                                          = $0F
 
-COLOR_RAM = $D800
-SCREEN_RAM = $0400
-SCREEN_RAM_HIBANK = $4800
-sprite0Ptr = SCREEN_RAM_HIBANK + $03F8
+M_BLACK                                        = $F0
+M_WHITE                                        = $F1
+M_RED                                          = $F2
+M_CYAN                                         = $F3
+M_PURPLE                                       = $F4
+M_GREEN                                        = $F5
+M_BLUE                                         = $F6
+M_YELLOW                                       = $F7
+M_ORANGE                                       = $F8
+M_BROWN                                        = $F9
+M_LTRED                                        = $FA
+M_GRAY1                                        = $FB
+M_GRAY2                                        = $FC
+M_LTGREEN                                      = $FD
+M_LTBLUE                                       = $FE
+M_GRAY3                                        = $FF
 
-BLACK                                   = $00
-WHITE                                   = $01
-RED                                     = $02
-CYAN                                    = $03
-PURPLE                                  = $04
-GREEN                                   = $05
-BLUE                                    = $06
-YELLOW                                  = $07
-ORANGE                                  = $08
-BROWN                                   = $09
-LTRED                                   = $0A
-GRAY1                                   = $0B
-GRAY2                                   = $0C
-LTGREEN                                 = $0D
-LTBLUE                                  = $0E
-GRAY3                                   = $0F
 
-M_BLACK                                   = $F0
-M_WHITE                                   = $F1
-M_RED                                     = $F2
-M_CYAN                                    = $F3
-M_PURPLE                                  = $F4
-M_GREEN                                   = $F5
-M_BLUE                                    = $F6
-M_YELLOW                                  = $F7
-M_ORANGE                                  = $F8
-M_BROWN                                   = $F9
-M_LTRED                                   = $FA
-M_GRAY1                                   = $FB
-M_GRAY2                                   = $FC
-M_LTGREEN                                 = $FD
-M_LTBLUE                                  = $FE
-M_GRAY3                                   = $FF
+; Sprite Constants
+MANTA                                          = $40
+MANTA1                                         = $41
+MANTA_2                                        = $42
+MANTA_RIGHT_3                                  = $43
+MANTA_RIGHT_4                                  = $44
+MANTA_RIGHT_5                                  = $45
+MANTA_RIGHT_6                                  = $46
+MANTA_RIGHT_7                                  = $47
+MANTA_RIGHT_8                                  = $48
+MANTA_RIGHT_9                                  = $49
+MANTA_RIGHT_10                                 = $4A
+MANTA_RIGHT_11                                 = $4B
+MANTA_RIGHT_12                                 = $4C
+MANTA_RIGHT_13                                 = $4D
+MANTA_RIGHT_14                                 = $4E
+MANTA_RIGHT_15                                 = $4F
+MANTA_LEFT_0                                   = $50
+MANTA_LEFT_1                                   = $51
+MANTA_LEFT_2                                   = $52
+MANTA_LEFT_3                                   = $53
+MANTA_LEFT_4                                   = $54
+MANTA_LEFT_5                                   = $55
+MANTA_LEFT_6                                   = $56
+MANTA_LEFT_7                                   = $57
+MANTA_LEFT_8                                   = $58
+MANTA_LEFT_9                                   = $59
+MANTA_LEFT_10                                  = $5A
+MANTA_LEFT_11                                  = $5B
+MANTA_LEFT_12                                  = $5C
+MANTA_LEFT_13                                  = $5D
+MANTA_LEFT_14                                  = $5E
+MANTA_LEFT_15                                  = $5F
+MANTA_FLIP_0                                   = $60
+MANTA_FLIP_1                                   = $61
+MANTA_FLIP_2                                   = $62
+MANTA_FLIP_3                                   = $63
+MANTA_FLIP_4                                   = $64
+MANTA_FLIP_5                                   = $65
+MANTA_FLIP_6                                   = $66
+MANTA_FLIP_7                                   = $67
+MANTA_FLIP_8                                   = $68
+MANTA_FLIP_9                                   = $69
+MANTA_FLIP_10                                  = $6A
+MANTA_FLIP_11                                  = $6B
+MANTA_FLIP_12                                  = $6C
+MANTA_FLIP_13                                  = $6D
+MEANIE_00                                      = $A0
+MEANIE_01                                      = $A1
+MEANIE_02                                      = $A2
+MEANIE_03                                      = $A3
+MEANIE_04                                      = $A4
+MEANIE_05                                      = $A5
+MEANIE_06                                      = $A6
+MEANIE_07                                      = $A7
+MEANIE_08                                      = $A8
+MEANIE_09                                      = $A9
+MEANIE_0A                                      = $AA
+MEANIE_0B                                      = $AB
+MEANIE_0C                                      = $AC
+MEANIE_0D                                      = $AD
+MEANIE_0E                                      = $AE
+MEANIE_0F                                      = $AF
+MEANIE_10                                      = $B0
+MEANIE_11                                      = $B1
+MEANIE_12                                      = $B2
+MEANIE_13                                      = $B3
+MEANIE_14                                      = $B4
+MEANIE_15                                      = $B5
+MEANIE_16                                      = $B6
+MEANIE_17                                      = $B7
+MEANIE_18                                      = $B8
+MEANIE_19                                      = $B9
+MEANIE_1A                                      = $BA
+MEANIE_1B                                      = $BB
+MEANIE_1C                                      = $BC
+MEANIE_1D                                      = $BD
+MEANIE_1E                                      = $BE
+MEANIE_1F                                      = $BF
+DROPSHIP_0                                     = $00
+DROPSHIP_1                                     = $01
+DROPSHIP_2                                     = $02
+DROPSHIP_3                                     = $03
+DROPSHIP_4                                     = $04
+DROPSHIP_5                                     = $05
+DROPSHIP_6                                     = $06
+DROPSHIP_7                                     = $07
+DROPSHIP_8                                     = $08
+DROPSHIP_9                                     = $09
+DROPSHIP_10                                    = $0A
+DROPSHIP_11                                    = $0B
+BULLET_WIDE                                    = $0C
+BULLET_NARROW                                  = $0D
+BULLET_VERYNARROW                              = $0E
+BULLET_SINGLE                                  = $0F
+EXPLOSION_1                                    = $10
+EXPLOSION_2                                    = $11
+BULLET_5                                       = $12
+EXPLOSION_BIG1                                 = $14
+EXPLOSION_BIG2                                 = $15
+EXPLOSION_BIG3                                 = $16
+EXPLOSION_BIG4                                 = $17
+EXPLOSION_BIG5                                 = $18
+EXPLOSION_MEDIUM1                              = $19
+EXPLOSION_MEDIUM2                              = $1A
+EXPLOSION_MEDIUM3                              = $1B
+EXPLOSION_MEDIUM4                              = $1C
+EXPLOSION_MEDIUM5                              = $1D
+EXPLOSION_MAJOR1                               = $30
+EXPLOSION_MAJOR2                               = $31
+EXPLOSION_MAJOR3                               = $32
+EXPLOSION_MAJOR4                               = $33
+EXPLOSION_MAJOR5                               = $34
+EXPLOSION_MAJOR6                               = $35
+EXPLOSION_MAJOR7                               = $36
+EXPLOSION_MAJOR8                               = $37
+EXPLOSION_MAJOR9                               = $38
+EXPLOSION_MAJOR10                              = $39
+EXPLOSION_MAJOR11                              = $3A
 
-randomDataStorage = $0800
+; Address Pointers
+surfaceDataForCurrentLevel                     = $8200
+startOfSurfaceDataForCurrentLevel              = $A240
 
-MANTA            = $40
-MANTA1           = $41
-MANTA_2          = $42
-MANTA_RIGHT_3    = $43
-MANTA_RIGHT_4    = $44
-MANTA_RIGHT_5    = $45
-MANTA_RIGHT_6    = $46
-MANTA_RIGHT_7    = $47
-MANTA_RIGHT_8    = $48
-MANTA_RIGHT_9    = $49
-MANTA_RIGHT_10   = $4A
-MANTA_RIGHT_11   = $4B
-MANTA_RIGHT_12   = $4C
-MANTA_RIGHT_13   = $4D
-MANTA_RIGHT_14   = $4E
-MANTA_RIGHT_15   = $4F
-MANTA_LEFT_0     = $50
-MANTA_LEFT_1     = $51
-MANTA_LEFT_2     = $52
-MANTA_LEFT_3     = $53
-MANTA_LEFT_4     = $54
-MANTA_LEFT_5     = $55
-MANTA_LEFT_6     = $56
-MANTA_LEFT_7     = $57
-MANTA_LEFT_8     = $58
-MANTA_LEFT_9     = $59
-MANTA_LEFT_10    = $5A
-MANTA_LEFT_11    = $5B
-MANTA_LEFT_12    = $5C
-MANTA_LEFT_13    = $5D
-MANTA_LEFT_14    = $5E
-MANTA_LEFT_15    = $5F
-MANTA_FLIP_0     = $60
-MANTA_FLIP_1     = $61
-MANTA_FLIP_2     = $62
-MANTA_FLIP_3     = $63
-MANTA_FLIP_4     = $64
-MANTA_FLIP_5     = $65
-MANTA_FLIP_6     = $66
-MANTA_FLIP_7     = $67
-MANTA_FLIP_8     = $68
-MANTA_FLIP_9     = $69
-MANTA_FLIP_10    = $6A
-MANTA_FLIP_11    = $6B
-MANTA_FLIP_12    = $6C
-MANTA_FLIP_13    = $6D
-MEANIE_00   = $A0
-MEANIE_01   = $A1
-MEANIE_02   = $A2
-MEANIE_03   = $A3
-MEANIE_04   = $A4
-MEANIE_05   = $A5
-MEANIE_06   = $A6
-MEANIE_07   = $A7
-MEANIE_08   = $A8
-MEANIE_09   = $A9
-MEANIE_0A   = $AA
-MEANIE_0B   = $AB
-MEANIE_0C   = $AC
-MEANIE_0D   = $AD
-MEANIE_0E   = $AE
-MEANIE_0F   = $AF
-MEANIE_10   = $B0
-MEANIE_11   = $B1
-MEANIE_12   = $B2
-MEANIE_13   = $B3
-MEANIE_14   = $B4
-MEANIE_15   = $B5
-MEANIE_16   = $B6
-MEANIE_17   = $B7
-MEANIE_18   = $B8
-MEANIE_19   = $B9
-MEANIE_1A   = $BA
-MEANIE_1B   = $BB
-MEANIE_1C   = $BC
-MEANIE_1D   = $BD
-MEANIE_1E   = $BE
-MEANIE_1F   = $BF
-DROPSHIP_0              = $00
-DROPSHIP_1              = $01
-DROPSHIP_2              = $02
-DROPSHIP_3              = $03
-DROPSHIP_4              = $04
-DROPSHIP_5              = $05
-DROPSHIP_6              = $06
-DROPSHIP_7              = $07
-DROPSHIP_8              = $08
-DROPSHIP_9              = $09
-DROPSHIP_10             = $0A
-DROPSHIP_11             = $0B
-BULLET_WIDE             = $0C
-BULLET_NARROW           = $0D
-BULLET_VERYNARROW       = $0E
-BULLET_SINGLE           = $0F
-EXPLOSION_1             = $10
-EXPLOSION_2             = $11
-BULLET_5                = $12
-EXPLOSION_BIG1          = $14
-EXPLOSION_BIG2          = $15
-EXPLOSION_BIG3          = $16
-EXPLOSION_BIG4          = $17
-EXPLOSION_BIG5          = $18
-EXPLOSION_MEDIUM1       = $19
-EXPLOSION_MEDIUM2       = $1A
-EXPLOSION_MEDIUM3       = $1B
-EXPLOSION_MEDIUM4       = $1C
-EXPLOSION_MEDIUM5       = $1D
-EXPLOSION_MAJOR1        = $30
-EXPLOSION_MAJOR2        = $31
-EXPLOSION_MAJOR3        = $32
-EXPLOSION_MAJOR4        = $33
-EXPLOSION_MAJOR5        = $34
-EXPLOSION_MAJOR6        = $35
-EXPLOSION_MAJOR7        = $36
-EXPLOSION_MAJOR8        = $37
-EXPLOSION_MAJOR9        = $38
-EXPLOSION_MAJOR10       = $39
-EXPLOSION_MAJOR11       = $3A
+endOfCurrentSurfaceData                        = $83E0
+surfaceStructureDataLoPtrArray                 = $A400
+surfaceStructureDataHiPtrArray                 = $A500
 
-surfaceDataForCurrentLevel = $8200
-startOfSurfaceDataForCurrentLevel = $A240
+hallOfFameSaver                                = $CA00
+inGameBannerSaver                              = $CAAC
+hiScoreScrollingBannerSaver                    = $CAC0
+finalLocationOfSomeLevelDataAndGameData        = $C000
+randomDataStorage                              = $0800
+COLOR_RAM                                      = $D800
+SCREEN_RAM                                     = $0400
+SCREEN_RAM_HIBANK                              = $4800
+sprite0Ptr                                     = SCREEN_RAM_HIBANK + $03F8
+storageForMiniGameData                         = $D200
+miniGameScreenData                             = $A6A0
 
-endOfCurrentSurfaceData = $83E0
-surfaceStructureDataLoPtrArray = $A400
-surfaceStructureDataHiPtrArray = $A500
+
+
 
 * = $0801
 ;------------------------------------------------------------------
@@ -548,7 +550,7 @@ DrawTitleScreen
         STA $DD0D    ;CIA2: CIA Interrupt Control Register
         LDA $DC0D    ;CIA1: CIA Interrupt Control Register
         LDA $DD0D    ;CIA2: CIA Interrupt Control Register
-        JSR CopyShipSpritesTosurfaceCharset
+        JSR CopyShipSpritesToSurfaceCharset
 
         ; Write 4 zeroes to the top left?
         LDX #<SCREEN_RAM_HIBANK
@@ -615,7 +617,7 @@ b0A3D   LDA playerLinesColorScheme1,Y
         JSR SetUpSomeData
 
         LDA #$03
-        STA a5B
+        STA currentBannerState
 
 ;--------------------------------------------------------------------
 ; TitleScreenLoop
@@ -684,7 +686,7 @@ PrepareLargeScrollingCreditAndHiScore
         STA indexToTextureSegment
         JSR SetUpScreenForScrolling
         LDA #$FC
-        STA mantaDirectionAndSpeed
+        STA mantaHorizontalMovementVelocity
         JSR ShowLargeScrollingCreditAndHiScore
         LDA firePressed
         BNE DrawHiScoreScreen
@@ -969,9 +971,10 @@ SpinningShipAnimationOver
 
         LDA backgroundColor2
         STA $D02E    ;Sprite 7 Color
+
         LDY #$07
-b0CF0   LDA someKindOfSettingArray,Y
-        STA a35,Y
+b0CF0   LDA mantaInitialMovementSettings,Y
+        STA mantaMinimumVerticalVelocity,Y
         DEY
         BPL b0CF0
 
@@ -1004,9 +1007,9 @@ mainGameLoopHiPtr   =*+$02
         JSR MaybeChangeTitleDecal
 
         JSR MaybeFirePlayerBullets
-        JSR MaybeMoveLeft
-        JSR MaybeMoveRight
-        JSR UpdateABunchOfGameVariables
+        JSR UpdateMantaVerticalMovementVelocity
+        JSR UpdateMantaHorizontalMovementVelocity
+        JSR UpdateMantaHorizontalAndVerticalPosition
         JSR AnimateMantaShip
         JSR CheckLandNowWarning
         LDA landNowActivated
@@ -1196,10 +1199,10 @@ b0E3C   CMP #$11
         RTS
 
 b0E49   JSR PlaySound
-        LDA a95
-        STA aEF
+        LDA volumeBuffer
+        STA previousVolumeBuffer
         LDA #$01
-        STA aF2
+        STA titleTuneTimeControl
         LDA #<themeTuneData
         STA themeTuneLoPtr
         LDA #>themeTuneData
@@ -1208,18 +1211,18 @@ b0E49   JSR PlaySound
 
 b0E5F   JSR PlaySound
         LDA #$0F
-        STA aEF
+        STA previousVolumeBuffer
         RTS
 
 b0E67   JSR PlaySound
 b0E6A   RTS
 
-j0E6B   DEC aF2
+j0E6B   DEC titleTuneTimeControl
         BEQ b0E72
         JMP PlaySomeOfTheTitleTune
 
 b0E72   LDA #$05
-        STA aF2
+        STA titleTuneTimeControl
         LDA themeTuneHiPtr
         CMP #$FF
         BEQ b0E6A
@@ -1243,7 +1246,7 @@ b0E97   LDA f3D2C,Y
         LDA f3D71,Y
         STA aF3,X
         LDA f3D90,Y
-        STA aFC,X
+        STA hiScoreSaverLoPtr,X
         LDA #$01
         STA aF6,X
         LDY aA0
@@ -1258,7 +1261,7 @@ j0EB7   TAX
         BEQ b0EBF
         JMP j0F51
 
-b0EBF   LDA aFC,X
+b0EBF   LDA hiScoreSaverLoPtr,X
         STA aA3
         LDA aF3,X
         STA aA2
@@ -1293,8 +1296,8 @@ b0EF5   TYA
         ADC aF3,X
         STA aF3,X
         LDA #$00
-        ADC aFC,X
-        STA aFC,X
+        ADC hiScoreSaverLoPtr,X
+        STA hiScoreSaverLoPtr,X
         LDA (aA2),Y
         AND #$F0
         BNE b0F0C
@@ -1349,8 +1352,8 @@ j0F51   INC a9F
 ; PlaySomeOfTheTitleTune
 ;--------------------------------------------------------------------
 PlaySomeOfTheTitleTune
-        LDA aEF
-a0F5F   =*+$01
+        LDA previousVolumeBuffer
+volumeBufferAdjust   =*+$01
         ORA #$80
         STA $D418    ;Select Filter Mode and Volume
         LDY #$00
@@ -1524,7 +1527,7 @@ b1091   LDA (aA2),Y
         CMP #$02
         BNE b10A4
         LDA #$00
-        STA a0F5F
+        STA volumeBufferAdjust
 b10A4   RTS
 
 ;-------------------------------------------------------------------
@@ -1610,7 +1613,7 @@ b1110   STA $D400,Y  ;Voice 1: Frequency Control - Low-Byte
         STA soundVariable2
         STA soundVariable3
         LDA #$80
-        STA a0F5F
+        STA volumeBufferAdjust
         JSR PlayNote
         RTS
 
@@ -1633,8 +1636,6 @@ f1144   .BYTE $00,$0F,$1E
 f1147   .BYTE $0E,$1D,$2C
 f114A   .BYTE $08,$00,$00,$00
 
-storageForMiniGameData = $D200
-miniGameScreenData = $A6A0
 ;-------------------------------------------------------------------
 ; DestructSequenceMiniGame
 ;-------------------------------------------------------------------
@@ -1699,10 +1700,10 @@ b11A4   LDA shouldWaitUntilReady
         JSR WasteCyclesUsingXAndY
         LDA indexToCurrentLevelTextureData
         STA shipDestructBonus
-        LDA #>SCREEN_RAM + $0209
-        STA aA9
-        LDA #<SCREEN_RAM + $0209
-        STA aA8
+        LDA #$06
+        STA miniGameTimer
+        LDA #9
+        STA miniGameBonusCounter
         LDA selectForBulletsOrMines
         LSR
         LSR
@@ -1721,10 +1722,10 @@ DestructSequenceMiniGameLoop
         LDA $D41B    ; Random Number Generator
         AND #$01
         STA randomNumberBetween0and1
-        LDA aA8
+        LDA miniGameBonusCounter
         CLC
         ADC shipDestructBonus
-        STA aAA
+        STA newShipDestructBonus
         JSR UpdateSomeDataForMiniGame
         LDA $D41B    ; Random Number Generator
         AND #$01
@@ -1742,10 +1743,10 @@ b1209   LDA shouldWaitUntilReady
         LDA anotherRandomNumberBetween0and1
         EOR #$01
         STA anotherRandomNumberBetween0and1
-        LDY aA9
+        LDY miniGameTimer
         LDA f3921,Y
         STA aA7
-        LDY aA9
+        LDY miniGameTimer
         LDA f3C95,Y
         LDX anotherRandomNumberBetween0and1
         CPX randomNumberBetween0and1
@@ -1756,7 +1757,7 @@ b1230   STA a3AFD
         STA soundVariable2
 b1237   LDA anotherRandomNumberBetween0and1
         BEQ b1284
-        LDY aA9
+        LDY miniGameTimer
         LDX indexToHiPtrArrayForMiniGame,Y
         LDA screenLineHiPtrArray,X
         STA someDataHiPtr
@@ -1771,7 +1772,7 @@ b1237   LDA anotherRandomNumberBetween0and1
         INC someDataHiPtr
         INC ramHiPtr
 b125B   JSR UpdateSomeMoreDataForMiniGame
-        LDY aA9
+        LDY miniGameTimer
         LDX LoPtrArrayForMiniGame,Y
         LDA screenLineHiPtrArray,X
         STA someDataHiPtr
@@ -1788,7 +1789,7 @@ b125B   JSR UpdateSomeMoreDataForMiniGame
 b127E   JSR ClearLoPtrs
         JMP j12CA
 
-b1284   LDY aA9
+b1284   LDY miniGameTimer
         LDX LoPtrArrayForMiniGame,Y
         LDA screenLineHiPtrArray,X
         STA someDataHiPtr
@@ -1803,7 +1804,7 @@ b1284   LDY aA9
         INC someDataHiPtr
         INC ramHiPtr
 b12A4   JSR UpdateSomeMoreDataForMiniGame
-        LDY aA9
+        LDY miniGameTimer
         LDX indexToHiPtrArrayForMiniGame,Y
         LDA screenLineHiPtrArray,X
         STA someDataHiPtr
@@ -1818,7 +1819,7 @@ b12A4   JSR UpdateSomeMoreDataForMiniGame
         INC someDataHiPtr
         INC ramHiPtr
 b12C7   JSR ClearLoPtrs
-j12CA   LDA aA8
+j12CA   LDA miniGameBonusCounter
         BEQ b12E6
         LDA firePressed
         BEQ b12D5
@@ -1827,9 +1828,9 @@ j12CA   LDA aA8
 b12D5   LDA anotherRandomNumberBetween0and1
         CMP randomNumberBetween0and1
         BEQ b12E6
-        LDA aAA
+        LDA newShipDestructBonus
         STA shipDestructBonus
-        DEC aA9
+        DEC miniGameTimer
         BEQ b12E6
         JMP DestructSequenceMiniGameLoop
 
@@ -1846,7 +1847,7 @@ UpdateSomeDataForMiniGame
         LDA #$80
         STA a3928
         STA a3929
-        LDA aAA
+        LDA newShipDestructBonus
         SEC
 b12FD   SBC #$0A
         BCC b1306
@@ -1865,7 +1866,7 @@ b1312   RTS
 ;-------------------------------------------------------------------
 UpdateSomeMoreDataForMiniGame
         LDY #$03
-        LDX aA9
+        LDX miniGameTimer
         LDA anotherRandomNumberBetween0and1
         CMP randomNumberBetween0and1
         BEQ b132B
@@ -1904,8 +1905,8 @@ b133B   LDA #$20
 UpdateMiniGameDisplay
         INC someKindOfFrameRate
         BNE b138D
-colorRamHiPtr4B   DEC aA8
-        LDY aA8
+        DEC miniGameBonusCounter
+        LDY miniGameBonusCounter
         LDA f3C8B,Y
         STA a3AED
         LDA #$15
@@ -1982,13 +1983,13 @@ ProcessGameFrame
         JSR UpdateColorsOnScreen
         JSR GetJoystickInput
         JSR MaybeShowPauseScreen
-        LDA fakeRightPressed
-        STA rightPressed
+        LDA fakeMantaHorizontalMovementUpdate
+        STA mantaHorizontalMovementUpdate
         JSR MaybeChangeTitleDecal
         INC someKindOfFrameRate
         JSR MaybeFirePlayerBullets
-        JSR MaybeMoveLeft
-        JSR MaybeMoveRight
+        JSR UpdateMantaVerticalMovementVelocity
+        JSR UpdateMantaHorizontalMovementVelocity
         RTS
 
 ;--------------------------------------------------------------------
@@ -2004,12 +2005,12 @@ ProcessGameFrameWithoutCheckingPause
         JSR UpdateColorsOnScreen
         JSR GetJoystickInput
         LDA #$00
-        STA leftPressed
-        STA rightPressed
+        STA mantaVerticalMovementUpdate
+        STA mantaHorizontalMovementUpdate
         INC someKindOfFrameRate
-        JSR MaybeMoveLeft
-        JSR MaybeMoveRight
-        JSR UpdateCannonsInSomeWay
+        JSR UpdateMantaVerticalMovementVelocity
+        JSR UpdateMantaHorizontalMovementVelocity
+        JSR UpdateGapBetweenCannonsToMatchAnimationFrame
         RTS
 
 ;-------------------------------------------------------------------
@@ -2017,9 +2018,9 @@ ProcessGameFrameWithoutCheckingPause
 ;-------------------------------------------------------------------
 LandOnShipAndMaybeRunMiniGame
         LDA #$00
-        STA leftPressed
+        STA mantaVerticalMovementUpdate
         LDA #$FF
-        STA fakeRightPressed
+        STA fakeMantaHorizontalMovementUpdate
         LDA #$92
         STA soundVariable1
         LDA #$93
@@ -2032,11 +2033,11 @@ LandingLoop
         JSR UpdateEnemies
         LDA BUTTON_DEBOUNCE
         STA buttonPressDebounce
-        LDA mantaDirectionAndSpeed
+        LDA mantaHorizontalMovementVelocity
         BEQ b1437
         BNE b143B
 b1437   LDA #$00
-        STA fakeRightPressed
+        STA fakeMantaHorizontalMovementUpdate
 b143B   LDA someKindOfFrameRate
         AND #$03
         BNE LandingLoop
@@ -2046,7 +2047,7 @@ b143B   LDA someKindOfFrameRate
         BCS LandingLoop
 
         LDA #$00
-        STA fakeRightPressed
+        STA fakeMantaHorizontalMovementUpdate
         LDA #$A0
         STA someKindOfFrameRate
 LowerOntoSurface   
@@ -2060,7 +2061,7 @@ LowerOntoSurface
         LDA #$00
         STA $D015    ;Sprite display Enable
         LDA #$1F
-        STA a0F
+        STA mantaAnimationSelectorTopBits
         LDA #$14
         STA soundVariable1
         STA soundVariable3
@@ -2068,11 +2069,11 @@ LowerOntoSurface
         STA soundVariable2
 b1473   JSR ScrollScreenRight
         JSR ScrollScreenLeft
-        DEC a0F
+        DEC mantaAnimationSelectorTopBits
         BNE b1473
 
         JSR DestructSequenceMiniGame
-        LDA aA8
+        LDA miniGameBonusCounter
         BNE AwardBonuses
         JMP RefreshDisplayAndReturn
         ; Returns
@@ -2151,7 +2152,7 @@ ReloadGameAfterMiniGame
         JSR CreateJaggedEdgeOfDestructSequence
         JSR GenerateStarfield
         JSR UpdateScreenColors
-        JSR SetInterrupToIRQInterrupt2
+        JSR SetInterruptToIRQInterrupt2
 
         LDA #$C0
         STA $D015    ;Sprite display Enable
@@ -2159,10 +2160,13 @@ ReloadGameAfterMiniGame
         STA soundVariable1
         LDA #$23
         STA soundVariable2
+
         JSR ProcessGameFrame
         JSR AnimateMantaShip
+
+        ; Force scrolling to the right?
         LDA #$01
-        STA fakeRightPressed
+        STA fakeMantaHorizontalMovementUpdate
 
         ; Wait a bit.
         LDY #$80
@@ -2175,32 +2179,35 @@ TakeOffLoop
         JSR AnimateMantaShip
         LDA BUTTON_DEBOUNCE
         STA buttonPressDebounce
-        LDA mantaDirectionAndSpeed
+        LDA mantaHorizontalMovementVelocity
         CMP #$FB
         BCS TakeOffLoop
+
         LDA mantaShadowOffset
         CMP #$18
-        BCS b155A
+        BCS CompletingTakeOff
         INC mantaShadowOffset
         JMP TakeOffLoop
 
-        ; Start ship destruct sequence
-b155A   JSR ProcessGameFrame
-        JSR UpdateABunchOfGameVariables
+        ; Wait until the ship has completed taking off.
+CompletingTakeOff
+        JSR ProcessGameFrame
+        JSR UpdateMantaHorizontalAndVerticalPosition
         JSR AnimateMantaShip
-        LDA a45
+        LDA mantaOrientation
         AND #$04
-        BEQ b155A
+        BEQ CompletingTakeOff
 
+        ; Start scrolling to the left.
         LDA #$FF
-        STA fakeRightPressed
+        STA fakeMantaHorizontalMovementUpdate
 
 ;--------------------------------------------------------------------
 ; ShipDestructSequence
 ;--------------------------------------------------------------------
 ShipDestructSequence
         JSR ProcessGameFrame
-        JSR UpdateABunchOfGameVariables
+        JSR UpdateMantaHorizontalAndVerticalPosition
         JSR AnimateMantaShip
         JSR UpdatePlayerScore
 
@@ -2218,19 +2225,19 @@ b1582
         LDA $D41B    ; Random Number Generator
         AND #$3F
         BNE b1593
-        LDA a45
+        LDA mantaOrientation
         CMP #$05
         BNE b1593
         ORA #$80
-        STA a46
-b1593   LDA mantaDirectionAndSpeed
+        STA mantaAnimationActive
+b1593   LDA mantaHorizontalMovementVelocity
         CMP #$07
         BCC b15A3
         LDA #$07
-        STA mantaDirectionAndSpeed
+        STA mantaHorizontalMovementVelocity
         LDA #$00
-        STA a2D
-        STA fakeRightPressed
+        STA playerVelocityLimiter
+        STA fakeMantaHorizontalMovementUpdate
 b15A3   LDA $D41B    ; Random Number Generator
         CMP #$F0
         BCC b15B2
@@ -2382,12 +2389,14 @@ b1676   LDY indexCurrentEnemyFormation
         RTS
 
         ; Display the Land Now warning.
-b1683   LDA a86
+b1683   LDA characterUnderMantasTopCannon
         CMP #$6F
         BNE b16BC
-        LDA a45
+
+        LDA mantaOrientation
         CMP #$01
         BNE b16BC
+
         LDA #$80
         STA landNowActivated
         LDA BUTTON_DEBOUNCE
@@ -2496,7 +2505,7 @@ b171B   INY
         STA destroyedEdgeHiPtr
 b173A   RTS
 
-edgePosition = a0F
+edgePosition = mantaAnimationSelectorTopBits
 ;-------------------------------------------------------------------
 ; CreateJaggedEdgeOfDestructSequence
 ;-------------------------------------------------------------------
@@ -2597,11 +2606,11 @@ SetInterruptToIRQInterrupt1
         RTS
 
 ;-------------------------------------------------------------------
-; SetInterrupToIRQInterrupt2
+; SetInterruptToIRQInterrupt2
 ;-------------------------------------------------------------------
-SetInterrupToIRQInterrupt2
+SetInterruptToIRQInterrupt2
         LDA shouldWaitUntilReady
-        BNE SetInterrupToIRQInterrupt2
+        BNE SetInterruptToIRQInterrupt2
         LDA #$FC
         STA $D012    ;Raster Position
         SEI
@@ -2707,7 +2716,7 @@ b18A0   LDA playerScore,X
         BPL b18A0
         LDY #$05
         LDA #<scrollPositionHiPtr
-        STA a0F
+        STA mantaAnimationSelectorTopBits
         LDX #>scrollPositionHiPtr
         STX dataIndex
 b18B2   LDX dataIndex
@@ -2717,14 +2726,14 @@ b18B2   LDX dataIndex
         LSR
         LSR
         BNE b18D9
-        LDA a0F
+        LDA mantaAnimationSelectorTopBits
 j18BE   STA (someDataLoPtr),Y
         INY
         LDX dataIndex
         LDA playerScore,X
         AND #$0F
         BNE b18E0
-        LDA a0F
+        LDA mantaAnimationSelectorTopBits
 j18CB   STA (someDataLoPtr),Y
         INY
         INC dataIndex
@@ -2734,11 +2743,11 @@ j18CB   STA (someDataLoPtr),Y
         JMP j18E7
 
 b18D9   LDX #$00
-        STX a0F
+        STX mantaAnimationSelectorTopBits
         JMP j18BE
 
 b18E0   LDX #$00
-        STX a0F
+        STX mantaAnimationSelectorTopBits
         JMP j18CB
 
 j18E7   LDA landNowActivated
@@ -2782,8 +2791,8 @@ CheckInitialsInput
 b1922   JSR CheckInputMaybeUpdateDecal
         JSR CheckInputMaybeUpdateDecal
         JSR UpdateColorsOfInitials
-        LDA leftPressed
-        ORA rightPressed
+        LDA mantaVerticalMovementUpdate
+        ORA mantaHorizontalMovementUpdate
         CLC
         ADC stashedYValue
         BMI b193C
@@ -3119,13 +3128,13 @@ j1ABF   ASL
         BPL b1B45
 
         ; Entering from the left.
-b1B36   LDA mantaDirectionAndSpeed
+b1B36   LDA mantaHorizontalMovementVelocity
         EOR #$FF
         CLC
         ADC #$01
         STA initialEnemyXPos
 
-        LDA mantaDirectionAndSpeed
+        LDA mantaHorizontalMovementVelocity
         BMI b1B4D
         BPL b1B5B
 
@@ -3135,7 +3144,7 @@ b1B45   LDA #$00
 
         ; Choose the direction of the enemy sprite based on the
         ; the direction the manta is travelling.
-        LDA mantaDirectionAndSpeed
+        LDA mantaHorizontalMovementVelocity
         BMI b1B5B
 
         ; Manta is travelling to the left, so choose right-facing sprite
@@ -3330,7 +3339,7 @@ b1C57   JMP DetectSpriteLeavingScreen
 ;-------------------------------------------------------------------
 IncrementSpriteXPosToFollowManta
         CLC
-        LDA mantaDirectionAndSpeed
+        LDA mantaHorizontalMovementVelocity
         BMI MantaGoingLeft
         ADC currentSpriteXPos
         STA currentSpriteXPos
@@ -3639,7 +3648,7 @@ MaybeAnimateEnemyMovememnt
         JMP AnimateEnemyShips
 
 CheckIfBulletHitEnemyShip
-        STA a0F
+        STA mantaAnimationSelectorTopBits
         LDA #$80
         STA enemyFiringStrategy,Y
         LDA currentSpriteYPos  ; Get the enemy's Y position.
@@ -3663,7 +3672,7 @@ b1DFA   TAX
         STA srcHiPtr
         LDA screenLineLoPtrArray,X
         CLC
-        ADC a0F
+        ADC mantaAnimationSelectorTopBits
         STA srcLoPtr
         BCC b1E0C
         INC srcHiPtr
@@ -3987,7 +3996,7 @@ AnimateEnemyBullet
         LDA currentSpriteYPos
         SEC
         SBC mantaCurrentYPos
-        STA a0F
+        STA mantaAnimationSelectorTopBits
         CLC
 
         ; Offsets are used to determine whether to set carry or not.
@@ -3997,7 +4006,7 @@ AnimateEnemyBullet
         SEC
         SBC #$05
         BMI ClearCarry
-        LDA a0F
+        LDA mantaAnimationSelectorTopBits
         CLC
         ADC bulletAnimationArrayOfSomeSort,X
         SEC
@@ -4137,19 +4146,19 @@ SetUpScreenForScrolling
         LDA #$FB
         STA $D025    ;Sprite Multi-Color Register 0
         LDA #$00
-        STA a34
-        STA mantaDirectionAndSpeed
-        STA a3F
-        STA a47
-        STA a46
-        STA a3E
+        STA mantaVerticalMovementVelocity
+        STA mantaHorizontalMovementVelocity
+        STA inputDebounceDuringAnimation
+        STA shadowDepthDuringMantaAnimation
+        STA mantaAnimationActive
+        STA mantaTurnActivated
         STA hasShipBeenHit
         LDA #$FF
-        STA a2D
+        STA playerVelocityLimiter
         LDA #$10
         STA mantaShadowOffset
         LDA #$05
-        STA a45
+        STA mantaOrientation
         LDA #$59
         STA newSpriteValue
         LDA #$98
@@ -4162,7 +4171,7 @@ SetUpScreenForScrolling
         STA $D02E    ;Sprite 7 Color
         LDA #$2F
         STA charsetSwitcher
-        JSR SetInterrupToIRQInterrupt2
+        JSR SetInterruptToIRQInterrupt2
         RTS
 
 ;-------------------------------------------------------------------
@@ -4225,8 +4234,8 @@ EnterDemoModeUntilDeadOrPlayerPressesFire
         LDA #$01
         STA pausedOrNotPaused
         LDA #$00
-        STA fakeRightPressed
-        STA fakeLeftPressed
+        STA fakeMantaHorizontalMovementUpdate
+        STA fakeMantaVerticalMovementUpdate
         STA playerScore
         STA playerScore + $01
         STA playerScore + $02
@@ -4263,8 +4272,8 @@ EnterDemoModeUntilDeadOrPlayerPressesFire
         STA currentColorValue
 
         LDY #$07
-b220D   LDA someKindOfSettingArray,Y
-        STA a35,Y
+b220D   LDA mantaInitialMovementSettings,Y
+        STA mantaMinimumVerticalVelocity,Y
         DEY
         BPL b220D
 
@@ -4298,9 +4307,9 @@ demoModeFuncHiPtr   =*+$02
         JSR MaybeChangeTitleDecal
         JSR RandomlyManipulateJoystick
         JSR MaybeFirePlayerBullets
-        JSR MaybeMoveLeft
-        JSR MaybeMoveRight
-        JSR UpdateABunchOfGameVariables
+        JSR UpdateMantaVerticalMovementVelocity
+        JSR UpdateMantaHorizontalMovementVelocity
+        JSR UpdateMantaHorizontalAndVerticalPosition
         JSR AnimateMantaShip
         LDA hasShipBeenHit
         BNE ShipHitInDemoMode
@@ -4336,8 +4345,8 @@ RandomlyManipulateJoystick
         EOR #$10
         STA firePressed
         STA fakeFirePressed
-b229A   LDA fakeLeftPressed
-        STA leftPressed
+b229A   LDA fakeMantaVerticalMovementUpdate
+        STA mantaVerticalMovementUpdate
         LDA $D41B    ; Random Number Generator
         CMP #$B4
         BCC b22B6
@@ -4349,10 +4358,10 @@ b229A   LDA fakeLeftPressed
         BCC b22B2
         DEY
         DEY
-b22B2   STY leftPressed
-        STY fakeLeftPressed
-b22B6   LDA fakeRightPressed
-        STA rightPressed
+b22B2   STY mantaVerticalMovementUpdate
+        STY fakeMantaVerticalMovementUpdate
+b22B6   LDA fakeMantaHorizontalMovementUpdate
+        STA mantaHorizontalMovementUpdate
         LDA $D41B    ; Random Number Generator
         CMP #$B4
         BCC b22D2
@@ -4364,8 +4373,8 @@ b22B6   LDA fakeRightPressed
         BCC b22CE
         DEY
         DEY
-b22CE   STY rightPressed
-        STY fakeRightPressed
+b22CE   STY mantaHorizontalMovementUpdate
+        STY fakeMantaHorizontalMovementUpdate
 b22D2   RTS
 
 ;-------------------------------------------------------------------
@@ -4375,17 +4384,17 @@ MaybeChangeTitleDecal
         LDA someKindOfFrameRate
         AND #$7F
         BNE b231C
-        LDA a5B
-        STA a0F
+        LDA currentBannerState
+        STA mantaAnimationSelectorTopBits
         CLC
         ADC #$01
         AND #$03
-        STA a5B
+        STA currentBannerState
         BEQ WriteUridiumDecalToScreen
         LDA pausedOrNotPaused
         CMP #$03
         BEQ WriteUridiumDecalToScreen
-        LDA a5B
+        LDA currentBannerState
         CMP #$01
         BEQ WriteHiScoreLabel
         CMP #$02
@@ -4393,13 +4402,15 @@ MaybeChangeTitleDecal
         LDA pausedOrNotPaused
         CMP #$02
         BEQ WriteCurrentLevel
-b22FC   LDA playerAndJoystickMode
+
+UpdateBannerDetail
+        LDA playerAndJoystickMode
         TAY
         LDA scrollingTitleScreenDataHiPtrArray,Y
         LDX scrollingTitleScreenDataLoPtrArray,Y
         TAY
         JSR WriteToScreen
-        LDA monochromEnabled
+        LDA monochromeEnabled
         BEQ b2315
 
         LDX #<globeSymbol
@@ -4469,9 +4480,10 @@ b2351   LDX #<$DC00
         LDX #<player1Symbol
         LDY #>player1Symbol
         JSR WriteToScreen
-j2374   LDA a5B
+
+j2374   LDA currentBannerState
         CMP #$03
-        BEQ b22FC
+        BEQ UpdateBannerDetail
         RTS
 
 b237B   LDA #$00
@@ -4526,12 +4538,12 @@ MaybeUpdateColorScheme
         LDY #>colorLabel
         JSR WriteToScreen
         LDA #$00
-        STA monochromEnabled
+        STA monochromeEnabled
         JSR PaintPlayerScoreColors
-        LDA a5B
+        LDA currentBannerState
         CMP #$03
         BNE b23D6
-        JMP b22FC
+        JMP UpdateBannerDetail
 
 b23D6   RTS
 
@@ -4539,12 +4551,12 @@ b23D7   LDX #<blckWhiteLabel
         LDY #>blckWhiteLabel
         JSR WriteToScreen
         LDA #$FF
-        STA monochromEnabled
+        STA monochromeEnabled
         JSR PaintPlayerScoreColors
-        LDA a5B
+        LDA currentBannerState
         CMP #$03
         BNE b23D6
-        JMP b22FC
+        JMP UpdateBannerDetail
 
         RTS
 
@@ -4552,7 +4564,7 @@ b23D7   LDX #<blckWhiteLabel
 ; PaintPlayerScoreColors
 ;-------------------------------------------------------------------
 PaintPlayerScoreColors
-        LDA monochromEnabled
+        LDA monochromeEnabled
         BEQ b2402
         LDA #M_WHITE
         STA COLOR_RAM + $005A
@@ -4618,7 +4630,7 @@ b2453   STA f8010,X
 ShipHasBeenHit
         LDA #$00
         STA $D015    ;Sprite display Enable
-        STA a3F
+        STA inputDebounceDuringAnimation
         LDA #$06
         STA loopCounter
         LDA #$0C
@@ -4639,7 +4651,7 @@ ShipHasBeenHit
 j2488   LDA hasShipBeenHit
         BPL b2490
         LDA #$00
-        STA mantaDirectionAndSpeed
+        STA mantaHorizontalMovementVelocity
 b2490   LDA loopCounter
         BMI b24BF
         LDA #$07
@@ -4682,27 +4694,27 @@ b24D5   JSR ApplySpriteVariablesAndDisplay
         JSR ProcessGameFrameWithoutCheckingPause
         JSR ProcessGameFrameWithoutCheckingPause
 
-        LDA mantaDirectionAndSpeed
+        LDA mantaHorizontalMovementVelocity
         BEQ b2506
         BMI b24F8
-        LDA a2D
+        LDA playerVelocityLimiter
         SEC
         SBC #$80
-        STA a2D
-        LDA mantaDirectionAndSpeed
+        STA playerVelocityLimiter
+        LDA mantaHorizontalMovementVelocity
         SBC #$00
-        STA mantaDirectionAndSpeed
+        STA mantaHorizontalMovementVelocity
         JMP j2508
 
 b24F8   CLC
-        LDA a2D
+        LDA playerVelocityLimiter
         ADC #$80
-        STA a2D
+        STA playerVelocityLimiter
         BCC b2503
-        INC mantaDirectionAndSpeed
+        INC mantaHorizontalMovementVelocity
 b2503   JMP j2508
 
-b2506   STA a2D
+b2506   STA playerVelocityLimiter
 j2508   LDA pausedOrNotPaused
         CMP #$02
         BEQ b2515
@@ -4777,80 +4789,90 @@ b256C   STA SCREEN_RAM_HIBANK + $03AC,Y
         RTS
 
 ;-------------------------------------------------------------------
-; MaybeMoveLeft
+; UpdateMantaVerticalMovementVelocity
 ;-------------------------------------------------------------------
-MaybeMoveLeft
+UpdateMantaVerticalMovementVelocity
         LDA buttonPressDebounce
         BEQ b25B0
-b257A   LDA leftPressed
-        BEQ b259E
-        BMI b258F
-        INC a34
-        LDA a34
+
+b257A
+        LDA mantaVerticalMovementUpdate
+        BEQ NeutralVerticalMovemement
+        BMI DecreaseVerticalVelocity
+
+IncreaseVerticalVelocity
+        INC mantaVerticalMovementVelocity
+        LDA mantaVerticalMovementVelocity
         BMI b258E
-        CMP a36
+        CMP mantaMaximumVerticalVelocity
         BCC b258E
-        LDA a36
-        STA a34
+        LDA mantaMaximumVerticalVelocity
+        STA mantaVerticalMovementVelocity
 b258E   RTS
 
-b258F   DEC a34
-        LDA a34
+DecreaseVerticalVelocity
+        DEC mantaVerticalMovementVelocity
+        LDA mantaVerticalMovementVelocity
         BPL b258E
-        CMP a35
+        CMP mantaMinimumVerticalVelocity
         BCS b258E
-        LDA a35
-        STA a34
+        LDA mantaMinimumVerticalVelocity
+        STA mantaVerticalMovementVelocity
         RTS
 
-b259E   LDA a34
+NeutralVerticalMovemement
+        LDA mantaVerticalMovementVelocity
         CMP #$FF
         BEQ b25AB
         ROL
-        LDA a34
+        LDA mantaVerticalMovementVelocity
         ROR
-        STA a34
+        STA mantaVerticalMovementVelocity
         RTS
 
 b25AB   LDA #$00
-        STA a34
+        STA mantaVerticalMovementVelocity
         RTS
 
-b25B0   LDA leftPressed
+b25B0
+        LDA mantaVerticalMovementUpdate
         BNE b25B9
         INC buttonPressDebounce
-        JMP b259E
+        JMP NeutralVerticalMovemement
 
-b25B9   LDA a3F
+b25B9
+        LDA inputDebounceDuringAnimation
         BNE b257A
-        LDA a45
+        LDA mantaOrientation
         BMI b257A
         AND #$03
         CMP #$01
         BNE b25DF
         CLC
-        ADC leftPressed
+        ADC mantaVerticalMovementUpdate
         AND #$03
         ORA #$80
-        STA a0F
-        LDA a3E
+        STA mantaAnimationSelectorTopBits
+        LDA mantaTurnActivated
         CMP #$03
         BCC b257A
-b25D6   LDA a45
+
+b25D6
+        LDA mantaOrientation
         AND #$FC
-        ORA a0F
-        STA a46
+        ORA mantaAnimationSelectorTopBits
+        STA mantaAnimationActive
         RTS
 
 b25DF   LDA #$81
-        STA a0F
+        STA mantaAnimationSelectorTopBits
         BNE b25D6
         ; Never Falls through
 
 ;-------------------------------------------------------------------
-; CopyShipSpritesTosurfaceCharset
+; CopyShipSpritesToSurfaceCharset
 ;-------------------------------------------------------------------
-CopyShipSpritesTosurfaceCharset
+CopyShipSpritesToSurfaceCharset
         LDX #<mantaShipSprites
         LDY #>mantaShipSprites
         STX srcLoPtr
@@ -4863,11 +4885,11 @@ CopyShipSpritesTosurfaceCharset
 b25F7   LDA (srcLoPtr),Y
         AND #$AA
         LSR
-        STA a0F
+        STA mantaAnimationSelectorTopBits
         LDA (srcLoPtr),Y
         AND #$55
         ASL
-        ORA a0F
+        ORA mantaAnimationSelectorTopBits
         ORA (srcLoPtr),Y
         STA (ramLoPtr),Y
         INY
@@ -4880,245 +4902,295 @@ b25F7   LDA (srcLoPtr),Y
         RTS
 
 ;--------------------------------------------------------------------
-; b2617
+; PlayerMovementReducesCurrentVelocity
 ;--------------------------------------------------------------------
-b2617
+PlayerMovementReducesCurrentVelocity
         BMI b2627
         CLC
-        ADC a2D
-        STA a2D
-        LDA mantaDirectionAndSpeed
+        ADC playerVelocityLimiter
+        STA playerVelocityLimiter
+        LDA mantaHorizontalMovementVelocity
         ADC #$00
-        BMI b2650
-        JMP j2679
+        BMI StoreHorizontalMovementVelocity
+        JMP UpdatedSpeedAndExit
 
-b2627   CLC
-        ADC a2D
-        STA a2D
-        LDA mantaDirectionAndSpeed
-        ADC #$FF
-        BMI b2650
-        JMP j2679
-
-;-------------------------------------------------------------------
-; MaybeMoveRight
-;-------------------------------------------------------------------
-MaybeMoveRight
-        LDA a3F
-        BNE b2617
-        LDA a45
-        AND #$04
-        BNE b2668
-        LDA rightPressed
-        BEQ b2659
-        BMI b265A
-        LDA a2D
+b2627
         CLC
-        ADC a39
-        STA a2D
-        LDA mantaDirectionAndSpeed
+        ADC playerVelocityLimiter
+        STA playerVelocityLimiter
+        LDA mantaHorizontalMovementVelocity
         ADC #$FF
-b2650   STA mantaDirectionAndSpeed
+        BMI StoreHorizontalMovementVelocity
+        JMP UpdatedSpeedAndExit
+
+;-------------------------------------------------------------------
+; UpdateMantaHorizontalMovementVelocity
+;-------------------------------------------------------------------
+UpdateMantaHorizontalMovementVelocity
+        LDA inputDebounceDuringAnimation
+        BNE PlayerMovementReducesCurrentVelocity
+
+        LDA mantaOrientation
+        AND #$04
+        BNE FacingRight
+
+        LDA mantaHorizontalMovementUpdate
+        BEQ NeutralHorizontalMovmeent
+        BMI LeftwardHorizontalMovement
+
+        LDA playerVelocityLimiter
+        CLC
+        ADC playerVelocityIncrementFacingLeftAccelerating
+        STA playerVelocityLimiter
+
+        LDA mantaHorizontalMovementVelocity
+        ADC #$FF
+StoreHorizontalMovementVelocity
+        STA mantaHorizontalMovementVelocity
         EOR #$FF
         CLC
         ADC #$01
-        STA a3E
-b2659   RTS
+        STA mantaTurnActivated
 
-b265A   LDA a2D
-        CLC
-        ADC a3A
-        STA a2D
-        LDA mantaDirectionAndSpeed
-        ADC #$00
-        JMP b2650
-
-b2668   LDA rightPressed
-        BEQ b2659
-        BPL b267E
-        LDA a2D
-        CLC
-        ADC a3B
-        STA a2D
-        LDA mantaDirectionAndSpeed
-        ADC #$00
-j2679
-        STA mantaDirectionAndSpeed
-        STA a3E
+NeutralHorizontalMovmeent
         RTS
 
-b267E   LDA a2D
+LeftwardHorizontalMovement
+        LDA playerVelocityLimiter
         CLC
-        ADC a3C
-        STA a2D
-        LDA mantaDirectionAndSpeed
+        ADC playerVelocityIncrementFacingLeftDecelerating
+        STA playerVelocityLimiter
+
+        LDA mantaHorizontalMovementVelocity
+        ADC #$00
+        JMP StoreHorizontalMovementVelocity
+
+FacingRight
+        LDA mantaHorizontalMovementUpdate
+        BEQ NeutralHorizontalMovmeent
+        BPL RightwardHorizontalMovement
+
+        LDA playerVelocityLimiter
+        CLC
+        ADC playerVelocityIncrementFacingRightAccelerating
+        STA playerVelocityLimiter
+
+        LDA mantaHorizontalMovementVelocity
+        ADC #$00
+UpdatedSpeedAndExit
+        STA mantaHorizontalMovementVelocity
+        STA mantaTurnActivated
+        RTS
+
+RightwardHorizontalMovement
+        LDA playerVelocityLimiter
+        CLC
+        ADC playerVelocityIncrementFacingRightDecelerating
+        STA playerVelocityLimiter
+        LDA mantaHorizontalMovementVelocity
         ADC #$FF
-        JMP j2679
+        JMP UpdatedSpeedAndExit
 
 ;-------------------------------------------------------------------
-; UpdateABunchOfGameVariables
+; UpdateMantaHorizontalAndVerticalPosition
 ;-------------------------------------------------------------------
-UpdateABunchOfGameVariables
-        LDA a34
+UpdateMantaHorizontalAndVerticalPosition
+        LDA mantaVerticalMovementVelocity    ; Get current vertical velocity.
         CLC
-        ADC mantaCurrentYPos
-        CMP #$62
-        BCS b2697
-        LDA #$62
-b2697   CMP #$D7
-        BCC b269D
-        LDA #$D7
-b269D   STA mantaCurrentYPos
-        LDA mantaDirectionAndSpeed
+        ADC mantaCurrentYPos                 ; Apply it to current position.
+        CMP #$62                             ; Have we reached the top of the screen?
+        BCS b2697                            ; If not, check for bottom of screen, otherwise..
+        LDA #$62                             ; Set Y Pos to top most vertical postition.
+b2697   CMP #$D7                             ; Have we reached the bottom of the screen?
+        BCC b269D                            ; If not, update new vertical position, otherwise..
+        LDA #$D7                             ; Set Y pos to bottommost vertical position.
+b269D   STA mantaCurrentYPos                 ; Update the manta's Y pos with selected value.
+
+        LDA mantaHorizontalMovementVelocity
         BMI b26D1
-        CMP a38
+        CMP mantaMaximumHorizontalVelocity
         BCC b26AB
-        LDA a38
-        STA mantaDirectionAndSpeed
-b26AB   LDA a45
-        BMI b26EB
+        LDA mantaMaximumHorizontalVelocity
+        STA mantaHorizontalMovementVelocity
+
+b26AB   LDA mantaOrientation
+        BMI CheckWhetherTurnAnimationActivated
         LDA currentScrollSegment
         BNE b26BA
         LDA #$C8
-        STA a3F
-        JMP b26EB
+        STA inputDebounceDuringAnimation
+        JMP CheckWhetherTurnAnimationActivated
 
 b26BA   CMP #$0E
-        BCC b26EB
+        BCC CheckWhetherTurnAnimationActivated
         LDA positionInsideScrollSegment
-        BPL b26EB
-b26C2   LDA a45
+        BPL CheckWhetherTurnAnimationActivated
+b26C2   LDA mantaOrientation
         ORA #$80
-        STA a46
-        JMP b26EB
+        STA mantaAnimationActive
+        JMP CheckWhetherTurnAnimationActivated
 
 b26CB   LDA positionInsideScrollSegment
-        BMI b26EB
+        BMI CheckWhetherTurnAnimationActivated
         BPL b26C2
-b26D1   CMP a37
+b26D1   CMP mantaMinimumHorizontalVelocity
         BCS b26D9
-        LDA a37
-        STA mantaDirectionAndSpeed
-b26D9   LDA a45
-        BMI b26EB
+        LDA mantaMinimumHorizontalVelocity
+        STA mantaHorizontalMovementVelocity
+b26D9   LDA mantaOrientation
+        BMI CheckWhetherTurnAnimationActivated
+
         LDA currentScrollSegment
-        BMI b26EB
+        BMI CheckWhetherTurnAnimationActivated
         BEQ b26CB
         CMP #$0E
-        BCC b26EB
+        BCC CheckWhetherTurnAnimationActivated
+
         LDA #$38
-        STA a3F
-b26EB   LDA a3E
+        STA inputDebounceDuringAnimation
+
+CheckWhetherTurnAnimationActivated
+        LDA mantaTurnActivated
         CMP #$03
-        BCS b26FF
+        BCS MantaPositionUpdateComplete
         CMP #$02
         BCS b2700
-        LDA a45
-        BMI b26FF
+
+        LDA mantaOrientation
+        BMI MantaPositionUpdateComplete
         EOR #$04
         ORA #$80
-        STA a46
-b26FF   RTS
+        STA mantaAnimationActive
 
-b2700   LDA a45
-        BMI b26FF
+MantaPositionUpdateComplete
+        RTS
+
+b2700
+        LDA mantaOrientation
+        BMI MantaPositionUpdateComplete
         AND #$03
         CMP #$01
-        BEQ b26FF
-        LDA a45
+        BEQ MantaPositionUpdateComplete
+        LDA mantaOrientation
         AND #$FC
         ORA #$81
-        STA a46
+        STA mantaAnimationActive
         RTS
 
 ;-------------------------------------------------------------------
 ; AnimateMantaShip
 ;-------------------------------------------------------------------
 AnimateMantaShip
-        LDA a46
+        LDA mantaAnimationActive
         BPL DrawTheAnimation
 
-        LDA a45
+        LDA mantaOrientation
         AND #$04
         BEQ RightFacingAnimation
 
 LeftFacingAnimation
-        LDA a45
+        LDA mantaOrientation
         ASL
         ASL
         ASL
         AND #$18
-        STA a0F
-        LDA a46
+        STA mantaAnimationSelectorTopBits
+
+        LDA mantaAnimationActive
         AND #$07
-        ORA a0F
+        ORA mantaAnimationSelectorTopBits
         TAX
         LDA mantaleftFacingAnimationLoPtrArray,X
         STA mantaAnimationLoPtr
         LDA mantaleftFacingAnimationHiPtrArray,X
         STA mantaAnimationHiPtr
 
-j2737   LDY #$00
+        ; Read in the animation data structure.
+        ; Byte 1: Number of Frames in Animation.
+        ; Byte 2 - N: Animation Frames
+        ; Byte N+1: Depth of manta shadow during animation 
+        ; Byte N+2: How much player input it takes to interrupt the animation. 
+
+        ; Get byte 1, the number of frames in the animation.
+ReadInAnimationDataStructure
+        LDY #$00
         LDA (mantaAnimationLoPtr),Y
         STA framesInAnimation
+
+        ; Get byte N+1, the depth of the manta shadow.
         TAY
         INY
         LDA (mantaAnimationLoPtr),Y
-        STA a47
-        BNE b2749
-        LDA a3F
-        BNE b274E
-b2749   INY
+        STA shadowDepthDuringMantaAnimation
+
+        BNE LoadDebounce
+        LDA inputDebounceDuringAnimation
+        BNE SkipLoadingDebounce
+
+        ; Byte N+2: How much player input it takes to interrupt the animation. 
+LoadDebounce
+        INY
         LDA (mantaAnimationLoPtr),Y
-        STA a3F
-b274E   LDA a46
-        STA a45
+        STA inputDebounceDuringAnimation
+
+SkipLoadingDebounce
+        LDA mantaAnimationActive
+        STA mantaOrientation
         LDA #$00
-        STA a46
+        STA mantaAnimationActive
         RTS
 
 RightFacingAnimation   
-        LDA a45
+        LDA mantaOrientation
         ASL
         ASL
         ASL
         AND #$18
-        STA a0F
-        LDA a46
+        STA mantaAnimationSelectorTopBits
+
+        LDA mantaAnimationActive
         AND #$07
-        ORA a0F
+        ORA mantaAnimationSelectorTopBits
         TAX
         LDA mantaRightFacingAnimationLoPtrArray,X
         STA mantaAnimationLoPtr
         LDA mantaRightFacingAnimationHiPtrArray,X
         STA mantaAnimationHiPtr
-        JMP j2737
+
+        JMP ReadInAnimationDataStructure
 
 DrawTheAnimation   
-        LDA a45
-        BMI b277B
+        LDA mantaOrientation
+        BMI NewAnimationFrameRequired
         JMP DrawMantaAnimationFrame
 
-b277B   LDA someKindOfFrameRate
+NewAnimationFrameRequired
+        LDA someKindOfFrameRate
         AND #$01
         BNE DrawMantaAnimationFrame
+
         LDY framesInAnimation
         LDA (mantaAnimationLoPtr),Y
         STA newSpriteValue
-        LDA a47
-        BEQ b2793
+
+        LDA shadowDepthDuringMantaAnimation
+        BEQ NoUpdateToShadowRequired
         LDA mantaShadowOffsets,Y
         CLC
         ADC mantaShadowOffset
         STA mantaShadowOffset
-b2793   DEC framesInAnimation
+
+NoUpdateToShadowRequired
+        DEC framesInAnimation
         BNE DrawMantaAnimationFrame
-        LDA a45
+
+        LDA mantaOrientation
         AND #$7F
-        STA a45
+        STA mantaOrientation
+
         LDA #$00
-        STA a3F
-        STA a47
+        STA inputDebounceDuringAnimation
+        STA shadowDepthDuringMantaAnimation
 
         ; Draw the animation frame.
 DrawMantaAnimationFrame   
@@ -5152,14 +5224,14 @@ DrawMantaAnimationFrame
         ; Falls through
 
 ;-------------------------------------------------------------------
-; UpdateCannonsInSomeWay
+; UpdateGapBetweenCannonsToMatchAnimationFrame
 ;-------------------------------------------------------------------
-UpdateCannonsInSomeWay
+UpdateGapBetweenCannonsToMatchAnimationFrame
         LDY newSpriteValue
-        LDA f33E8,Y
-        STA a56
+        LDA gapBetweenMantaCannonsArray,Y
+        STA currentGapBetweenCannons
         AND #$01
-        STA a57
+        STA unusedOffsetForCannonPtrs
         TAY
         BNE b27FD
         LDA (mantaTopCannonLoPtr),Y
@@ -5179,14 +5251,14 @@ a27FA   =*+$01
         STA hasShipBeenHit
 b27FD   LDY #$01
         LDA (mantaTopCannonLoPtr),Y
-        STA a86
+        STA characterUnderMantasTopCannon
         BPL b280D
         CMP #$90
         BCS b280D
 a280A   =*+$01
         LDA #$80
         STA hasShipBeenHit
-b280D   LDA a56
+b280D   LDA currentGapBetweenCannons
         BPL b2838
         DEC mantaTopCannonHiPtr
         DEC mantaTopCannonHiPtr
@@ -5382,7 +5454,7 @@ b2954   AND #$7F
         STA fireButtonDebounce
         RTS
 
-pixelYPositionOfPlayerBullet = a0F
+pixelYPositionOfPlayerBullet = mantaAnimationSelectorTopBits
 ;-------------------------------------------------------------------
 ; FirePlayerBullets
 ;-------------------------------------------------------------------
@@ -5442,7 +5514,7 @@ UpdateBulletArrays
         LDA #$09
         STA soundVariable1
         LDA #$02
-        LDY mantaDirectionAndSpeed
+        LDY mantaHorizontalMovementVelocity
         BEQ b29DF
         BMI b29DF
 
@@ -5711,14 +5783,14 @@ SkipSpace
 ; UpdateScrollPositionUsingDirectionAndSpeed
 ;-------------------------------------------------------------------
 UpdateScrollPositionUsingDirectionAndSpeed
-        LDA mantaDirectionAndSpeed
+        LDA mantaHorizontalMovementVelocity
         BEQ UpdatePixelsToScroll
         BPL ScrollLeft
 
         ; Set the scroll position with a precision at the character level.
         LDA positionInsideScrollSegment
         SEC
-        SBC mantaDirectionAndSpeed
+        SBC mantaHorizontalMovementVelocity
         STA positionInsideScrollSegment
 
         ; Update the current scroll segment.
@@ -5741,7 +5813,7 @@ ScrollLeft
         ; Set the scroll position with a precision at the character level.
         LDA positionInsideScrollSegment
         SEC
-        SBC mantaDirectionAndSpeed
+        SBC mantaHorizontalMovementVelocity
         STA positionInsideScrollSegment
 
         ; Update the current scroll segment.
@@ -5839,7 +5911,7 @@ ExitPauseScreen
         RTS
 
 
-secondHalfOfMap = a0F
+secondHalfOfMap = mantaAnimationSelectorTopBits
 ;-------------------------------------------------------------------
 ; ScrollShipSurface
 ;-------------------------------------------------------------------
@@ -6454,7 +6526,7 @@ UpdateScreenColors
         STY ramHiPtr
         LDA #$00
         STA initialValueOfY
-        LDA monochromEnabled
+        LDA monochromeEnabled
         BNE b2F5B
 
         ; Is there a color scheme for this level?
@@ -6542,13 +6614,13 @@ UpdateColorsOnScreen
         BMI b3000
 b2FCC   LDY $0220,X
         LDA colorLineHiPtrArray,Y
-        STA a1F
+        STA colorLineHiPtr
         LDA screenLineLoPtrArray,Y
-        STA a1E
+        STA colorLineLoPtr
         LDY $0240,X
         BMI b2FE2
         LDA loadedCharacterColor
-        STA (a1E),Y
+        STA (colorLineLoPtr),Y
 b2FE2   LDA $0200,X
         CMP mantaBottomCannonLoPtr
         BCC b3001
@@ -6561,7 +6633,7 @@ b2FE2   LDA $0200,X
         BMI b3001
         TAY
         LDA currentColorValue
-        STA (a1E),Y
+        STA (colorLineLoPtr),Y
 b2FFD   DEX
         BPL b2FCC
 b3000   RTS
@@ -6892,7 +6964,6 @@ p3FD6   RTI
 ; breaking the game.
 
 *=$A900
-fA900
 ;--------------------------------------------------------------------
 ; ResetSomeValues
 ;--------------------------------------------------------------------
@@ -6918,18 +6989,20 @@ aC90A   = $C90A
 PrepareHiScoreScreen
         LDX #$00
 bA912   LDA firstInHallofFame,X
-        STA fCA00,X
+        STA hallOfFameSaver,X
         INX
         CPX #$AC
         BNE bA912
+
         LDX #$13
 bA91F   LDA inGameBanner,X
-        STA fCAAC,X
+        STA inGameBannerSaver,X
         DEX
         BPL bA91F
+
         LDX #$0D
 bA92A   LDA hiScoreForScrollingBanner,X
-        STA fCAC0,X
+        STA hiScoreScrollingBannerSaver,X
         DEX
         BPL bA92A
 
@@ -6958,10 +7031,10 @@ bA95B   STA soundOrTitleSelector,X
         BNE bA95B
 
 ;-------------------------------------------------------------------
-; sC962 sA962
+; SaveHighScoreToFile sA962
 ; FIXME: This looks like the hiscore saver, added by the hacker. Remove.
 ;-------------------------------------------------------------------
-sC962 = $C962
+SaveHighScoreToFile = $C962
         LDA #$01
         TAY
         LDX #$08
@@ -6970,10 +7043,10 @@ sC962 = $C962
         LDX #$BF
         LDY #$C9
         JSR $FFBD ;- set file name
-        LDA #<fCA00
-        STA aFB
-        LDY #>fCA00
-        STY aFC
+        LDA #<hallOfFameSaver
+        STA hiScoreSaverHiPtr
+        LDY #>hallOfFameSaver
+        STY hiScoreSaverLoPtr
         LDX #$CE
         LDA #$FB
         JSR $FFD8 ;- save after call SETLFS,SETNAM
@@ -7050,17 +7123,17 @@ bA9F7   LDA #$01
 ;-------------------------------------------------------------------
 InitializeSomePointers
         LDA #>$0180
-        STA aBC
+        STA unusedDataLoPtr
         LDA #<$0180
-        STA aBB
+        STA unusedDataHiPtr
         LDX #<dataIndex
         LDY #>dataIndex
-        STX aB7
-        STY aB8
+        STX dataIndexLoPtr
+        STY dataIndexHiPtr
         LDA #<SCREEN_RAM + $0100
-        STA a94
+        STA screenRAMLoPtr
         LDA #>SCREEN_RAM + $0100
-        STA a95
+        STA volumeBuffer
         RTS
 
 ;-------------------------------------------------------------------
@@ -7068,8 +7141,8 @@ InitializeSomePointers
 ;-------------------------------------------------------------------
 GetJoystickInput
         LDA #$00
-        STA leftPressed
-        STA rightPressed
+        STA mantaVerticalMovementUpdate
+        STA mantaHorizontalMovementUpdate
         LDA #$FF
         STA $DC00    ;CIA1: Data Port Register A
 joystick1LoPtr   =*+$01
@@ -7079,24 +7152,33 @@ joystick2LoPtr   =*+$01
 joystick2HiPtr   =*+$02
         AND $DC01    ;CIA1: Data Port Register B
         BIT msbForSpriteArray + $02
-        BEQ bB037
+        BEQ LeftButtonPressed
         BIT msbForSpriteArray + $03
-        BEQ bB03B
-        JMP jB03D
+        BEQ RightButtonPressed
+        JMP CheckUpDownButton
 
-bB037   DEC rightPressed
-        BNE jB03D
-bB03B   INC rightPressed
-jB03D   BIT msbForSpriteArray
-        BEQ bB04A
+LeftButtonPressed
+        DEC mantaHorizontalMovementUpdate
+        BNE CheckUpDownButton
+
+RightButtonPressed
+        INC mantaHorizontalMovementUpdate
+
+CheckUpDownButton
+        BIT msbForSpriteArray
+        BEQ UpButtonPressed
         BIT msbForSpriteArray + $01
-        BEQ bB04E
-        JMP jB050
+        BEQ DownButtonPressed
+        JMP CheckIfFirePressed
 
-bB04A   DEC leftPressed
-        BNE jB050
-bB04E   INC leftPressed
-jB050   AND #$10
+UpButtonPressed
+        DEC mantaVerticalMovementUpdate
+        BNE CheckIfFirePressed
+DownButtonPressed
+        INC mantaVerticalMovementUpdate
+
+CheckIfFirePressed
+        AND #$10
         STA firePressed
         RTS
 
@@ -7286,7 +7368,7 @@ bB1A7   CLC
         INC ramHiPtr
 bB1B3   RTS
 
-currentScoreCharToWrite = a0F
+currentScoreCharToWrite = mantaAnimationSelectorTopBits
 currentDigitInScore = dataIndex
 ;-------------------------------------------------------------------
 ; UpdatePlayerScore
@@ -7390,10 +7472,10 @@ FiddleWithRAMAccessMode
         LDA RAM_ACCESS_MODE
         ORA #$20
         STA RAM_ACCESS_MODE
-        STA a94
+        STA screenRAMLoPtr
 bB259   RTS
 
-bB25A   LDA a94
+bB25A   LDA screenRAMLoPtr
         BEQ bB259
         LDA RAM_ACCESS_MODE
         AND #$DF
@@ -7466,12 +7548,12 @@ bB2A0   =*+$01
         JMP jB2B4
 
 WriteCharsLoop
-        LDY aBA
+        LDY writeCharsIndex
         LDA (dataLoPtr),Y
 jB2B4   INY
-        STY aBA
+        STY writeCharsIndex
 
-        ; Stop writing if the leftmost bit is set on aBA. This means
+        ; Stop writing if the leftmost bit is set on writeCharsIndex. This means
         ; the most bytes we'll write is 128.
         BMI bB2C5
         ; Stop writing if the leftmost bit is set on the char to write.
@@ -7570,17 +7652,17 @@ UpdateVolumeSetting
         BNE bB35F
         LDA bitMapForPlayerVolumeAndColor
         BPL bB336
-        LDA a95
+        LDA volumeBuffer
         CMP #$0F
         BCS bB33E
-        INC a95
+        INC volumeBuffer
         JMP bB33E
 
-bB336   LDA a95
+bB336   LDA volumeBuffer
         CMP #$00
         BEQ bB33E
-        DEC a95
-bB33E   LDA a95
+        DEC volumeBuffer
+bB33E   LDA volumeBuffer
         CMP #$0A
         BCC bB34B
         SBC #$0A
@@ -7590,8 +7672,8 @@ bB33E   LDA a95
 bB34B   LDY #$30
 jB34D   STY volumeTens
         STA volumeOnes
-        LDA a95
-        STA aEF
+        LDA volumeBuffer
+        STA previousVolumeBuffer
         NOP
         LDX #<volumeText
         LDY #>volumeText

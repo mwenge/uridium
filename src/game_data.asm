@@ -89,62 +89,87 @@ playerLinesColorScheme3
 ; Manta manoeuvres. These data structures are used to animate the movement
 ; of the player's ship when it changes direction, rolls, or flips.
 
+; Byte 1: Number of Frames in Animation.
+; Byte 2 - N: Animation Frames
+; Byte N+1: Depth of manta shadow during animation 
+; Byte N+2: How much player input it takes to interrupt the animation. 
+
 a0000 = $0000
-mantaRollRightFrom90Degrees
+bankLeftTo90DegreesFacingRight
         .BYTE $04,MANTA_RIGHT_13,MANTA_RIGHT_14,MANTA_RIGHT_15,MANTA,$00,$FF
-mantaRollLeftFromUpsideDown
+bankRightTo90DegreesFacingRight
         .BYTE $04,MANTA_RIGHT_5,MANTA_RIGHT_4,MANTA_RIGHT_3,MANTA_2,$00,$FF
-mantaRollLeft1
+flattenLeftFrom90DegreesFacingRight
         .BYTE $04,MANTA1,MANTA_2,MANTA_RIGHT_3,MANTA_RIGHT_4,$00,$FF
-mantaRollLeft
+flattenRightFrom90DegreesFacingRight
+        ; FIXME: is this a mistake? I think it should be:
+        ; .BYTE $04,MANTA1,MANTA_RIGHT_15,MANTA_RIGHT_14,MANTA_RIGHT_13,$00,$FF
         .BYTE $04,MANTA1,MANTA_2,MANTA_RIGHT_3,MANTA_RIGHT_4,$00,$FF
+
+mantaFlipFromLeftToRight
+        .BYTE $10
+        .BYTE MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6
+        .BYTE MANTA_LEFT_5,MANTA_LEFT_4
+        .BYTE MANTA_LEFT_3,MANTA_LEFT_2,MANTA_LEFT_1,MANTA_FLIP_6
+        .BYTE MANTA_FLIP_5,MANTA_FLIP_4,MANTA_FLIP_3
+        .BYTE MANTA_FLIP_2,MANTA_FLIP_1,MANTA_FLIP_0
+        .BYTE $28,$28
+mantaRoll360DegreesRightFacingRight
+        .BYTE $10
+        .BYTE MANTA1,MANTA,MANTA_RIGHT_15,MANTA_RIGHT_14
+        .BYTE MANTA_RIGHT_13,MANTA_RIGHT_12,MANTA_RIGHT_11
+        .BYTE MANTA_RIGHT_10,MANTA_RIGHT_9,MANTA_RIGHT_8
+        .BYTE MANTA_RIGHT_7,MANTA_RIGHT_6,MANTA_RIGHT_5
+        .BYTE MANTA_RIGHT_4,MANTA_RIGHT_3,MANTA_2
+        .BYTE $00,$FF
+
+bankRightTo90DegreesFacingLeft
+        .BYTE $04,MANTA_LEFT_5,MANTA_LEFT_6,MANTA_LEFT_7,MANTA_LEFT_8,$00,$01
+bankLeft90DegreesFacingLeft
+        .BYTE $04,MANTA_LEFT_13,MANTA_LEFT_12,MANTA_LEFT_11,MANTA_LEFT_10,$00,$01
+flattenLeftFrom90DegreesFacingLeft
+        .BYTE $04,MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6,$00,$01
+flattenRightFrom90DegreesFacingLeft
+        .BYTE $04,MANTA_LEFT_9,MANTA_LEFT_10,MANTA_LEFT_11,MANTA_LEFT_12,$00,$01
 
 mantaFlipFromRightToLeft
-        .BYTE $10,MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6,MANTA_LEFT_5,MANTA_LEFT_4
-        .BYTE MANTA_LEFT_3,MANTA_LEFT_2,MANTA_LEFT_1,MANTA_FLIP_6,MANTA_FLIP_5,MANTA_FLIP_4,MANTA_FLIP_3
-        .BYTE MANTA_FLIP_2,MANTA_FLIP_1,MANTA_FLIP_0,$28,$28
-mantaRollFacingRight
-        .BYTE $10,MANTA1,MANTA,MANTA_RIGHT_15,MANTA_RIGHT_14,MANTA_RIGHT_13,MANTA_RIGHT_12,MANTA_RIGHT_11
-        .BYTE MANTA_RIGHT_10,MANTA_RIGHT_9,MANTA_RIGHT_8,MANTA_RIGHT_7,MANTA_RIGHT_6,MANTA_RIGHT_5,MANTA_RIGHT_4,MANTA_RIGHT_3
-        .BYTE MANTA_2,$00,$FF
-
-mantaRollLeft90DegreesFacingLeft
-        .BYTE $04,MANTA_LEFT_5,MANTA_LEFT_6,MANTA_LEFT_7,MANTA_LEFT_8,$00,$01
-mantaRollRight90DegreesFacingLeft
-        .BYTE $04,MANTA_LEFT_13,MANTA_LEFT_12,MANTA_LEFT_11,MANTA_LEFT_10,$00,$01
-mantaRollRightFrom180DegreesFacingLeft
-        .BYTE $04,MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6,$00,$01
-mantaRollLeftFrom180DegreesFacingLeft
-        .BYTE $04,MANTA_LEFT_9,MANTA_LEFT_10,MANTA_LEFT_11,MANTA_LEFT_12,$00,$01
-mantaRollAndFlipLeft
         .BYTE $10,MANTA1,MANTA,MANTA_RIGHT_15,MANTA_RIGHT_14
         .BYTE MANTA_RIGHT_13,MANTA_RIGHT_12,MANTA_RIGHT_11
         .BYTE MANTA_RIGHT_10,MANTA_RIGHT_9,MANTA_FLIP_7,MANTA_FLIP_8
         .BYTE MANTA_FLIP_9,MANTA_FLIP_10,MANTA_FLIP_11,MANTA_FLIP_12
         .BYTE MANTA_FLIP_13,$D8,$D8
-manta360RollLeft
-        .BYTE $10,MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6,MANTA_LEFT_5,MANTA_LEFT_4,MANTA_LEFT_3
-        .BYTE MANTA_LEFT_2,MANTA_LEFT_1,MANTA_LEFT_0,MANTA_LEFT_15,MANTA_LEFT_14,MANTA_LEFT_13,MANTA_LEFT_12,MANTA_LEFT_11
-        .BYTE MANTA_LEFT_10,$00,$01
+mantaRoll360DegreesLeftFacingLeft
+        .BYTE $10
+        .BYTE MANTA_LEFT_9,MANTA_LEFT_8,MANTA_LEFT_7,MANTA_LEFT_6
+        .BYTE MANTA_LEFT_5,MANTA_LEFT_4,MANTA_LEFT_3
+        .BYTE MANTA_LEFT_2,MANTA_LEFT_1,MANTA_LEFT_0,MANTA_LEFT_15
+        .BYTE MANTA_LEFT_14,MANTA_LEFT_13,MANTA_LEFT_12,MANTA_LEFT_11
+        .BYTE MANTA_LEFT_10
+        .BYTE $00,$01
 
 
 mantaleftFacingAnimationLoPtrArray
-        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<mantaRollRightFrom180DegreesFacingLeft,<a0000,<a0000
-        .BYTE <a0000,<mantaRollAndFlipLeft,<a0000,<a0000,<mantaRollLeft90DegreesFacingLeft,<manta360RollLeft,<mantaRollRight90DegreesFacingLeft,<a0000
-        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<mantaRollLeftFrom180DegreesFacingLeft
+        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000
+        .BYTE <flattenLeftFrom90DegreesFacingLeft,<a0000,<a0000
+        .BYTE <a0000,<mantaFlipFromRightToLeft,<a0000,<a0000
+        .BYTE <bankRightTo90DegreesFacingLeft,<mantaRoll360DegreesLeftFacingLeft,<bankLeft90DegreesFacingLeft,<a0000
+        .BYTE <a0000,<a0000,<a0000,<a0000,<a0000,<flattenRightFrom90DegreesFacingLeft
 mantaleftFacingAnimationHiPtrArray
-        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>mantaRollRightFrom180DegreesFacingLeft,>a0000,>a0000
-        .BYTE >a0000,>mantaRollAndFlipLeft,>a0000,>a0000,>mantaRollLeft90DegreesFacingLeft,>manta360RollLeft,>mantaRollRight90DegreesFacingLeft,>a0000
-        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>mantaRollLeftFrom180DegreesFacingLeft
+        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>flattenLeftFrom90DegreesFacingLeft,>a0000,>a0000
+        .BYTE >a0000,>mantaFlipFromRightToLeft,>a0000,>a0000
+        .BYTE >bankRightTo90DegreesFacingLeft,>mantaRoll360DegreesLeftFacingLeft,>bankLeft90DegreesFacingLeft,>a0000
+        .BYTE >a0000,>a0000,>a0000,>a0000,>a0000,>flattenRightFrom90DegreesFacingLeft
 
 mantaRightFacingAnimationLoPtrArray
-        .BYTE <a0000,<mantaRollLeft1,<a0000,<a0000,<a0000,<a0000,<a0000,<a0000
-        .BYTE <mantaRollRightFrom90Degrees,<mantaRollFacingRight,<mantaRollLeftFromUpsideDown,<a0000,<a0000,<mantaFlipFromRightToLeft,<a0000,<a0000
-        .BYTE <a0000,<mantaRollLeft
+        .BYTE <a0000,<flattenLeftFrom90DegreesFacingRight,<a0000,<a0000,<a0000,<a0000,<a0000,<a0000
+        .BYTE <bankLeftTo90DegreesFacingRight,<mantaRoll360DegreesRightFacingRight
+        .BYTE <bankRightTo90DegreesFacingRight,<a0000,<a0000,<mantaFlipFromLeftToRight,<a0000,<a0000
+        .BYTE <a0000,<flattenRightFrom90DegreesFacingRight
 mantaRightFacingAnimationHiPtrArray
-        .BYTE >a0000,>mantaRollLeft1,>a0000,>a0000,>a0000,>a0000,>a0000,>a0000
-        .BYTE >mantaRollRightFrom90Degrees,>mantaRollFacingRight,>mantaRollLeftFromUpsideDown,>a0000,>a0000,>mantaFlipFromRightToLeft,>a0000,>a0000
-        .BYTE >a0000,>mantaRollLeft
+        .BYTE >a0000,>flattenLeftFrom90DegreesFacingRight,>a0000,>a0000,>a0000,>a0000,>a0000,>a0000
+        .BYTE >bankLeftTo90DegreesFacingRight,>mantaRoll360DegreesRightFacingRight
+        .BYTE >bankRightTo90DegreesFacingRight,>a0000,>a0000,>mantaFlipFromLeftToRight,>a0000,>a0000
+        .BYTE >a0000,>flattenRightFrom90DegreesFacingRight
 
 ; The values in these arrays get loaded by UpdateSpriteVariablesAndThenRedrawSprites to:
 ; spriteIndex, currentSpriteXPos, currentSpriteMSBXPosOffset, currentSpriteYPos,
@@ -166,7 +191,7 @@ dropshipSpriteVariables10
 spriteVariablesExplosion
         .BYTE $07,$AA,$00,$00,$FF,$00,$00,$FF
         .BYTE $00,$F7,$30
-someKindOfSettingArray
+mantaInitialMovementSettings
         .BYTE $FD,$03,$F8,$08,$B0,$40,$50,$C0
 mantaShadowOffsets   
         .BYTE $00,$00,$FF,$FE,$FD,$FD,$FE,$FE
@@ -237,7 +262,7 @@ f33C6   .BYTE $06,$08,$0B,$07,$06,$04,$02,$03
 f33D6   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$10,$11,$0F,$0D,$0C
 f33E6   .BYTE $00,$0B
-f33E8   .BYTE $0D,$10,$11,$0E,$0D,$0B,$00,$0C
+gapBetweenMantaCannonsArray   .BYTE $0D,$10,$11,$0E,$0D,$0B,$00,$0C
         .BYTE $0D,$10,$11,$0E,$0D,$0B
 scoresForHittingStructuresArray
         .BYTE $00,$0C,$0D,$10,$11,$0F,$0D,$0C
