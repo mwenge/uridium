@@ -15,7 +15,7 @@
 ;
 
 ; Sound system Variables
-a9C                                            = $9C
+titleTuneBuffer                                            = $9C
 aA4                                            = $A4
 aC0                                            = $C0
 aC1                                            = $C1
@@ -118,10 +118,10 @@ multiColor0                                    = $4E
 spriteColorForLevel                            = $4F
 mantaBottomCannonLoPtr                         = $50
 mantaBottomCannonHiPtr                         = $51
-mantaTopCannonHiPtr                            = $53
+centreOfMantaHiPtr                            = $53
 someKindOfTextureColorVariable                 = $54
 currentColorValue                              = $55
-currentGapBetweenCannons                       = $56
+mantaDimensionHint                       = $56
 unusedOffsetForCannonPtrs                      = $57
 monochromeCharacterColor                       = $58
 loopCounter                                    = $59
@@ -157,7 +157,7 @@ enemyYPosDownwardVelocity                      = $82
 enemyYPosDownwardIncrement                     = $83
 initialEnemyXPos                               = $84
 landNowActivated                               = $85
-characterUnderMantasTopCannon                  = $86
+characterUnderManta                  = $86
 formationAnnihilationBonus                     = $87
 numberOfEnemiesSpawned                         = $88
 destroyedEdgeLoPtr                             = $89
@@ -171,9 +171,9 @@ soundVariable2                                 = $92
 soundVariable3                                 = $93
 screenRAMLoPtr                                 = $94
 volumeBuffer                                   = $95
-a96                                            = $96
-a97                                            = $97
-a98                                            = $98
+soundVariable4                                            = $96
+soundVariable5                                            = $97
+soundVariable6                                            = $98
 a99                                            = $99
 a9D                                            = $9D
 a9F                                            = $9F
@@ -211,7 +211,7 @@ hiScoreSaverHiPtr                              = $FB
 hiScoreSaverLoPtr                              = $FC
 colorRamLoPtr                                  = $12
 colorLineLoPtr                                 = $1E
-mantaTopCannonLoPtr                            = $52
+centreOfMantaLoPtr                            = $52
 dataLoPtr                                      = $BE
 
 
@@ -349,16 +349,16 @@ BULLET_SINGLE                                  = $0F
 EXPLOSION_1                                    = $10
 EXPLOSION_2                                    = $11
 BULLET_5                                       = $12
-EXPLOSION_BIG1                                 = $14
-EXPLOSION_BIG2                                 = $15
-EXPLOSION_BIG3                                 = $16
-EXPLOSION_BIG4                                 = $17
-EXPLOSION_BIG5                                 = $18
-EXPLOSION_MEDIUM1                              = $19
-EXPLOSION_MEDIUM2                              = $1A
-EXPLOSION_MEDIUM3                              = $1B
-EXPLOSION_MEDIUM4                              = $1C
-EXPLOSION_MEDIUM5                              = $1D
+MEANIE_EXPLOSION_1                             = $14
+MEANIE_EXPLOSION_2                             = $15
+MEANIE_EXPLOSION_3                             = $16
+MEANIE_EXPLOSION_4                             = $17
+MEANIE_EXPLOSION_5                             = $18
+MEANIE_SECONDARY_1                             = $19
+MEANIE_SECONDARY_2                             = $1A
+MEANIE_SECONDARY_3                             = $1B
+MEANIE_SECONDARY_4                             = $1C
+MEANIE_SECONDARY_5                             = $1D
 EXPLOSION_MAJOR1                               = $30
 EXPLOSION_MAJOR2                               = $31
 EXPLOSION_MAJOR3                               = $32
@@ -1361,10 +1361,10 @@ volumeBufferAdjust   =*+$01
 b0F67   LDA soundVariable1,Y
         BEQ b0F78
         BMI b0F72
-        LDX a96,Y
+        LDX soundVariable4,Y
         BMI b0F78
-b0F72   STA a96,Y
-        JSR SomeOtherSoundRoutine
+b0F72   STA soundVariable4,Y
+        JSR PlayNoteOfTitleTune
 b0F78   LDY a9F
         LDA #$00
         STA soundVariable1,Y
@@ -1419,7 +1419,7 @@ b0FD7   LDX a9F
         STY a99,X
         BNE b0FED
         LDX a9F
-        LDA a9C,X
+        LDA titleTuneBuffer,X
         AND #$FE
         LDY soundPtr
         STA $D404,Y  ;Voice 1: Control Register
@@ -1473,7 +1473,7 @@ j102D   LDY aC6,X
         STA soundVariable1,X
 j103F   LDX a9F
         LDA #$00
-        STA a96,X
+        STA soundVariable4,X
         CPX #$02
         BNE b104C
         JSR PlayNote
@@ -1488,13 +1488,13 @@ b104C   INC a9F
 b105C   RTS
 
 ;-------------------------------------------------------------------
-; SomeOtherSoundRoutine
+; PlayNoteOfTitleTune
 ;-------------------------------------------------------------------
-SomeOtherSoundRoutine
+PlayNoteOfTitleTune
         JSR UpdateSoundPtr
         LDA #$00
         STA aA3
-        LDA a96,Y
+        LDA soundVariable4,Y
         SEC
         SBC #$01
         AND #$7F
@@ -1577,7 +1577,7 @@ b10D3   LDY aA0
         DEY
         DEY
         LDA titleTuneData,Y
-        STA a9C,X
+        STA titleTuneBuffer,X
         ORA #$01
         LDY soundPtr
         DEY
@@ -1606,9 +1606,9 @@ PlaySound
 b1110   STA $D400,Y  ;Voice 1: Frequency Control - Low-Byte
         DEY
         BPL b1110
-        STA a96
-        STA a97
-        STA a98
+        STA soundVariable4
+        STA soundVariable5
+        STA soundVariable6
         STA soundVariable1
         STA soundVariable2
         STA soundVariable3
@@ -2010,7 +2010,7 @@ ProcessGameFrameWithoutCheckingPause
         INC someKindOfFrameRate
         JSR UpdateMantaVerticalMovementVelocity
         JSR UpdateMantaHorizontalMovementVelocity
-        JSR UpdateGapBetweenCannonsToMatchAnimationFrame
+        JSR CheckForMantaCollisionsWithSurface
         RTS
 
 ;-------------------------------------------------------------------
@@ -2389,7 +2389,7 @@ b1676   LDY indexCurrentEnemyFormation
         RTS
 
         ; Display the Land Now warning.
-b1683   LDA characterUnderMantasTopCannon
+b1683   LDA characterUnderManta
         CMP #$6F
         BNE b16BC
 
@@ -2405,7 +2405,7 @@ b1683   LDA characterUnderMantasTopCannon
         LDY #$05
 b169A   LDA indexToEnemyUpdatePtrArray,Y
         BEQ b16A9
-        LDA #$06 ; RemoveEnemy
+        LDA #$06 ; AnimateEnemyExplosion
         STA indexToEnemyUpdatePtrArray,Y
         LDA #$14
         STA sprite0Ptr,Y
@@ -3313,9 +3313,9 @@ SkipEnemyUpdate
         RTS
 
 ;--------------------------------------------------------------------
-; RemoveEnemy
+; AnimateEnemyExplosion
 ;--------------------------------------------------------------------
-RemoveEnemy
+AnimateEnemyExplosion
         JSR IncrementSpriteXPosToFollowManta
         LDA someKindOfFrameRate
         AND #$01
@@ -3702,7 +3702,7 @@ EnemyShipWasHit
         AND #$0F
         TAX
         LDA playerBulletSlotArray,X
-        BEQ b1E4B
+        BEQ MaybeAwardScore
         LDA playerBulletRamLoPtrArray,X
         STA ramLoPtr
         LDA playerBulletRamHiPtrArray,X
@@ -3712,16 +3712,18 @@ EnemyShipWasHit
         STA (ramLoPtr),Y
         LDA #$00
         STA playerBulletSlotArray,X
-b1E4B   LDA whetherScoreAwardedForHittingEnemy
-        BNE b1E54
+MaybeAwardScore   
+        LDA whetherScoreAwardedForHittingEnemy
+        BNE InitiateMeanieExplosion
         LDY scoreToAddForHittingEnemy
         JSR AddScoresFromHittingStuff
-b1E54   LDA #$26
+InitiateMeanieExplosion
+        LDA #$26
         STA soundVariable2
         LDY stashedYValue
-        LDA #$06         ; RemoveEnemy
+        LDA #$06         ; AnimateEnemyExplosion
         STA indexToEnemyUpdatePtrArray,Y
-        LDA #$14
+        LDA #$14        ; MEANIE_EXPLOSION_1
         STA currentSpriteValue
         DEC numberOfEnemiesSpawned
         JMP UpdateEnemyContentAndPositionAndReturn
@@ -3807,7 +3809,7 @@ b1EE1   JMP DetectSpriteLeavingScreen
 EnemyBulletIsOffScreen
         LDA #$14
         STA currentSpriteValue
-        LDA #$06    ; RemoveEnemy
+        LDA #$06    ; AnimateEnemyExplosion
         STA indexToEnemyUpdatePtrArray,Y
         LDA #$0A
         STA soundVariable2
@@ -4048,7 +4050,7 @@ b204C   JMP DetectSpriteLeavingScreen
 MineOffScreen
         LDA #$14
         STA currentSpriteValue
-        LDA #$06 ; RemoveEnemy
+        LDA #$06 ; AnimateEnemyExplosion
         STA indexToEnemyUpdatePtrArray,Y
         LDA #$0A
         STA soundVariable1
@@ -4995,17 +4997,21 @@ RightwardHorizontalMovement
 ; UpdateMantaHorizontalAndVerticalPosition
 ;-------------------------------------------------------------------
 UpdateMantaHorizontalAndVerticalPosition
+        ; Vertical position is easy.
         LDA mantaVerticalMovementVelocity    ; Get current vertical velocity.
         CLC
         ADC mantaCurrentYPos                 ; Apply it to current position.
         CMP #$62                             ; Have we reached the top of the screen?
-        BCS b2697                            ; If not, check for bottom of screen, otherwise..
+        BCS CheckForBottomOfScreen           ; If not, check for bottom of screen, otherwise..
         LDA #$62                             ; Set Y Pos to top most vertical postition.
-b2697   CMP #$D7                             ; Have we reached the bottom of the screen?
-        BCC b269D                            ; If not, update new vertical position, otherwise..
+CheckForBottomOfScreen
+        CMP #$D7                             ; Have we reached the bottom of the screen?
+        BCC StoreNewVerticalPosition         ; If not, update new vertical position, otherwise..
         LDA #$D7                             ; Set Y pos to bottommost vertical position.
-b269D   STA mantaCurrentYPos                 ; Update the manta's Y pos with selected value.
+StoreNewVerticalPosition
+        STA mantaCurrentYPos                 ; Update the manta's Y pos with selected value.
 
+        ; Horizontal is.. complicated.
         LDA mantaHorizontalMovementVelocity
         BMI b26D1
         CMP mantaMaximumHorizontalVelocity
@@ -5161,10 +5167,10 @@ RightFacingAnimation
 
 DrawTheAnimation   
         LDA mantaOrientation
-        BMI NewAnimationFrameRequired
+        BMI GetNextFrameOfAnimation
         JMP DrawMantaAnimationFrame
 
-NewAnimationFrameRequired
+GetNextFrameOfAnimation
         LDA someKindOfFrameRate
         AND #$01
         BNE DrawMantaAnimationFrame
@@ -5224,65 +5230,81 @@ DrawMantaAnimationFrame
         ; Falls through
 
 ;-------------------------------------------------------------------
-; UpdateGapBetweenCannonsToMatchAnimationFrame
+; CheckForMantaCollisionsWithSurface
 ;-------------------------------------------------------------------
-UpdateGapBetweenCannonsToMatchAnimationFrame
+CheckForMantaCollisionsWithSurface
         LDY newSpriteValue
-        LDA gapBetweenMantaCannonsArray,Y
-        STA currentGapBetweenCannons
+        LDA mantaDimensionHintsArray,Y
+        STA mantaDimensionHint
         AND #$01
         STA unusedOffsetForCannonPtrs
         TAY
-        BNE b27FD
-        LDA (mantaTopCannonLoPtr),Y
-        BPL b27EF
+        ; If the manta is in the very middle of a flip
+        ; it is narrow on the vertical axis, so we don't need
+        ; to check for collision on the left or right of the 
+        ; manta's normal dimensions.
+        BNE CheckCentreOfManta
+
+CheckLeftSideOfManta
+        LDA (centreOfMantaLoPtr),Y
+        BPL CheckRightSideOfManta
         CMP #$90
-        BCS b27EF
-a27EC   =*+$01
+        BCS CheckRightSideOfManta
         LDA #$80
         STA hasShipBeenHit
-b27EF   LDY #$02
-        LDA (mantaTopCannonLoPtr),Y
-        BPL b27FD
+
+CheckRightSideOfManta
+        LDY #$02
+        LDA (centreOfMantaLoPtr),Y
+        BPL CheckCentreOfManta
         CMP #$90
-        BCS b27FD
-a27FA   =*+$01
+        BCS CheckCentreOfManta
         LDA #$80
         STA hasShipBeenHit
-b27FD   LDY #$01
-        LDA (mantaTopCannonLoPtr),Y
-        STA characterUnderMantasTopCannon
-        BPL b280D
+
+CheckCentreOfManta
+        LDY #$01
+        LDA (centreOfMantaLoPtr),Y
+        STA characterUnderManta
+        BPL CheckTopSideOfManta
         CMP #$90
-        BCS b280D
-a280A   =*+$01
+        BCS CheckTopSideOfManta
         LDA #$80
         STA hasShipBeenHit
-b280D   LDA currentGapBetweenCannons
-        BPL b2838
-        DEC mantaTopCannonHiPtr
-        DEC mantaTopCannonHiPtr
-        LDA (mantaTopCannonLoPtr),Y
-        BPL b2821
+
+CheckTopSideOfManta
+        LDA mantaDimensionHint
+        ; Skip this part if the manta is in the exact middle of a 
+        ; roll. THis is because if it's narrow there is no need to check
+        ; the top and bottom half.
+        BPL ReturnFromCollisionCheck
+        DEC centreOfMantaHiPtr
+        DEC centreOfMantaHiPtr
+        LDA (centreOfMantaLoPtr),Y
+        BPL CheckBottomSideOfManta
         CMP #$90
-        BCS b2821
-a281E   =*+$01
+        BCS CheckBottomSideOfManta
         LDA #$80
         STA hasShipBeenHit
-b2821   LDA mantaTopCannonHiPtr
+
+CheckBottomSideOfManta
+        LDA centreOfMantaHiPtr
         CLC
         ADC #$04
-        STA mantaTopCannonHiPtr
-        LDA (mantaTopCannonLoPtr),Y
-        BPL b2834
+        STA centreOfMantaHiPtr
+        LDA (centreOfMantaLoPtr),Y
+        BPL RestorePointerToCentre
         CMP #$90
-        BCS b2834
-a2831   =*+$01
+        BCS RestorePointerToCentre
         LDA #$80
         STA hasShipBeenHit
-b2834   DEC mantaTopCannonHiPtr
-        DEC mantaTopCannonHiPtr
-b2838   RTS
+
+RestorePointerToCentre
+        DEC centreOfMantaHiPtr
+        DEC centreOfMantaHiPtr
+
+ReturnFromCollisionCheck
+        RTS
 
 ;-------------------------------------------------------------------
 ; PlayShipDeploymentSequence
@@ -5521,7 +5543,7 @@ UpdateBulletArrays
         ; Create a right-firing bullet.
         LDA #$FE
         STA playerBulletSlotArray,X
-        LDA mantaTopCannonLoPtr
+        LDA centreOfMantaLoPtr
         STA playerBulletRamLoPtrArray,X
         STA colorRamLoPtr
 
@@ -5536,7 +5558,7 @@ b29C3   STA bulletOffsetsInCharsetDef,X
         LSR
         AND #$FE
         STA pixelYPositionOfPlayerBullet
-        LDA mantaTopCannonHiPtr
+        LDA centreOfMantaHiPtr
         AND #$01
         CLC
         ADC pixelYPositionOfPlayerBullet
@@ -5548,7 +5570,7 @@ b29C3   STA bulletOffsetsInCharsetDef,X
         ; Create a left-firing bullet.
 b29DF   STA playerBulletSlotArray,X
         CLC
-        ADC mantaTopCannonLoPtr
+        ADC centreOfMantaLoPtr
         STA playerBulletRamLoPtrArray,X
         STA colorRamLoPtr
         PHP
@@ -5563,7 +5585,7 @@ b29F5   STA bulletOffsetsInCharsetDef,X
         LSR
         AND #$FE
         STA pixelYPositionOfPlayerBullet
-        LDA mantaTopCannonHiPtr
+        LDA centreOfMantaHiPtr
         AND #$01
         CLC
         ADC pixelYPositionOfPlayerBullet
@@ -5992,7 +6014,7 @@ FinishScrollingAndCleanUp
         LDA scrollPositionLoPtr
         CLC
         ADC #$12
-        STA mantaTopCannonLoPtr
+        STA centreOfMantaLoPtr
 
         PHP
         LDA mantaCurrentYPos
@@ -6003,7 +6025,7 @@ FinishScrollingAndCleanUp
         LSR
         PLP
         ADC scrollPositionHiPtr
-        STA mantaTopCannonHiPtr
+        STA centreOfMantaHiPtr
 
         LDA scrollPositionHiPtr
         ROR

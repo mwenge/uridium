@@ -194,9 +194,8 @@ spriteVariablesExplosion
 mantaInitialMovementSettings
         .BYTE $FD,$03,$F8,$08,$B0,$40,$50,$C0
 mantaShadowOffsets   
-        .BYTE $00,$00,$FF,$FE,$FD,$FD,$FE,$FE
-        .BYTE $FF,$00,$01,$02,$03,$03,$02,$02
-        .BYTE $01
+        .CHAR 0,0,-1,-2,-3,-3,-2,-2
+        .CHAR -1,0,1,2,3,3,2,2,1
 loPtrsToShipDeploymentSpriteVariables
         .BYTE <dropshipSpriteVariables1,<dropshipSpriteVariables2,<dropshipSpriteVariables3,<dropshipSpriteVariables4
         .BYTE <dropshipSpriteVariables5,<dropshipSpriteVariables6,<bayDoorSection,<dropshipSpriteVariables8
@@ -262,7 +261,8 @@ f33C6   .BYTE $06,$08,$0B,$07,$06,$04,$02,$03
 f33D6   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$10,$11,$0F,$0D,$0C
 f33E6   .BYTE $00,$0B
-gapBetweenMantaCannonsArray   .BYTE $0D,$10,$11,$0E,$0D,$0B,$00,$0C
+mantaDimensionHintsArray
+        .BYTE $0D,$10,$11,$0E,$0D,$0B,$00,$0C
         .BYTE $0D,$10,$11,$0E,$0D,$0B
 scoresForHittingStructuresArray
         .BYTE $00,$0C,$0D,$10,$11,$0F,$0D,$0C
@@ -273,12 +273,18 @@ colorLineHiPtrArray
         .BYTE $D8,$D8,$D8,$D8,$D8,$D8,$D8,$D9
         .BYTE $D9,$D9,$D9,$D9,$D9,$DA,$DA,$DA
         .BYTE $DA,$DA,$DA,$DA,$DB,$DB,$DB,$DB
-        .BYTE $DB,$80,$80,$80,$80,$00,$00,$00
-        .BYTE $80,$80,$80,$80,$80,$00,$00,$00
-        .BYTE $80,$80,$80,$80,$80,$00,$00,$00
-        .BYTE $80,$80,$80,$80,$80,$00,$00,$00
-        .BYTE $80,$80,$80,$81,$81,$81,$80,$80
-        .BYTE $80,$80,$81,$81,$81,$80,$80,$00
+        .BYTE $DB
+
+; Actual mantaDimensionHintsArray. The array
+; is referenced using the sprite value as an offset
+; from mantaDimensionHintsArray above.
+        .BYTE $80,$80,$80,$80,$00,$00,$00,$80 ; $40 - $47
+        .BYTE $80,$80,$80,$80,$00,$00,$00,$80 ; $48 - $4F
+        .BYTE $80,$80,$80,$80,$00,$00,$00,$80 ; $50 - $57
+        .BYTE $80,$80,$80,$80,$00,$00,$00,$80 ; $58 - $5F
+        .BYTE $80,$80,$81,$81,$81,$80,$80,$80 ; $60 - $67
+        .BYTE $80,$81,$81,$81,$80,$80,$00     ; $68 - $6E
+
         .BYTE $01,$00,$01,$00,$01,$02,$00,$01
         .BYTE $02,$00,$01,$02,$00,$00,$00,$00
         .BYTE $00,$02,$02,$00,$00,$00,$02,$02
@@ -417,7 +423,7 @@ enemyUpdatePtrArray
         .BYTE <DoNothing,>DoNothing
         .BYTE <UpdateEnemyPositions,>UpdateEnemyPositions
         .BYTE <MaybeAnimateEnemyBullet,>MaybeAnimateEnemyBullet
-        .BYTE <RemoveEnemy, >RemoveEnemy
+        .BYTE <AnimateEnemyExplosion, >AnimateEnemyExplosion
         .BYTE <MaybeAnimateMineCreation,>MaybeAnimateMineCreation
         .BYTE <MaybeMineExplodes,>MaybeMineExplodes
         .BYTE <DoNothing,>DoNothing
