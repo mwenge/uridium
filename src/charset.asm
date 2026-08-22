@@ -1291,7 +1291,7 @@ f73E8
                                                 ; 00000000           
 
 ; $7400
-secondHalfTextCharacterSet
+lowerHalfTextCharacterSet
 ; level7DreadnoughtData and level8DreadnoughtData are copied to $AA00 and $ABD8 at startup.
 ; This region ($7400) is then used for the second 1024 bytes of the text character
 ; set.

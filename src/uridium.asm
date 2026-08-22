@@ -84,7 +84,7 @@ mantaHorizontalMovementVelocity                = $2E
 shouldWaitUntilReady                           = $2F
 scrollPositionHiPtr                            = $30
 scrollPositionLoPtr                            = $31
-hasShipBeenHit                                 = $32
+hasMantaStruckTheSurface                                 = $32
 mantaCurrentYPos                               = $33
 mantaVerticalMovementVelocity                  = $34
 
@@ -125,7 +125,7 @@ mantaDimensionHint                       = $56
 unusedOffsetForCannonPtrs                      = $57
 monochromeCharacterColor                       = $58
 loopCounter                                    = $59
-pausedOrNotPaused                              = $5A
+pausedPlayingOrDemo                              = $5A
 currentBannerState                             = $5B
 playerAndJoystickMode                          = $5C
 currentPlayer                                  = $5D
@@ -359,17 +359,17 @@ MEANIE_SECONDARY_2                             = $1A
 MEANIE_SECONDARY_3                             = $1B
 MEANIE_SECONDARY_4                             = $1C
 MEANIE_SECONDARY_5                             = $1D
-EXPLOSION_MAJOR1                               = $30
-EXPLOSION_MAJOR2                               = $31
-EXPLOSION_MAJOR3                               = $32
-EXPLOSION_MAJOR4                               = $33
-EXPLOSION_MAJOR5                               = $34
-EXPLOSION_MAJOR6                               = $35
-EXPLOSION_MAJOR7                               = $36
-EXPLOSION_MAJOR8                               = $37
-EXPLOSION_MAJOR9                               = $38
-EXPLOSION_MAJOR10                              = $39
-EXPLOSION_MAJOR11                              = $3A
+MANTA_EXPLOSION1                               = $30
+MANTA_EXPLOSION2                               = $31
+MANTA_EXPLOSION3                               = $32
+MANTA_EXPLOSION4                               = $33
+MANTA_EXPLOSION5                               = $34
+MANTA_EXPLOSION6                               = $35
+MANTA_EXPLOSION7                               = $36
+MANTA_EXPLOSION8                               = $37
+MANTA_EXPLOSION9                               = $38
+MANTA_EXPLOSION10                              = $39
+MANTA_EXPLOSION11                              = $3A
 
 ; Address Pointers
 surfaceDataForCurrentLevel                     = $8200
@@ -380,9 +380,8 @@ surfaceStructureDataLoPtrArray                 = $A400
 surfaceStructureDataHiPtrArray                 = $A500
 
 hallOfFameSaver                                = $CA00
-inGameBannerSaver                              = $CAAC
+inGameHiScoreSaver                              = $CAAC
 hiScoreScrollingBannerSaver                    = $CAC0
-finalLocationOfSomeLevelDataAndGameData        = $C000
 randomDataStorage                              = $0800
 COLOR_RAM                                      = $D800
 SCREEN_RAM                                     = $0400
@@ -439,8 +438,8 @@ b091C   LDX #<startOfMainLevelData
         JSR CopyDataUntilXIsZero
 
         ; Copy data from $A000-$AFFF to $C000-$CFFF
-        LDX #<finalLocationOfSomeLevelDataAndGameData
-        LDY #>finalLocationOfSomeLevelDataAndGameData
+        LDX #<indexesToFontData
+        LDY #>indexesToFontData
         STX tempLoPtrCopyTo
         STY tempHiPtrCopyTo
         LDX #$10
@@ -483,8 +482,8 @@ b091C   LDX #<startOfMainLevelData
         JSR CopyDataUntilXIsZero
 
         ; Copy data from $7400-$77FF to $AA00-$ADFF
-        LDX #<secondHalfTextCharacterSet
-        LDY #>secondHalfTextCharacterSet
+        LDX #<lowerHalfTextCharacterSet
+        LDY #>lowerHalfTextCharacterSet
         STX tempLoPtrCopyFrom
         STY tempHiPtrCopyFrom
         LDX #$04
@@ -503,8 +502,8 @@ b091C   LDX #<startOfMainLevelData
         LDY #$00
         JSR CopyDataUntilYIsZero
 
-        JSR CopyDataFrommainCharacterSetTosecondHalfTextCharacterSet
-        JSR ShuffleCharacterSetData
+        JSR CreateUpperAndLowerHalvesOfTextCharset
+        JSR MoveTheLogoDefinitionIntoPlace
 
 ;-------------------------------------------------------------------
 ; DrawTitleScreen
@@ -614,7 +613,7 @@ b0A3D   LDA playerLinesColorScheme1,Y
         JSR WriteToScreen
         JSR PaintPlayerScoreColors
 
-        JSR SetUpSomeData
+        JSR SetUpScrollingTitleData
 
         LDA #$03
         STA currentBannerState
@@ -627,7 +626,7 @@ TitleScreenLoop
 
         LDA #$00
         STA $D015    ;Sprite display Enable
-        STA pausedOrNotPaused
+        STA pausedPlayingOrDemo
         STA selectForBulletsOrMines
 
         LDA #$11
@@ -777,7 +776,7 @@ b0B67   LDA initialPlayerScore,X
         LDA #$01
         STA currentPlayer
         LDA #$02
-        STA pausedOrNotPaused
+        STA pausedPlayingOrDemo
         LDA #$09
         STA indexToTextureSegment
         LDA #$1F
@@ -1004,7 +1003,7 @@ MainGameLoop
         STA mainGameLoopLoPtr
 mainGameLoopLoPtr   =*+$01
 mainGameLoopHiPtr   =*+$02
-        JSR MaybeChangeTitleDecal
+        JSR MaybeUpdateInGameBanner
 
         JSR MaybeFirePlayerBullets
         JSR UpdateMantaVerticalMovementVelocity
@@ -1016,7 +1015,7 @@ mainGameLoopHiPtr   =*+$02
         BPL b0D41
         JMP StartLandingSequence
 
-b0D41   LDA hasShipBeenHit
+b0D41   LDA hasMantaStruckTheSurface
         BEQ MainGameLoop
 
 ;--------------------------------------------------------------------
@@ -1046,7 +1045,7 @@ b0D62   LDA #$00
         ; Doesn't return here, enters main game loop.
 
 CheckIfGameIsOver
-        JSR ShipHasBeenHit
+        JSR ExplodeTheManta
 
         LDA indexCurrentEnemyFormation
         SEC
@@ -1169,7 +1168,7 @@ b0E16   JMP RestartLevel
 StartLandingSequence
         JSR LandOnShipAndMaybeRunMiniGame
         LDA #$00
-        STA hasShipBeenHit
+        STA hasMantaStruckTheSurface
         JMP MaybeStartNewLevel
 
 ;-------------------------------------------------------------------
@@ -1936,11 +1935,11 @@ UpdateMiniGameDisplay
 b138D   RTS
 
 ;-------------------------------------------------------------------
-; ShuffleCharacterSetData
+; MoveTheLogoDefinitionIntoPlace
 ; Shuffles data around within the first character set between $7000
 ; and $7800.
 ;-------------------------------------------------------------------
-ShuffleCharacterSetData
+MoveTheLogoDefinitionIntoPlace
         LDY #$47
 b1390   LDA surfaceTextureCharacterSet,Y
         STA f7188,Y
@@ -1964,7 +1963,7 @@ b13A1   LDA f7848,Y
 ;-------------------------------------------------------------------
 CheckInputMaybeUpdateDecal
         JSR GetJoystickInput
-        JSR MaybeChangeTitleDecal
+        JSR MaybeUpdateInGameBanner
         LDY #$18
         JSR WasteCyclesUsingXAndY
         INC someKindOfFrameRate
@@ -1985,7 +1984,7 @@ ProcessGameFrame
         JSR MaybeShowPauseScreen
         LDA fakeMantaHorizontalMovementUpdate
         STA mantaHorizontalMovementUpdate
-        JSR MaybeChangeTitleDecal
+        JSR MaybeUpdateInGameBanner
         INC someKindOfFrameRate
         JSR MaybeFirePlayerBullets
         JSR UpdateMantaVerticalMovementVelocity
@@ -2256,7 +2255,7 @@ b15B2   LDA currentScrollSegment
 ;-------------------------------------------------------------------
 IncrementCurrentLevel
         INC currentLevel
-        INC hasShipBeenHit
+        INC hasMantaStruckTheSurface
         RTS
 
 ;--------------------------------------------------------------------
@@ -2270,7 +2269,7 @@ RefreshDisplayAndReturn
         JSR ScrollShipSurface
         LDA #$C0
         STA $D015    ;Sprite display Enable
-        INC hasShipBeenHit
+        INC hasMantaStruckTheSurface
         RTS
 
 ;-------------------------------------------------------------------
@@ -3799,7 +3798,7 @@ MaybeAnimateEnemyBullet
         LDA mantaShadowOffset
         CMP #$14
         BCS b1EE1
-        INC hasShipBeenHit
+        INC hasMantaStruckTheSurface
 b1EE1   JMP DetectSpriteLeavingScreen
         ; Returns
 
@@ -4044,7 +4043,7 @@ b203F   JSR AnimateEnemyBullet
         LDA mantaShadowOffset
         CMP #$14
         BCS b204C
-a204A   INC hasShipBeenHit
+a204A   INC hasMantaStruckTheSurface
 b204C   JMP DetectSpriteLeavingScreen
 
 MineOffScreen
@@ -4154,7 +4153,7 @@ SetUpScreenForScrolling
         STA shadowDepthDuringMantaAnimation
         STA mantaAnimationActive
         STA mantaTurnActivated
-        STA hasShipBeenHit
+        STA hasMantaStruckTheSurface
         LDA #$FF
         STA playerVelocityLimiter
         LDA #$10
@@ -4187,7 +4186,7 @@ TitleScreenWaitForFireToBePressed
 b2158   JSR GetJoystickInput
         JSR CheckForKeyboardCommands
         JSR UpdateVolumeSetting
-        JSR MaybeChangeTitleDecal
+        JSR MaybeUpdateInGameBanner
         JSR UpdatePlayerAndJoystickDisplay
         JSR MaybeUpdateColorScheme
         LDY #$0C
@@ -4215,7 +4214,7 @@ b2182   LDA shouldWaitUntilReady
         JSR UpdateColorsOnScreen
         JSR GetJoystickInput
         JSR CheckForKeyboardCommands
-        JSR MaybeChangeTitleDecal
+        JSR MaybeUpdateInGameBanner
         JSR UpdateVolumeSetting
         JSR MaybeUpdateColorScheme
         JSR UpdatePlayerAndJoystickDisplay
@@ -4234,7 +4233,7 @@ b21B4   RTS
 ;-------------------------------------------------------------------
 EnterDemoModeUntilDeadOrPlayerPressesFire
         LDA #$01
-        STA pausedOrNotPaused
+        STA pausedPlayingOrDemo
         LDA #$00
         STA fakeMantaHorizontalMovementUpdate
         STA fakeMantaVerticalMovementUpdate
@@ -4306,14 +4305,14 @@ DemoLoop
         STA demoModeFuncHiPtr
 demoModeFuncLoPtr   =*+$01
 demoModeFuncHiPtr   =*+$02
-        JSR MaybeChangeTitleDecal
+        JSR MaybeUpdateInGameBanner
         JSR RandomlyManipulateJoystick
         JSR MaybeFirePlayerBullets
         JSR UpdateMantaVerticalMovementVelocity
         JSR UpdateMantaHorizontalMovementVelocity
         JSR UpdateMantaHorizontalAndVerticalPosition
         JSR AnimateMantaShip
-        LDA hasShipBeenHit
+        LDA hasMantaStruckTheSurface
         BNE ShipHitInDemoMode
         LDA someKindOfFrameRate
         BNE DemoLoop
@@ -4330,7 +4329,7 @@ ReturnFromDemo
 ShipHitInDemoMode   
         LDA #$10
         STA firePressed
-        JSR ShipHasBeenHit
+        JSR ExplodeTheManta
         JSR GenerateRandomDataFromRNG
         RTS
 
@@ -4380,55 +4379,55 @@ b22CE   STY mantaHorizontalMovementUpdate
 b22D2   RTS
 
 ;-------------------------------------------------------------------
-; MaybeChangeTitleDecal
+; MaybeUpdateInGameBanner
 ;-------------------------------------------------------------------
-MaybeChangeTitleDecal
+MaybeUpdateInGameBanner
         LDA someKindOfFrameRate
         AND #$7F
-        BNE b231C
+        BNE ReturnFromBanner
         LDA currentBannerState
         STA mantaAnimationSelectorTopBits
         CLC
         ADC #$01
         AND #$03
         STA currentBannerState
-        BEQ WriteUridiumDecalToScreen
-        LDA pausedOrNotPaused
+        BEQ WriteUridiumLogo
+        LDA pausedPlayingOrDemo
         CMP #$03
-        BEQ WriteUridiumDecalToScreen
+        BEQ WriteUridiumLogo
         LDA currentBannerState
         CMP #$01
         BEQ WriteHiScoreLabel
         CMP #$02
         BEQ WriteInGameBanner
-        LDA pausedOrNotPaused
+        LDA pausedPlayingOrDemo
         CMP #$02
         BEQ WriteCurrentLevel
 
 UpdateBannerDetail
         LDA playerAndJoystickMode
         TAY
-        LDA scrollingTitleScreenDataHiPtrArray,Y
-        LDX scrollingTitleScreenDataLoPtrArray,Y
+        LDA bannerConfigurationHiPtrArray,Y
+        LDX bannerConfigurationLoPtrArray,Y
         TAY
         JSR WriteToScreen
         LDA monochromeEnabled
-        BEQ b2315
+        BEQ WriteColorSymbol
 
-        LDX #<globeSymbol
-        LDY #>globeSymbol
+WriteMonochromeSymbol   
+        LDX #<monoChromeSymbol
+        LDY #>monoChromeSymbol
         JSR WriteToScreen
         RTS
 
-b2315   LDX #<arrowKeysSymbol
-        LDY #>arrowKeysSymbol
+WriteColorSymbol   
+        LDX #<colorSymbol
+        LDY #>colorSymbol
         JSR WriteToScreen
-b231C   RTS
+ReturnFromBanner   
+        RTS
 
-;-------------------------------------------------------------------
-; WriteUridiumDecalToScreen
-;-------------------------------------------------------------------
-WriteUridiumDecalToScreen 
+WriteUridiumLogo 
         LDX #<uridiumDecal
         LDY #>uridiumDecal
         JSR WriteToScreen
@@ -4441,8 +4440,8 @@ WriteHiScoreLabel
         RTS
 
 WriteInGameBanner   
-        LDX #<inGameBanner
-        LDY #>inGameBanner
+        LDX #<inGameHiScore
+        LDY #>inGameHiScore
         JSR WriteToScreen
         RTS
 
@@ -4479,8 +4478,8 @@ b2351   LDX #<$DC00
         BMI b2389
         LDA #$02
         STA playerAndJoystickMode
-        LDX #<player1Symbol
-        LDY #>player1Symbol
+        LDX #<twoPlayers1Joystick
+        LDY #>twoPlayers1Joystick
         JSR WriteToScreen
 
 j2374   LDA currentBannerState
@@ -4490,15 +4489,15 @@ j2374   LDA currentBannerState
 
 b237B   LDA #$00
         STA playerAndJoystickMode
-        LDX #<player2Symbol
-        LDY #>player2Symbol
+        LDX #<twoPlayersTwoJoysticks
+        LDY #>twoPlayersTwoJoysticks
         JSR WriteToScreen
         JMP j2374
 
 b2389   LDA #$01
         STA playerAndJoystickMode
-        LDX #<playerAndJoystickSymbol
-        LDY #>playerAndJoystickSymbol
+        LDX #<onePlayerOneJoystick
+        LDY #>onePlayerOneJoystick
         JSR WriteToScreen
         JMP j2374
 
@@ -4575,92 +4574,112 @@ PaintPlayerScoreColors
         STA COLOR_RAM + $0083
         RTS
 
-b2402   LDA #$F2
+b2402   LDA #M_RED
         STA COLOR_RAM + $005A
         STA COLOR_RAM + $005B
-        LDA #<$F6F5
+        LDA #M_GREEN
         STA COLOR_RAM + $0082
-        LDA #>$F6F5
+        LDA #M_BLUE
         STA COLOR_RAM + $0083
         RTS
 
 ;-------------------------------------------------------------------
-; SetUpSomeData
+; SetUpScrollingTitleData
 ;-------------------------------------------------------------------
-SetUpSomeData
+SetUpScrollingTitleData
         LDX #$00
         STX dataIndex
         STX stashedYValue
-b241B   LDY f349F,X
+CopyTitleScrollerData   
+        LDY scrollingMessage,X
         BMI b244D
-        LDA finalLocationOfSomeLevelDataAndGameData,Y
+        LDA indexesToFontData,Y
         CLC
         ADC #$60
         STA srcLoPtr
+
         LDA #$C0
         ADC #$00
         STA srcHiPtr
+
+        ; Each glyph can be up to 4 bytes long
         LDY #$00
         LDX stashedYValue
-b2432   LDA (srcLoPtr),Y
+b2432   
+        LDA (srcLoPtr),Y
         BEQ b243A
-        STA f8010,X
+        STA titleScreenData,X
         INX
-b243A   INY
+b243A   
+        INY
         CPY #$04
         BCC b2432
+
         LDA #$01
-        STA f8010,X
+        STA titleScreenData,X
         INX
         STX stashedYValue
         INC dataIndex
         LDX dataIndex
-        BPL b241B
+        BPL CopyTitleScrollerData
 
-b244D   LDX stashedYValue
+b244D   
+        LDX stashedYValue
         LDY #$03
         LDA #$00
-b2453   STA f8010,X
+b2453   
+        STA titleScreenData,X
         INX
         DEY
         BPL b2453
         RTS
 
+frameCounter = loopCounter
 ;-------------------------------------------------------------------
-; ShipHasBeenHit
+; ExplodeTheManta
 ;-------------------------------------------------------------------
-ShipHasBeenHit
+ExplodeTheManta
         LDA #$00
         STA $D015    ;Sprite display Enable
         STA inputDebounceDuringAnimation
         LDA #$06
-        STA loopCounter
+        STA frameCounter
         LDA #$0C
         STA soundVariable1
         STA soundVariable2
-        LDA #$F8
+        LDA #M_ORANGE
         STA $D026    ;Sprite Multi-Color Register 1
-        LDA #$F0
+        LDA #M_BLACK
         STA $D025    ;Sprite Multi-Color Register 0
+
         LDX #<spriteVariablesExplosion
         LDY #>spriteVariablesExplosion
         STX spriteVariablesLoPtr
         STY spriteVariablesHiPtr
         JSR LoadSpriteVariablesAndDisplay
+
         LDA mantaCurrentYPos
         STA currentSpriteYPos
         JSR DisplayCurrentSprite
-j2488   LDA hasShipBeenHit
-        BPL b2490
+
+MantaExplosionLoop
+        LDA hasMantaStruckTheSurface
+        BPL SetUpExplosion
         LDA #$00
         STA mantaHorizontalMovementVelocity
-b2490   LDA loopCounter
-        BMI b24BF
+SetUpExplosion
+        LDA frameCounter
+        BMI AnimateNextExplosionFrame
+
+AddNewSequence
         LDA #$07
         STA spriteIndex
-        JSR StoreShipSpriteState
-        LDA loopCounter
+        JSR LoadExplosionStateForSprite
+
+        LDA frameCounter
         STA spriteIndex
+
+        ; Jitter the horizontal position of the explosion.
         LDA $D41B    ; Random Number Generator
         AND #$0F
         SEC
@@ -4668,8 +4687,11 @@ b2490   LDA loopCounter
         CLC
         ADC currentSpriteXPos
         STA currentSpriteXPos
-        LDA #EXPLOSION_MAJOR1
+
+        LDA #MANTA_EXPLOSION1
         STA currentSpriteValue
+
+        ; Jitter the vertical position of the explosion.
         LDA $D41B    ; Random Number Generator
         AND #$0F
         SBC #$08
@@ -4677,28 +4699,35 @@ b2490   LDA loopCounter
         ADC currentSpriteYPos
         STA currentSpriteYPos
         JSR ApplySpriteVariablesAndDisplay
-b24BF   JSR ProcessGameFrameWithoutCheckingPause
 
-        ; Animte the ship explosion
+AnimateNextExplosionFrame
+        JSR ProcessGameFrameWithoutCheckingPause
+
+        ; All available sprites are devoted to the explosion. That
+        ; means we get seven separate detonations at randomly jittered
+        ; distances from the centre of the manta.
+        ; Here we advance the state of each of the seven explosions.
         LDA #$07
         STA spriteIndex
-b24C6   JSR StoreShipSpriteState
+MantaExplosionAnimation
+        JSR LoadExplosionStateForSprite
         INC currentSpriteValue
         LDA currentSpriteValue
-        CMP #EXPLOSION_MAJOR11 + $01
-        BCC b24D5
+        CMP #MANTA_EXPLOSION11 + $01
+        BCC NextExplosionFrame
         LDA #$00
         STA currentSpriteDisplayEnable
-b24D5   JSR ApplySpriteVariablesAndDisplay
+NextExplosionFrame
+        JSR ApplySpriteVariablesAndDisplay
         DEC spriteIndex
-        BPL b24C6
+        BPL MantaExplosionAnimation
 
         JSR ProcessGameFrameWithoutCheckingPause
         JSR ProcessGameFrameWithoutCheckingPause
 
         LDA mantaHorizontalMovementVelocity
-        BEQ b2506
-        BMI b24F8
+        BEQ UpdateVelocityLimiter
+        BMI CheckPlayerVelocity
         LDA playerVelocityLimiter
         SEC
         SBC #$80
@@ -4706,32 +4735,39 @@ b24D5   JSR ApplySpriteVariablesAndDisplay
         LDA mantaHorizontalMovementVelocity
         SBC #$00
         STA mantaHorizontalMovementVelocity
-        JMP j2508
+        JMP CheckPauseStatus
 
-b24F8   CLC
+CheckPlayerVelocity
+        CLC
         LDA playerVelocityLimiter
         ADC #$80
         STA playerVelocityLimiter
-        BCC b2503
+        BCC NoNeedToIncreaseVelocity
         INC mantaHorizontalMovementVelocity
-b2503   JMP j2508
+NoNeedToIncreaseVelocity
+        JMP CheckPauseStatus
 
-b2506   STA playerVelocityLimiter
-j2508   LDA pausedOrNotPaused
+UpdateVelocityLimiter
+        STA playerVelocityLimiter
+CheckPauseStatus
+        LDA pausedPlayingOrDemo
         CMP #$02
-        BEQ b2515
+        BEQ UpdateMantaScore
         LDA firePressed
-        BEQ b2523
-        JMP j2518
+        BEQ ExitMantaExplosion
+        JMP GoToNextFrame
 
-b2515   JSR UpdatePlayerScore
-j2518   DEC loopCounter
-        LDA loopCounter
+UpdateMantaScore
+        JSR UpdatePlayerScore
+GoToNextFrame
+        DEC frameCounter
+        LDA frameCounter
         CMP #$F0
-        BEQ b2523
-        JMP j2488
+        BEQ ExitMantaExplosion
+        JMP MantaExplosionLoop
 
-b2523   RTS
+ExitMantaExplosion
+        RTS
 
 ;--------------------------------------------------------------------
 ; UpdateCurrentColorValue
@@ -5251,7 +5287,7 @@ CheckLeftSideOfManta
         CMP #$90
         BCS CheckRightSideOfManta
         LDA #$80
-        STA hasShipBeenHit
+        STA hasMantaStruckTheSurface
 
 CheckRightSideOfManta
         LDY #$02
@@ -5260,7 +5296,7 @@ CheckRightSideOfManta
         CMP #$90
         BCS CheckCentreOfManta
         LDA #$80
-        STA hasShipBeenHit
+        STA hasMantaStruckTheSurface
 
 CheckCentreOfManta
         LDY #$01
@@ -5270,7 +5306,7 @@ CheckCentreOfManta
         CMP #$90
         BCS CheckTopSideOfManta
         LDA #$80
-        STA hasShipBeenHit
+        STA hasMantaStruckTheSurface
 
 CheckTopSideOfManta
         LDA mantaDimensionHint
@@ -5285,7 +5321,7 @@ CheckTopSideOfManta
         CMP #$90
         BCS CheckBottomSideOfManta
         LDA #$80
-        STA hasShipBeenHit
+        STA hasMantaStruckTheSurface
 
 CheckBottomSideOfManta
         LDA centreOfMantaHiPtr
@@ -5297,7 +5333,7 @@ CheckBottomSideOfManta
         CMP #$90
         BCS RestorePointerToCentre
         LDA #$80
-        STA hasShipBeenHit
+        STA hasMantaStruckTheSurface
 
 RestorePointerToCentre
         DEC centreOfMantaHiPtr
@@ -5439,7 +5475,7 @@ CheckInputDuringDeploymentSequence
         JSR GetJoystickInput
         JSR MaybeShowPauseScreen
         JSR CheckForKeyboardCommands
-        JSR MaybeChangeTitleDecal
+        JSR MaybeUpdateInGameBanner
         INC someKindOfFrameRate
 b292A   LDA shouldWaitUntilReady
         BEQ b292A
@@ -5860,7 +5896,7 @@ MaybeShowPauseScreen
         LDA #$00
         STA soundOrTitleSelector
         LDA #$03
-        STA pausedOrNotPaused
+        STA pausedPlayingOrDemo
 
         ; Pause pressed. Wait to unpause.
 PauseLoop
@@ -5884,7 +5920,7 @@ SecondPauseLoop
         ; clr/home pressed - abandon game.
         BEQ JumptoGameOverCheckHiScore
         JSR GetJoystickInput
-        JSR MaybeChangeTitleDecal
+        JSR MaybeUpdateInGameBanner
         LDY #$18
         JSR WasteCyclesUsingXAndY
         INC someKindOfFrameRate
@@ -5929,7 +5965,7 @@ ExitPauseScreen
         LDA #$12
         STA soundOrTitleSelector
         LDA #$02
-        STA pausedOrNotPaused
+        STA pausedPlayingOrDemo
         RTS
 
 
@@ -6746,77 +6782,96 @@ b308A   LDA $D41B    ; Random Number Generator
         BNE b308A
         RTS
 
-secondHalfTextCharacterSetLoPtr = colorRamLoPtr
-secondHalfTextCharacterSetHiPtr = colorRamHiPtr
+upperHalfTextCharsetLoPtr = colorRamLoPtr
+upperHalfTextCharsetHiPtr = colorRamHiPtr
+currentHalfLoPtr = someDataLoPtr
+currentHalfHiPtr = someDataHiPtr
+numberOfCharsToSplit      = initialValueOfY
 ;-------------------------------------------------------------------
-; CopyDataFrommainCharacterSetTosecondHalfTextCharacterSet
+; CreateUpperAndLowerHalvesOfTextCharset
 ;-------------------------------------------------------------------
-CopyDataFrommainCharacterSetTosecondHalfTextCharacterSet
-        LDX #<secondHalfTextCharacterSet
-        LDY #>secondHalfTextCharacterSet
-        STX someDataLoPtr
-        STY someDataHiPtr
+CreateUpperAndLowerHalvesOfTextCharset
+        LDX #<lowerHalfTextCharacterSet
+        LDY #>lowerHalfTextCharacterSet
+        STX currentHalfLoPtr
+        STY currentHalfHiPtr
         LDX #<mainCharacterSet
         LDY #>mainCharacterSet
-        STX secondHalfTextCharacterSetLoPtr
-        STY secondHalfTextCharacterSetHiPtr
+        STX upperHalfTextCharsetLoPtr
+        STY upperHalfTextCharsetHiPtr
 
         LDA #$80
-        STA initialValueOfY
-b30B4   LDX #$07
+        STA numberOfCharsToSplit
+SplitTextCharsetLoop   
+        LDX #$07
         STX dataIndex
 
         LDY #$07
-b30BA   LDA #$00
-        STA (someDataLoPtr),Y
+StripeTheLowerHalf   
+        LDA #$00
+        STA (currentHalfLoPtr),Y
         DEY
         STY stashedYValue
         LDY dataIndex
-        LDA (secondHalfTextCharacterSetLoPtr),Y
+        LDA (upperHalfTextCharsetLoPtr),Y
         DEY
         STY dataIndex
         LDY stashedYValue
-        STA (someDataLoPtr),Y
+        STA (currentHalfLoPtr),Y
         DEY
-        BPL b30BA
+        BPL StripeTheLowerHalf
 
-        LDA someDataHiPtr
+        ; Move the pointer to the mainCharacterSet so
+        ; that we striped the upper half of the character
+        ; set as well (i.e. move pointer to $7000).
+        LDA currentHalfHiPtr
         SEC
         SBC #$04
-        STA someDataHiPtr
+        STA currentHalfHiPtr
 
         LDY #$07
-b30D8   LDA #$00
-        STA (someDataLoPtr),Y
+StripeTheUpperHalf   
+        LDA #$00
+        STA (currentHalfLoPtr),Y
         DEY
         STY stashedYValue
         LDY dataIndex
-        LDA (secondHalfTextCharacterSetLoPtr),Y
+        LDA (upperHalfTextCharsetLoPtr),Y
         DEY
         STY dataIndex
         LDY stashedYValue
-        STA (someDataLoPtr),Y
+        STA (currentHalfLoPtr),Y
         DEY
-        BPL b30D8
+        BPL StripeTheUpperHalf
 
-        LDA someDataLoPtr
+        ; Move to the next character definition in the character
+        ; set for the lower half of the character set
+        ;  (each character definition is 8 bytes long).
+        LDA currentHalfLoPtr
         CLC
         ADC #$08
-        STA someDataLoPtr
+        STA currentHalfLoPtr
 
-        LDA someDataHiPtr
+        ; Move the pointer back to the lower half of the character
+        ; set so  that is ready for the next iteration.
+        ; (i.e. move pointer to $7400).
+        LDA currentHalfHiPtr
         ADC #$04
-        STA someDataHiPtr
+        STA currentHalfHiPtr
 
+        ; Move to the next character definition in the character
+        ; set for the upper half of the character set
+        ;  (each character definition is 8 bytes long).
         CLC
-        LDA secondHalfTextCharacterSetLoPtr
+        LDA upperHalfTextCharsetLoPtr
         ADC #$08
-        STA secondHalfTextCharacterSetLoPtr
+        STA upperHalfTextCharsetLoPtr
 
-        BCC b3105
-        INC secondHalfTextCharacterSetHiPtr
-b3105   DEC initialValueOfY
-        BNE b30B4
+        BCC GoToNextCharDefinition
+        INC upperHalfTextCharsetHiPtr
+GoToNextCharDefinition   
+        DEC numberOfCharsToSplit
+        BNE SplitTextCharsetLoop
 
         RTS
 
@@ -6941,18 +6996,18 @@ b3F97   SBC #$01
         LDA #$C8
         STA $D016    ;VIC Control Register 2
 
-a3FB0   =*+$01
+tuneControlRasterPosition   =*+$01
         LDA #$00
         STA shouldWaitUntilReady
 
         LDA #$01
         STA $D019    ;VIC Interrupt Request Register (IRR)
 
-        LDA a3FB0
+        LDA tuneControlRasterPosition
         STA $D012    ;Raster Position
 
         EOR #$80
-        STA a3FB0
+        STA tuneControlRasterPosition
 
         JSR FiddleWithRAMAccessMode
         LDA shouldWaitUntilReady
@@ -7017,8 +7072,8 @@ bA912   LDA firstInHallofFame,X
         BNE bA912
 
         LDX #$13
-bA91F   LDA inGameBanner,X
-        STA inGameBannerSaver,X
+bA91F   LDA inGameHiScore,X
+        STA inGameHiScoreSaver,X
         DEX
         BPL bA91F
 
@@ -7236,9 +7291,9 @@ bB088   STA currentSpriteMSBXPosOffset
         RTS
 
 ;-------------------------------------------------------------------
-; StoreShipSpriteState
+; LoadExplosionStateForSprite
 ;-------------------------------------------------------------------
-StoreShipSpriteState
+LoadExplosionStateForSprite
         LDY spriteIndex
         LDA msbForSpriteArray,Y
         STA currentSpriteMSB
@@ -7547,13 +7602,12 @@ WriteToScreen
         STY dataHiPtr
 
         ;Get the Y Pos from the first byte
-bB299   LDY #$00
+        LDY #$00
         LDA (dataLoPtr),Y
         STA currentCharYPos
-bB2A0   =*+$01
         ; Return early if the Y Pos is invalid
         CMP #$18
-        BCS bB2C5
+        BCS FinishWritingToScreen
 
         ; Get the X pos from the second byte
         INY
@@ -7577,18 +7631,22 @@ jB2B4   INY
 
         ; Stop writing if the leftmost bit is set on writeCharsIndex. This means
         ; the most bytes we'll write is 128.
-        BMI bB2C5
+        BMI FinishWritingToScreen
         ; Stop writing if the leftmost bit is set on the char to write.
         CMP #$00
-        BMI bB2C5
+        BMI FinishWritingToScreen
 
         ; Write the character to screen.
         STA charToWrite
         JSR WriteCharacterToScreen
         JMP WriteCharsLoop
 
-bB2C5   RTS
+FinishWritingToScreen
+        RTS
 
+
+screenCharLoPtr = tempLoPtrCopyTo
+screenCharHiPtr = tempHiPtrCopyTo
 ;-------------------------------------------------------------------
 ; WriteCharacterToScreen
 ;-------------------------------------------------------------------
@@ -7596,47 +7654,50 @@ WriteCharacterToScreen
         ; Move the ptr to the x/y position.
         LDY currentCharYPos
         LDA screenLineHiPtrArray,Y
-        STA tempHiPtrCopyTo
+        STA screenCharHiPtr
         LDA screenLineLoPtrArray,Y
         CLC
         ADC currentCharXPos
-        STA tempLoPtrCopyTo
+        STA screenCharLoPtr
 
         LDA #$00
-        ADC tempHiPtrCopyTo
-        STA tempHiPtrCopyTo
+        ADC screenCharHiPtr
+        STA screenCharHiPtr
 
         ; Write the top half of the character
         LDA charToWrite
         LDY #$00
-        STA (tempLoPtrCopyTo),Y
+        STA (screenCharLoPtr),Y
 
         ; Write the bottom half of the character
         ORA #$80
         LDY #$28
-        STA (tempLoPtrCopyTo),Y
+        STA (screenCharLoPtr),Y
 
         ; Check if the byte encodes a second half.
         INC currentCharXPos
         AND #$7F
+        ; Characters between 3A and 5A have a second half. For example,
+        ; capital A has a second half.
         CMP #$3A
-        BCC bB301
+        BCC FinishedWritingCharacter
 
         CMP #$5A
-        BCS bB301
+        BCS FinishedWritingCharacter
 
         ; The byte encodes a second half. Write the top half of it.
         LDY #$01
-        ADC #$20
-        STA (tempLoPtrCopyTo),Y
+        ADC #$20   ; The top half of the right hand portion.
+        STA (screenCharLoPtr),Y
 
         ; Write the bottom half of it.
-        ORA #$80
+        ORA #$80   ; The bottom half of the right hand portion.
         LDY #$29
-        STA (tempLoPtrCopyTo),Y
+        STA (screenCharLoPtr),Y
 
         INC currentCharXPos
-bB301   RTS
+FinishedWritingCharacter   
+        RTS
 
 ;-------------------------------------------------------------------
 ; CopyDataUntilXIsZero

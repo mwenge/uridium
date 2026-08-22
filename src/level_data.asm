@@ -1,17 +1,16 @@
-f8010 = $8010
-notUsed = $8010 
+titleScreenData = $8010 
 finalLocationOfMainLevelData = $E000
 *=$8000
 startOfMainLevelData
         .BYTE $00,$09,$00,$09,$C3,$C2,$CD,$38
         .BYTE $30,$00,$00,$00,$00,$00,$00,$00
 dreadnoughtDataForLevelLoPtrArray = $E010
-        .BYTE <notUsed,<level1DreadnoughtData,<level2DreadnoughtData,<level3DreadnoughtData
+        .BYTE <titleScreenData,<level1DreadnoughtData,<level2DreadnoughtData,<level3DreadnoughtData
         .BYTE <level4DreadnoughtData,<level5DreadnoughtData,<level6DreadnoughtData,<level7DreadnoughtData
         .BYTE <level8DreadnoughtData,<level9DreadnoughtData,<level10DreadnoughtData,<level11DreadnoughtData
         .BYTE <level12DreadnoughtData,<level13DreadnoughtData,<level14DreadnoughtData,<level15DreadnoughtData
 dreadnoughtDataForLevelHiPtrArray = $E020
-        .BYTE >notUsed,>level1DreadnoughtData,>level2DreadnoughtData,>level3DreadnoughtData
+        .BYTE >titleScreenData,>level1DreadnoughtData,>level2DreadnoughtData,>level3DreadnoughtData
         .BYTE >level4DreadnoughtData,>level5DreadnoughtData,>level6DreadnoughtData,>level7DreadnoughtData
         .BYTE >level8DreadnoughtData,>level9DreadnoughtData,>level10DreadnoughtData,>level11DreadnoughtData
         .BYTE >level12DreadnoughtData,>level13DreadnoughtData,>level14DreadnoughtData,>level15DreadnoughtData
@@ -76,7 +75,10 @@ level15Name = $EFDF
         .TEXT "  15. Uridium.  ", $FF, ""
         .BYTE $00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
 level3DreadnoughtData = $F000
+        ; First layer, the surface data. Each byte is an index into
+        ; surfaceStructureData (see structure_data.asm). 
         .BYTE $05,$5C,$5C,$04,$02,$5C,$06,$5C
         .BYTE $5C,$5C,$06,$5C,$07,$0C,$08,$08
         .BYTE $08,$08,$08,$08,$02,$5C,$04,$0C
@@ -96,6 +98,12 @@ level3DreadnoughtData = $F000
         .BYTE $7A,$7B,$7B,$7B,$7B,$02,$03,$03
         .BYTE $04,$7A,$7B,$7B,$7B,$7B,$02,$5C
         .BYTE $5C,$5C,$5C,$5C,$5C,$5C,$07,$00
+
+        ; The structures to place on the surface layer. Each structure
+        ; is a triplet of location (High Byte + Low Byte) and index into
+        ; surfaceStructureData.
+        ; e.g. $9844 - location to place the structure on the surface.
+        ;      $0D   - index to surfaceStructureData of the structure to place.
         .BYTE $98,$44,$0D,$8E,$55,$13,$94,$58
         .BYTE $1F,$A0,$58,$1F,$88,$7B,$1D,$A2
         .BYTE $7B,$1E,$96,$7B,$18,$90,$7B,$18
@@ -598,6 +606,7 @@ themeTuneData = $FE00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
         .BYTE $FF,$00,$FF,$00,$FF,$00,$FF,$00
 ;aA000
+indexesToFontData = $C000
         .BYTE $00,$04,$08,$0C,$10,$14,$18,$1C
         .BYTE $20,$24,$28,$2C,$30,$34,$38,$3C
         .BYTE $40,$44,$48,$4C,$50,$54,$48,$5C
@@ -610,6 +619,7 @@ themeTuneData = $FE00
         .BYTE $60,$64,$68,$6C,$70,$74,$78,$7C
         .BYTE $80,$84,$88,$8C,$80,$90,$90,$90
         .BYTE $90,$90,$90,$90,$90,$90,$90,$90
+fontData = $C060
         .BYTE $27,$28,$50,$2A,$45,$23,$00,$00
         .BYTE $43,$25,$46,$00,$47,$25,$25,$26
         .BYTE $48,$00,$00,$00,$49,$4A,$25,$3C

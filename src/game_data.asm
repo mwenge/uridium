@@ -296,26 +296,23 @@ colorLineHiPtrArray
 initialPlayerScore
         .BYTE $00,$00,$00,$00,$00,$03,$01,$01
         .BYTE $00
-f349F   .BYTE $4E,$1B,$12,$0D,$12,$1E,$42,$30
-        .BYTE $0B,$22,$30,$3A,$17,$0D,$1B,$0E
-        .BYTE $54,$30,$3B,$1B,$0A,$22,$0B,$1B
-        .BYTE $18,$18,$14,$28,$30,$41,$12,$10
-        .BYTE $11,$30,$2E
-
+scrollingMessage
+        .TEXT "Uridium by Andrew Braybrook. High -"
 hiScoreForScrollingBanner
         .TEXT " 12000 AEB", $FF, $FF, $FF, $FF
-player1Symbol
+
+twoPlayers1Joystick
         .BYTE $00,$0F
         .TEXT "  ", $55, $55, " ", $56, "  ", $FF
-player2Symbol
+twoPlayersTwoJoysticks
         .BYTE $00,$0F
         .TEXT " ", $55, $55, " ", $56, $56, " ", $FF
-playerAndJoystickSymbol
+onePlayerOneJoystick
         .BYTE $00,$0F
         .TEXT "   ", $55, " ", $56, "   ", $FF
-arrowKeysSymbol
+colorSymbol
         .BYTE $02,$0A,$57,$FF
-globeSymbol
+monoChromeSymbol
         .BYTE $02,$0A,$58,$FF
 uridiumDecal
         .BYTE $02,$0A
@@ -327,14 +324,21 @@ hiScoreLabel
         .TEXT "     Hi-score      ", $FF
 
 inGameHiScoreDisplay =*+$04
-inGameBanner ; $3526
+inGameHiScore ; $3526
         .BYTE $02,$0A
-        .TEXT "     12000 AEB   ", $FF, "2c    "
-        .TEXT " ", $55, $55, "     ", $56, $56, $FF, "2c     ", $55, " "
-        .TEXT "        ", $56, $FF, "2c     ", $55, $55, " "
-        .TEXT "      ", $56, $FF
-scrollingTitleScreenDataLoPtrArray   .BYTE $3A,$4B,$5E
-scrollingTitleScreenDataHiPtrArray   .BYTE $35,$35,$35
+        .TEXT "     12000 AEB   ", $FF
+inGameTwoPlayersTwoJoysticksDisplay
+        .BYTE $02,$0C
+        .TEXT "     ", $55, $55, "     ", $56, $56, $FF
+inGameOnePlayerOneJoystickDisplay
+        .BYTE $02,$0C
+        .TEXT "     ", $55,    "         ", $56, $FF
+inGameTwoPlayersOneJoystickDisplay
+        .BYTE $02,$0C
+        .TEXT "     ", $55, $55, "       ", $56, $FF
+
+bannerConfigurationLoPtrArray   .BYTE <inGameTwoPlayersTwoJoysticksDisplay,<inGameOnePlayerOneJoystickDisplay,<inGameTwoPlayersOneJoystickDisplay
+bannerConfigurationHiPtrArray   .BYTE >inGameTwoPlayersTwoJoysticksDisplay,>inGameOnePlayerOneJoystickDisplay,>inGameTwoPlayersOneJoystickDisplay
 
 hewson
         .BYTE $06,$0E
@@ -406,17 +410,17 @@ currentColorValueArray
 
 
 mainLoopJumpTableLoPtr
-        .BYTE <MaybeChangeTitleDecal,<MaybeCreateNewEnemyFormation,<UpdatePlayerScore,<MaybeShowPauseScreen
+        .BYTE <MaybeUpdateInGameBanner,<MaybeCreateNewEnemyFormation,<UpdatePlayerScore,<MaybeShowPauseScreen
         .BYTE <DoNothing,<MaybeLaunchMine,<UpdateCurrentColorValue,<MaybeShowPauseScreen
 mainLoopJumpTableHiPtr
-        .BYTE >MaybeChangeTitleDecal,>MaybeCreateNewEnemyFormation,>UpdatePlayerScore,>MaybeShowPauseScreen
+        .BYTE >MaybeUpdateInGameBanner,>MaybeCreateNewEnemyFormation,>UpdatePlayerScore,>MaybeShowPauseScreen
         .BYTE >DoNothing,>MaybeLaunchMine,>UpdateCurrentColorValue,>MaybeShowPauseScreen
 
 
 DemoModeLoPtrFuncArray
-        .BYTE <MaybeChangeTitleDecal,<MaybeLaunchMine,<MaybeUpdateColorScheme,<UpdatePlayerAndJoystickDisplay
+        .BYTE <MaybeUpdateInGameBanner,<MaybeLaunchMine,<MaybeUpdateColorScheme,<UpdatePlayerAndJoystickDisplay
 DemoModeHiPtrFuncArray
-        .BYTE >MaybeChangeTitleDecal,>MaybeLaunchMine,>MaybeUpdateColorScheme,>UpdatePlayerAndJoystickDisplay
+        .BYTE >MaybeUpdateInGameBanner,>MaybeLaunchMine,>MaybeUpdateColorScheme,>UpdatePlayerAndJoystickDisplay
 
 
 enemyUpdatePtrArray
