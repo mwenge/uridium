@@ -411,22 +411,22 @@ currentColorValueArray
 
 mainLoopJumpTableLoPtr
         .BYTE <MaybeUpdateInGameBanner,<MaybeCreateNewEnemyFormation,<UpdatePlayerScore,<MaybeShowPauseScreen
-        .BYTE <DoNothing,<MaybeLaunchMine,<UpdateCurrentColorValue,<MaybeShowPauseScreen
+        .BYTE <DoNothing,<MaybeLaunchUridimine,<UpdateCurrentColorValue,<MaybeShowPauseScreen
 mainLoopJumpTableHiPtr
         .BYTE >MaybeUpdateInGameBanner,>MaybeCreateNewEnemyFormation,>UpdatePlayerScore,>MaybeShowPauseScreen
-        .BYTE >DoNothing,>MaybeLaunchMine,>UpdateCurrentColorValue,>MaybeShowPauseScreen
+        .BYTE >DoNothing,>MaybeLaunchUridimine,>UpdateCurrentColorValue,>MaybeShowPauseScreen
 
 
 DemoModeLoPtrFuncArray
-        .BYTE <MaybeUpdateInGameBanner,<MaybeLaunchMine,<MaybeUpdateColorScheme,<UpdatePlayerAndJoystickDisplay
+        .BYTE <MaybeUpdateInGameBanner,<MaybeLaunchUridimine,<MaybeUpdateColorScheme,<UpdatePlayerAndJoystickDisplay
 DemoModeHiPtrFuncArray
-        .BYTE >MaybeUpdateInGameBanner,>MaybeLaunchMine,>MaybeUpdateColorScheme,>UpdatePlayerAndJoystickDisplay
+        .BYTE >MaybeUpdateInGameBanner,>MaybeLaunchUridimine,>MaybeUpdateColorScheme,>UpdatePlayerAndJoystickDisplay
 
 
 enemyUpdatePtrArray
         .BYTE <DoNothing,>DoNothing
         .BYTE <UpdateEnemyPositions,>UpdateEnemyPositions
-        .BYTE <MaybeAnimateEnemyBullet,>MaybeAnimateEnemyBullet
+        .BYTE <AnimateEnemyBullet,>AnimateEnemyBullet
         .BYTE <AnimateEnemyExplosion, >AnimateEnemyExplosion
         .BYTE <MaybeAnimateMineCreation,>MaybeAnimateMineCreation
         .BYTE <MaybeMineExplodes,>MaybeMineExplodes
@@ -438,7 +438,8 @@ enemyHorizontalVelocityArray
 enemyVerticalVelocityArray
         .BYTE $61,$61,$81,$71,$81,$91,$81,$91
         .BYTE $B1,$21,$61,$51,$41,$71,$61,$41
-fireBulletOrMineArray   .BYTE $10,$10,$14,$18,$1C,$0C,$18,$1C
+fireBulletOrMineArray   
+        .BYTE $10,$10,$14,$18,$1C,$0C,$18,$1C
         .BYTE $0C,$0A,$18,$10,$0C,$14,$0E,$18
 bulletSpriteArray
         .BYTE BULLET_NARROW,BULLET_5,BULLET_NARROW,BULLET_WIDE,BULLET_5,BULLET_NARROW,BULLET_VERYNARROW,BULLET_NARROW

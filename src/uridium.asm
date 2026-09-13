@@ -15,7 +15,7 @@
 ;
 
 ; Sound system Variables
-titleTuneBuffer                                            = $9C
+titleTuneBuffer                                = $9C
 aA4                                            = $A4
 aC0                                            = $C0
 aC1                                            = $C1
@@ -84,7 +84,7 @@ mantaHorizontalMovementVelocity                = $2E
 shouldWaitUntilReady                           = $2F
 scrollPositionHiPtr                            = $30
 scrollPositionLoPtr                            = $31
-hasMantaStruckTheSurface                                 = $32
+hasMantaBeenHit                       = $32
 mantaCurrentYPos                               = $33
 mantaVerticalMovementVelocity                  = $34
 
@@ -118,14 +118,14 @@ multiColor0                                    = $4E
 spriteColorForLevel                            = $4F
 mantaBottomCannonLoPtr                         = $50
 mantaBottomCannonHiPtr                         = $51
-centreOfMantaHiPtr                            = $53
-someKindOfTextureColorVariable                 = $54
+centreOfMantaHiPtr                             = $53
+uridimineArrayIndex                            = $54
 currentColorValue                              = $55
-mantaDimensionHint                       = $56
+mantaDimensionHint                             = $56
 unusedOffsetForCannonPtrs                      = $57
 monochromeCharacterColor                       = $58
 loopCounter                                    = $59
-pausedPlayingOrDemo                              = $5A
+pausedPlayingOrDemo                            = $5A
 currentBannerState                             = $5B
 playerAndJoystickMode                          = $5C
 currentPlayer                                  = $5D
@@ -143,7 +143,7 @@ whetherScoreAwardedForHittingEnemy             = $68
 whetherToFireEnemyBulletOrMine                 = $69
 bulletSpriteCurrentLevel                       = $6A
 enemyBulletXPosIncrement                       = $6B
-usedToCheckIfWeShouldLaunchMine                = $6C
+uridimineOrBulletInProgress                = $6C
 loPtrToEnemyFormationOrder                     = $6D
 hiPtrToEnemyFormationOrder                     = $6E
 currentEnemyMovementStrategy                   = $6F
@@ -157,7 +157,7 @@ enemyYPosDownwardVelocity                      = $82
 enemyYPosDownwardIncrement                     = $83
 initialEnemyXPos                               = $84
 landNowActivated                               = $85
-characterUnderManta                  = $86
+characterUnderManta                            = $86
 formationAnnihilationBonus                     = $87
 numberOfEnemiesSpawned                         = $88
 destroyedEdgeLoPtr                             = $89
@@ -171,9 +171,9 @@ soundVariable2                                 = $92
 soundVariable3                                 = $93
 screenRAMLoPtr                                 = $94
 volumeBuffer                                   = $95
-soundVariable4                                            = $96
-soundVariable5                                            = $97
-soundVariable6                                            = $98
+soundVariable4                                 = $96
+soundVariable5                                 = $97
+soundVariable6                                 = $98
 a99                                            = $99
 a9D                                            = $9D
 a9F                                            = $9F
@@ -211,7 +211,7 @@ hiScoreSaverHiPtr                              = $FB
 hiScoreSaverLoPtr                              = $FC
 colorRamLoPtr                                  = $12
 colorLineLoPtr                                 = $1E
-centreOfMantaLoPtr                            = $52
+centreOfMantaLoPtr                             = $52
 dataLoPtr                                      = $BE
 
 
@@ -347,7 +347,7 @@ BULLET_NARROW                                  = $0D
 BULLET_VERYNARROW                              = $0E
 BULLET_SINGLE                                  = $0F
 EXPLOSION_1                                    = $10
-EXPLOSION_2                                    = $11
+URIDIMINE                                      = $11
 BULLET_5                                       = $12
 MEANIE_EXPLOSION_1                             = $14
 MEANIE_EXPLOSION_2                             = $15
@@ -380,7 +380,7 @@ surfaceStructureDataLoPtrArray                 = $A400
 surfaceStructureDataHiPtrArray                 = $A500
 
 hallOfFameSaver                                = $CA00
-inGameHiScoreSaver                              = $CAAC
+inGameHiScoreSaver                             = $CAAC
 hiScoreScrollingBannerSaver                    = $CAC0
 randomDataStorage                              = $0800
 COLOR_RAM                                      = $D800
@@ -390,6 +390,10 @@ sprite0Ptr                                     = SCREEN_RAM_HIBANK + $03F8
 storageForMiniGameData                         = $D200
 miniGameScreenData                             = $A6A0
 
+uridimineLaunchSiteXPosArray                   = $0240
+uridimineLaunchSiteYPosArray                   = $0220
+uridimineLaunchSiteBaseXPosArray               = $0210
+uridimineCachedYPosArray                       = $0200
 
 
 
@@ -988,7 +992,7 @@ MainGameLoop
         JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
-        JSR UpdateColorsOnScreen
+        JSR UpdateMineLaunchSiteColor
         JSR UpdateEnemies
         INC someKindOfFrameRate
         JSR GetJoystickInput
@@ -1015,7 +1019,7 @@ mainGameLoopHiPtr   =*+$02
         BPL b0D41
         JMP StartLandingSequence
 
-b0D41   LDA hasMantaStruckTheSurface
+b0D41   LDA hasMantaBeenHit
         BEQ MainGameLoop
 
 ;--------------------------------------------------------------------
@@ -1168,7 +1172,7 @@ b0E16   JMP RestartLevel
 StartLandingSequence
         JSR LandOnShipAndMaybeRunMiniGame
         LDA #$00
-        STA hasMantaStruckTheSurface
+        STA hasMantaBeenHit
         JMP MaybeStartNewLevel
 
 ;-------------------------------------------------------------------
@@ -1979,7 +1983,7 @@ ProcessGameFrame
         JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
-        JSR UpdateColorsOnScreen
+        JSR UpdateMineLaunchSiteColor
         JSR GetJoystickInput
         JSR MaybeShowPauseScreen
         LDA fakeMantaHorizontalMovementUpdate
@@ -2001,7 +2005,7 @@ ProcessGameFrameWithoutCheckingPause
         JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
-        JSR UpdateColorsOnScreen
+        JSR UpdateMineLaunchSiteColor
         JSR GetJoystickInput
         LDA #$00
         STA mantaVerticalMovementUpdate
@@ -2146,7 +2150,7 @@ b1504   JSR CheckInputMaybeUpdateDecal
 
 ReloadGameAfterMiniGame   
         LDA #$FF
-        STA someKindOfTextureColorVariable
+        STA uridimineArrayIndex
         JSR FetchCurrentSurfaceData
         JSR CreateJaggedEdgeOfDestructSequence
         JSR GenerateStarfield
@@ -2255,7 +2259,7 @@ b15B2   LDA currentScrollSegment
 ;-------------------------------------------------------------------
 IncrementCurrentLevel
         INC currentLevel
-        INC hasMantaStruckTheSurface
+        INC hasMantaBeenHit
         RTS
 
 ;--------------------------------------------------------------------
@@ -2269,7 +2273,7 @@ RefreshDisplayAndReturn
         JSR ScrollShipSurface
         LDA #$C0
         STA $D015    ;Sprite display Enable
-        INC hasMantaStruckTheSurface
+        INC hasMantaBeenHit
         RTS
 
 ;-------------------------------------------------------------------
@@ -2959,7 +2963,7 @@ UpdatePointersAndFetchSurfaceData
         STA formationAnnihilationBonus
         STA landNowActivated
         LDA #$80
-        STA usedToCheckIfWeShouldLaunchMine
+        STA uridimineOrBulletInProgress
         STA whetherScoreAwardedForHittingEnemy
         JSR FetchCurrentSurfaceData
         RTS
@@ -2998,14 +3002,14 @@ MaybeCreateNewEnemyFormation
         CMP #$21
         BNE DontCreateNewFormation
 
-        LDA usedToCheckIfWeShouldLaunchMine
+        LDA uridimineOrBulletInProgress
         BEQ SelectAFormation
 
         CMP #$80
         BNE DontCreateNewFormation
 
         LDA #$00
-        STA usedToCheckIfWeShouldLaunchMine
+        STA uridimineOrBulletInProgress
         LDA numberOfEnemiesSpawned
         BNE b1A93
 
@@ -3026,7 +3030,7 @@ SelectAFormation
         LDA #$00
         STA enemyFormationDataHiPtr
         LDA #$80
-        STA usedToCheckIfWeShouldLaunchMine
+        STA uridimineOrBulletInProgress
         LDA #$AE
         STA soundVariable2
 
@@ -3221,7 +3225,7 @@ InitializeEnemyLoop
         LDA #$02 ; UpdateEnemyPositions
         STA indexToEnemyUpdatePtrArray,Y
 
-        INC usedToCheckIfWeShouldLaunchMine
+        INC uridimineOrBulletInProgress
         INC numberOfEnemiesSpawned
 
         LDA durationOfStrategyForNextEnemyInFormation
@@ -3276,7 +3280,7 @@ UpdateEnemies
         LDA #$0A
         STA dataIndex
         LSR
-        ; Store $08 in numberOfEnemiesToUpdate
+        ; Store $05 in numberOfEnemiesToUpdate
         STA numberOfEnemiesToUpdate
         LDA #$FF
         STA currentSpriteMultiColorMode
@@ -3327,7 +3331,7 @@ AnimateEnemyExplosion
         STA currentSpriteDisplayEnable
         LDY numberOfEnemiesToUpdate
         STA indexToEnemyUpdatePtrArray,Y ; DoNothing
-        DEC usedToCheckIfWeShouldLaunchMine
+        DEC uridimineOrBulletInProgress
         JSR DisplayCurrentSprite
         RTS
 
@@ -3340,6 +3344,8 @@ IncrementSpriteXPosToFollowManta
         CLC
         LDA mantaHorizontalMovementVelocity
         BMI MantaGoingLeft
+
+MantaGoingRight
         ADC currentSpriteXPos
         STA currentSpriteXPos
         BCC b1C67
@@ -3757,7 +3763,7 @@ b1E93   LDA currentSpriteXPos
 b1E99   LDA #$00
         STA currentSpriteDisplayEnable
         STA indexToEnemyUpdatePtrArray,Y   ; DoNothing
-        DEC usedToCheckIfWeShouldLaunchMine
+        DEC uridimineOrBulletInProgress
 
 UpdateEnemyContentAndPositionAndReturn
         JSR DisplayCurrentSprite
@@ -3778,34 +3784,35 @@ DetectSpriteLeavingScreen
         LDA #$00
         STA currentSpriteDisplayEnable
         STA indexToEnemyUpdatePtrArray,Y   ; DoNothing
-        DEC usedToCheckIfWeShouldLaunchMine
+        DEC uridimineOrBulletInProgress
 b1EBF   JSR DisplayCurrentSprite
         RTS
 
 ;--------------------------------------------------------------------
-; MaybeAnimateEnemyBullet
+; AnimateEnemyBullet
 ;--------------------------------------------------------------------
-MaybeAnimateEnemyBullet
+AnimateEnemyBullet
         JSR IncrementSpriteXPosToFollowManta
         JSR UpdateEnemySpriteXYPos
         LDA durationOfMovementStrategyForEnemy,Y
         SEC
         SBC #$01
         STA durationOfMovementStrategyForEnemy,Y
-        BEQ EnemyBulletIsOffScreen
-        JSR AnimateEnemyBullet
+        BEQ BulletExpired
+        JSR DetectHittingManta
         BCC b1EE1
         LDA mantaShadowOffset
         CMP #$14
         BCS b1EE1
-        INC hasMantaStruckTheSurface
-b1EE1   JMP DetectSpriteLeavingScreen
+        INC hasMantaBeenHit
+b1EE1   
+        JMP DetectSpriteLeavingScreen
         ; Returns
 
 ;--------------------------------------------------------------------
-; EnemyBulletIsOffScreen
+; BulletExpired
 ;--------------------------------------------------------------------
-EnemyBulletIsOffScreen
+BulletExpired
         LDA #$14
         STA currentSpriteValue
         LDA #$06    ; AnimateEnemyExplosion
@@ -3849,16 +3856,16 @@ MaybeFireEnemyShipBullet
         ; fire a bullet.
         LDY #$05
 b1F11   LDA indexToEnemyUpdatePtrArray,Y
-        BEQ FireBulletFromEnemyShip
+        BEQ FireEnemyBullet
         DEY
         BPL b1F11
         LDY stashedYValue
         RTS
 
 ;--------------------------------------------------------------------
-; FireBulletFromEnemyShip
+; FireEnemyBullet
 ;--------------------------------------------------------------------
-FireBulletFromEnemyShip
+FireEnemyBullet
         STY spriteIndex
         LDA currentSpriteValue
         PHA
@@ -3880,13 +3887,13 @@ FireBulletFromEnemyShip
         LDA #$00
         STA enemyYPosCurrentVelocityArray,Y
         STA enemyYPosVelocityLimitArray,Y
-        LDA #$04 ; MaybeAnimateEnemyBullet
+        LDA #$04 ; AnimateEnemyBullet
         STA indexToEnemyUpdatePtrArray,Y
         LDA #$A0
         STA durationOfMovementStrategyForEnemy,Y
         PLA
         STA currentSpriteValue
-        INC usedToCheckIfWeShouldLaunchMine
+        INC uridimineOrBulletInProgress
         LDY stashedYValue
         STY spriteIndex
         LDA #$0B
@@ -3900,49 +3907,54 @@ MaybeAnimateMineCreation
         JSR IncrementSpriteXPosToFollowManta
         LDA someKindOfFrameRate
         AND #$03
-        BNE b1F7C
+        BNE FinishAnimatingMine
         DEC currentSpriteValue
         LDA currentSpriteValue
         CMP #$14
-        BCS b1F7C
+        BCS FinishAnimatingMine
         LDA #$0A  ; MaybeMineExplodes
         STA indexToEnemyUpdatePtrArray,Y
-        LDA #$11
+        LDA #URIDIMINE
         STA currentSpriteValue
-b1F7C   JMP DetectSpriteLeavingScreen
+FinishAnimatingMine   
+        JMP DetectSpriteLeavingScreen
 
 ;--------------------------------------------------------------------
-; MaybeLaunchMine
+; MaybeLaunchUridimine
 ;--------------------------------------------------------------------
-MaybeLaunchMine
-        LDA usedToCheckIfWeShouldLaunchMine
-        BPL b1F9A
+MaybeLaunchUridimine
+        LDA uridimineOrBulletInProgress
+        BPL DontLaunchUridimine
         LDA whetherToFireEnemyBulletOrMine
-        BEQ b1F9A
+        BEQ DontLaunchUridimine
         LSR
         LSR
         CMP $D41B    ; Random Number Generator
-        BCC b1F9A
-        LDX someKindOfTextureColorVariable
-        BMI b1F9A
-b1F92   LDA $0240,X
-        BPL LaunchMine
+        BCC DontLaunchUridimine
+        LDX uridimineArrayIndex
+        BMI DontLaunchUridimine
+FindSuitableLaunchSite   
+        LDA uridimineLaunchSiteXPosArray,X
+        BPL LaunchUridimine
         DEX
-        BPL b1F92
-b1F9A   RTS
-
-;--------------------------------------------------------------------
-; LaunchMine
-;--------------------------------------------------------------------
-LaunchMine
-        LDY #$05
-b1F9D   LDA indexToEnemyUpdatePtrArray,Y
-        BEQ b1FA6
-        DEY
-        BPL b1F9D
+        BPL FindSuitableLaunchSite
+DontLaunchUridimine   
         RTS
 
-b1FA6   STY spriteIndex
+;--------------------------------------------------------------------
+; LaunchUridimine
+;--------------------------------------------------------------------
+LaunchUridimine
+        LDY #$05
+FindSlotInPtrArray   
+        LDA indexToEnemyUpdatePtrArray,Y
+        BEQ LaunchTheUridimine
+        DEY
+        BPL FindSlotInPtrArray
+        RTS
+
+LaunchTheUridimine   
+        STY spriteIndex
         LDA #$FF
         STA currentSpriteDisplayEnable
         LDA #$1D
@@ -3961,31 +3973,33 @@ b1FA6   STY spriteIndex
         STA enemyXPosCurrentVelocityArray,Y
         STA enemyXPosCurrentVelocityMSBOffsetArray,Y
         STA enemyYPosCurrentVelocityArray,Y
-        LDA $0220,X
+        LDA uridimineLaunchSiteYPosArray,X
         ASL
         ASL
         ASL
         CLC
         ADC #$2C
         STA currentSpriteYPos
-        LDA $0240,X
+
+        LDA uridimineLaunchSiteXPosArray,X
         CLC
         ADC #$02
         ASL
         ASL
         ASL
         STA currentSpriteXPos
+
         LDA #$00
         ROL
         STA currentSpriteMSBXPosOffset
         JSR DisplayCurrentSprite
-        INC usedToCheckIfWeShouldLaunchMine
+        INC uridimineOrBulletInProgress
         RTS
 
 ;-------------------------------------------------------------------
-; AnimateEnemyBullet
+; DetectHittingManta
 ;-------------------------------------------------------------------
-AnimateEnemyBullet
+DetectHittingManta
         LDA currentSpriteMSBXPosOffset
         AND #$01
         BNE ClearCarry
@@ -4026,7 +4040,7 @@ ClearCarry
 MaybeMineExplodes
         JSR IncrementSpriteXPosToFollowManta
         JSR UpdateEnemySpriteXYPos
-        JSR AnimateMineMovememnt
+        JSR UpdateMineVelocity
         LDA durationOfMovementStrategyForEnemy,Y
         SEC
         SBC #$01
@@ -4038,12 +4052,12 @@ MaybeMineExplodes
         BNE b203F
         LDA #$0E
         STA soundVariable2
-b203F   JSR AnimateEnemyBullet
+b203F   JSR DetectHittingManta
         BCC b204C
         LDA mantaShadowOffset
         CMP #$14
         BCS b204C
-a204A   INC hasMantaStruckTheSurface
+        INC hasMantaBeenHit
 b204C   JMP DetectSpriteLeavingScreen
 
 MineOffScreen
@@ -4056,9 +4070,9 @@ MineOffScreen
         JMP DetectSpriteLeavingScreen
 
 ;-------------------------------------------------------------------
-; AnimateMineMovememnt
+; UpdateMineVelocity
 ;-------------------------------------------------------------------
-AnimateMineMovememnt
+UpdateMineVelocity
         LDA someKindOfFrameRate
         AND #$03
         BNE b20D2
@@ -4153,7 +4167,7 @@ SetUpScreenForScrolling
         STA shadowDepthDuringMantaAnimation
         STA mantaAnimationActive
         STA mantaTurnActivated
-        STA hasMantaStruckTheSurface
+        STA hasMantaBeenHit
         LDA #$FF
         STA playerVelocityLimiter
         LDA #$10
@@ -4211,7 +4225,7 @@ b2182   LDA shouldWaitUntilReady
         JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
-        JSR UpdateColorsOnScreen
+        JSR UpdateMineLaunchSiteColor
         JSR GetJoystickInput
         JSR CheckForKeyboardCommands
         JSR MaybeUpdateInGameBanner
@@ -4285,7 +4299,7 @@ DemoLoop
         JSR UpdateScrollPositionUsingDirectionAndSpeed
         JSR ScrollShipSurface
         JSR AddStarsBehindDreadnought
-        JSR UpdateColorsOnScreen
+        JSR UpdateMineLaunchSiteColor
         JSR UpdateEnemies
         JSR MaybeCreateNewEnemyFormation
         JSR GetJoystickInput
@@ -4312,7 +4326,7 @@ demoModeFuncHiPtr   =*+$02
         JSR UpdateMantaHorizontalMovementVelocity
         JSR UpdateMantaHorizontalAndVerticalPosition
         JSR AnimateMantaShip
-        LDA hasMantaStruckTheSurface
+        LDA hasMantaBeenHit
         BNE ShipHitInDemoMode
         LDA someKindOfFrameRate
         BNE DemoLoop
@@ -4663,7 +4677,7 @@ ExplodeTheManta
         JSR DisplayCurrentSprite
 
 MantaExplosionLoop
-        LDA hasMantaStruckTheSurface
+        LDA hasMantaBeenHit
         BPL SetUpExplosion
         LDA #$00
         STA mantaHorizontalMovementVelocity
@@ -5287,7 +5301,7 @@ CheckLeftSideOfManta
         CMP #$90
         BCS CheckRightSideOfManta
         LDA #$80
-        STA hasMantaStruckTheSurface
+        STA hasMantaBeenHit
 
 CheckRightSideOfManta
         LDY #$02
@@ -5296,7 +5310,7 @@ CheckRightSideOfManta
         CMP #$90
         BCS CheckCentreOfManta
         LDA #$80
-        STA hasMantaStruckTheSurface
+        STA hasMantaBeenHit
 
 CheckCentreOfManta
         LDY #$01
@@ -5306,7 +5320,7 @@ CheckCentreOfManta
         CMP #$90
         BCS CheckTopSideOfManta
         LDA #$80
-        STA hasMantaStruckTheSurface
+        STA hasMantaBeenHit
 
 CheckTopSideOfManta
         LDA mantaDimensionHint
@@ -5321,7 +5335,7 @@ CheckTopSideOfManta
         CMP #$90
         BCS CheckBottomSideOfManta
         LDA #$80
-        STA hasMantaStruckTheSurface
+        STA hasMantaBeenHit
 
 CheckBottomSideOfManta
         LDA centreOfMantaHiPtr
@@ -5333,7 +5347,7 @@ CheckBottomSideOfManta
         CMP #$90
         BCS RestorePointerToCentre
         LDA #$80
-        STA hasMantaStruckTheSurface
+        STA hasMantaBeenHit
 
 RestorePointerToCentre
         DEC centreOfMantaHiPtr
@@ -6140,7 +6154,7 @@ currentLevelSurfaceDataLoPtr = someDataLoPtr
 ;-------------------------------------------------------------------
 CreateDreadnoughtForCurrentLevel
         LDA #$FF
-        STA someKindOfTextureColorVariable
+        STA uridimineArrayIndex
         LDA indexToCurrentLevelTextureData
         AND #$0F
         TAY
@@ -6334,7 +6348,7 @@ ProcessCharacterInStrip
         CMP #SPACE
         BEQ b2DC1
         STA (ramLoPtr),Y
-b2DC1   JSR SomeKindOfFixUpToTheSurfaceData
+b2DC1   JSR AddUridimineLaunchSite
         LDY stashedYValue
         DEC ramHiPtr ; Move up to the next position in the strip (i.e. 512 bytes) ..
         DEC ramHiPtr ; .. by decrementing the high pointer twice.
@@ -6360,35 +6374,46 @@ FinishSurfaceAndReturn
         RTS
 
 ;-------------------------------------------------------------------
-; SomeKindOfFixUpToTheSurfaceData
+; AddUridimineLaunchSite
 ;-------------------------------------------------------------------
-SomeKindOfFixUpToTheSurfaceData
+AddUridimineLaunchSite
+        ; Check if the chars are for a uridimine launch site. These
+        ; are chars $59, $5A, and $5B.
         CMP #$59
-        BCC b2E16
+        BCC ReturnFromUridimineLaunchSite
         CMP #$5C
-        BCS b2E16
-        LDY someKindOfTextureColorVariable
+        BCS ReturnFromUridimineLaunchSite
+
+        ; It's a uridimine launch site so add it to the arrays for
+        ; tracking their position.
+        LDY uridimineArrayIndex
         INY
         CPY #$10
-        BCS b2E16
-        STY someKindOfTextureColorVariable
+        BCS ReturnFromUridimineLaunchSite
+        STY uridimineArrayIndex
+
         LDA ramHiPtr
         AND #$01
         STA $0230,Y
+
         LDA ramHiPtr
         SEC
         SBC #$82
         CLC
         ADC #$0C
         LSR
-        STA $0220,Y
+        STA uridimineLaunchSiteYPosArray,Y
+
         LDA ramLoPtr
-        STA $0210,Y
+        STA uridimineLaunchSiteBaseXPosArray,Y
+
         ROR
-        STA $0200,Y
+        STA uridimineCachedYPosArray,Y
+
         LDA #$FF
-        STA $0240,Y
-b2E16   RTS
+        STA uridimineLaunchSiteXPosArray,Y
+ReturnFromUridimineLaunchSite   
+        RTS
 
 ;-------------------------------------------------------------------
 ; AddStarsToBackgroundBehindDreadnought
@@ -6665,39 +6690,47 @@ CheckIfPauseOrFireHasBeenPressed
 b2FC7   RTS
 
 ;-------------------------------------------------------------------
-; UpdateColorsOnScreen
+; UpdateMineLaunchSiteColor
 ;-------------------------------------------------------------------
-UpdateColorsOnScreen
-        LDX someKindOfTextureColorVariable
+UpdateMineLaunchSiteColor
+        LDX uridimineArrayIndex
         BMI b3000
-b2FCC   LDY $0220,X
+
+UpdateLaunchSitesLoop   
+        LDY uridimineLaunchSiteYPosArray,X
         LDA colorLineHiPtrArray,Y
         STA colorLineHiPtr
         LDA screenLineLoPtrArray,Y
         STA colorLineLoPtr
-        LDY $0240,X
+
+        LDY uridimineLaunchSiteXPosArray,X
         BMI b2FE2
+
         LDA loadedCharacterColor
         STA (colorLineLoPtr),Y
-b2FE2   LDA $0200,X
+
+b2FE2   LDA uridimineCachedYPosArray,X
         CMP mantaBottomCannonLoPtr
         BCC b3001
         CMP mantaBottomCannonHiPtr
         BCS b3001
-        LDA $0210,X
+
+        LDA uridimineLaunchSiteBaseXPosArray,X
         SEC
         SBC scrollPositionLoPtr
-        STA $0240,X
+        STA uridimineLaunchSiteXPosArray,X
+
         BMI b3001
         TAY
         LDA currentColorValue
         STA (colorLineLoPtr),Y
 b2FFD   DEX
-        BPL b2FCC
+        BPL UpdateLaunchSitesLoop
+
 b3000   RTS
 
 b3001   LDA #$FF
-        STA $0240,X
+        STA uridimineLaunchSiteXPosArray,X
         BNE b2FFD
 
 ;-------------------------------------------------------------------
