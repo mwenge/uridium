@@ -1,5 +1,5 @@
 # Uridium (1986) by Andrew Braybrook
-<img src="https://www.mobygames.com/images/covers/l/213927-uridium-commodore-64-front-cover.jpg" height=300><img src="https://t.gamesnostalgia.com/screenshots/u/r/uridium/main_small.jpg" height=300>
+<img src="https://github.com/user-attachments/assets/0ac1ed47-648e-458b-b5ec-cd043938b4d3" height=300><img src="https://t.gamesnostalgia.com/screenshots/u/r/uridium/main_small.jpg" height=300>
 
 
 This is the reverse-engineered and [commented source code] for the 1986 Commodore 64 game Uridium by Andrew Braybrook. Following the build instructions below you can compile and run Uridium from scratch yourself on a Linux or Windows desktop. Uridium was written in 6502 assembler so might be a challenge to read and understand, even for someone who is already familiar with low-level languages such as C. The objective of providing the commented code here is to allow an interested reader to understand the techniques Braybrook used when coding the game and gain some insight into the workings of 6502 assembler in a then-state-of-the-art Commodore 64 game. The place to start is the [overview of the code in the src directory](https://github.com/mwenge/uridium/tree/master/src).
